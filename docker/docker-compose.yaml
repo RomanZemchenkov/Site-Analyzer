@@ -1,0 +1,30 @@
+version: "3.9"
+
+networks:
+  app-tier:
+    driver: "bridge"
+
+name: "final_project"
+
+services:
+  postgres:
+    image: "postgres:16.3"
+    container_name: "database"
+    ports:
+      - "5432:5432"
+    environment:
+      - "POSTGRES_PASSWORD=1234"
+      - "POSTGRES_USER=roman"
+      - "POSTGRES_DB=search_engine"
+    networks:
+      - "app-tier"
+
+  redis:
+    image: "redis:7.4.0"
+    container_name: "database_in_ram"
+    ports:
+      - "6379:6379"
+    networks:
+      - "app-tier"
+    depends_on:
+      - "postgres"

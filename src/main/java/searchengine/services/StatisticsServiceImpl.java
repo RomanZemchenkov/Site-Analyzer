@@ -4,10 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
-import searchengine.dto.statistics.DetailedStatisticsItem;
-import searchengine.dto.statistics.StatisticsData;
-import searchengine.dto.statistics.StatisticsResponse;
-import searchengine.dto.statistics.TotalStatistics;
+import searchengine.services.dto.page.CreatePageDto;
+import searchengine.services.dto.site.CreateSiteDto;
+import searchengine.services.dto.site.ShowSiteDto;
+import searchengine.services.dto.statistics.DetailedStatisticsItem;
+import searchengine.services.dto.statistics.StatisticsData;
+import searchengine.services.dto.statistics.StatisticsResponse;
+import searchengine.services.dto.statistics.TotalStatistics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +22,8 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     private final Random random = new Random();
     private final SitesList sites;
+    private final PageService pageService;
+    private final SiteService siteService;
 
     @Override
     public StatisticsResponse getStatistics() {
@@ -61,4 +66,5 @@ public class StatisticsServiceImpl implements StatisticsService {
         response.setResult(true);
         return response;
     }
+
 }
