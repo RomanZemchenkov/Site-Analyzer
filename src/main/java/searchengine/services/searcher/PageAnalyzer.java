@@ -1,16 +1,19 @@
 package searchengine.services.searcher;
 
 import org.jsoup.Connection;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import searchengine.services.searcher.entity.ErrorResponse;
+import searchengine.services.searcher.entity.HttpResponseEntity;
+import searchengine.services.searcher.entity.NormalResponse;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static searchengine.services.searcher.ConstantsCode.errorStatusCodes;
 
 public class PageAnalyzer {
 
@@ -20,21 +23,37 @@ public class PageAnalyzer {
         this.mainUrl = mainUrl;
     }
 
-    public ResponseEntity searchLink(String url) {
-        HttpResponse response = createConnect(url);
-
-        Integer statusCode = response.getStatusCode();
-        Document documentOfUrl = response.getDocument();
-
-        return createResponse(documentOfUrl, statusCode, url);
+    public HttpResponseEntity searchLink(String url) {
+        return createConnect(url);
     }
 
+    private HttpResponseEntity createConnect(String url){
+        try {
+            Connection.Response response = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                               "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 YaBrowser/24.4.0.0 Safari/537.36")
+                    .execute();
 
-    private ResponseEntity createResponse(Document document, Integer statusCode, String url) {
-        Set<String> allLinksFromPage = checkAvailableStatusCode(statusCode) ? parseToUrl(document) : Set.of();
+            int statusCode = response.statusCode();
+            Document document = response.parse();
+            HttpResponse httpResponse = new HttpResponse(statusCode, document);
+
+            return createResponse(httpResponse, url);
+        } catch (HttpStatusException statusException){
+            return statusAnalyzed(statusException.getStatusCode(),statusException.getMessage(), url);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private HttpResponseEntity createResponse(HttpResponse response, String url) {
+        Integer statusCode = response.getStatusCode();
+        Document document = response.getDocument();
+
+        Set<String> allLinksFromPage = parseToUrl(document);
         String htmlText = document.toString();
 
-        return new ResponseEntity(statusCode, url, htmlText, allLinksFromPage);
+        return new NormalResponse(statusCode, url, htmlText, allLinksFromPage);
     }
 
     private Set<String> parseToUrl(Document document) {
@@ -51,27 +70,8 @@ public class PageAnalyzer {
         return links;
     }
 
-    private HttpResponse createConnect(String url) {
-        try {
-            Connection.Response response = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                               "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 YaBrowser/24.4.0.0 Safari/537.36")
-                    .execute();
-
-            int statusCode = getStatusCode(response);
-            Document document = response.parse();
-            return new HttpResponse(statusCode,document);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private boolean checkAvailableStatusCode(Integer statusCode){
-        return !errorStatusCodes.contains(statusCode);
-    }
-
-    private int getStatusCode(Connection.Response response) {
-        return response.statusCode();
+    private HttpResponseEntity statusAnalyzed(int statusCode, String message, String url) {
+        return new ErrorResponse(statusCode,url, message);
     }
 
     private boolean isValidUrl(String url) {
@@ -80,6 +80,7 @@ public class PageAnalyzer {
                && !url.contains(".sql")
                && !url.contains(".zip")
                && !url.contains(".pdf")
+               && !url.contains(".jpg")
                && url.startsWith(mainUrl);
     }
 }

@@ -23,7 +23,7 @@ public class ApiController {
     }
 
 //    @GetMapping("/startIndexing")
-//    public ResponseEntity<StatisticsResponse> startIndexing(){
+//    public NormalResponse<StatisticsResponse> startIndexing(){
 //        statisticsService.getStatistics();
 //    }
 }

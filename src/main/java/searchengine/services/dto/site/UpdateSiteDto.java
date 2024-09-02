@@ -11,7 +11,7 @@ public class UpdateSiteDto {
     private final String id;
     private final String status;
     private final OffsetDateTime statusTime;
-    private final String lastError;
+    private String lastError;
     private final String url;
     private final String name;
 
@@ -19,6 +19,14 @@ public class UpdateSiteDto {
         this.id = id;
         this.status = status;
         this.lastError = lastError;
+        this.statusTime = OffsetDateTime.now(ZoneId.systemDefault());
+        this.url = url;
+        this.name = name;
+    }
+
+    public UpdateSiteDto(String id, String status, String url, String name) {
+        this.id = id;
+        this.status = status;
         this.statusTime = OffsetDateTime.now(ZoneId.systemDefault());
         this.url = url;
         this.name = name;

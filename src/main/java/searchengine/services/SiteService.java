@@ -24,7 +24,7 @@ public class SiteService {
     private final SiteMapper mapper;
 
     @Transactional
-    public Site createSite(CreateSiteDto dto){
+    public Integer createSite(CreateSiteDto dto){
         String name = dto.getName();
 
         Optional<Site> mayBeSite = repository.findSiteByName(name);
@@ -35,17 +35,17 @@ public class SiteService {
         site.setStatus(Status.INDEXING);
         site.setStatusTime(OffsetDateTime.now(ZoneId.systemDefault()));
 
-        return repository.saveAndFlush(site);
+        Site savedSite = repository.saveAndFlush(site);
+        return savedSite.getId();
     }
 
     @Transactional
-    public boolean updateSite(UpdateSiteDto dto){
+    public void updateSite(UpdateSiteDto dto){
         Integer id = Integer.valueOf(dto.getId());
         Site existSite = repository.findById(id).get();
 
         Site siteBeforeUpdate = mapper.mapToSite(dto, existSite);
 
-        Site savedSite = repository.saveAndFlush(siteBeforeUpdate);
-        return dto.getLastError().isEmpty();
+        repository.saveAndFlush(siteBeforeUpdate);
     }
 }

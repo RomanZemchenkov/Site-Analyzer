@@ -18,7 +18,6 @@ public interface SiteMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", source = "status")
     @Mapping(target = "statusTime", source = "statusTime")
-    @Mapping(target = "lastError", source = "lastError")
     Site mapToSite(UpdateSiteDto dto, @MappingTarget Site existSite);
 
     @Mapping(target = "id", source = "id")

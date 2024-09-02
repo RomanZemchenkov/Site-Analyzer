@@ -9,7 +9,17 @@ spring:
         format_sql: false
         show_sql: false
 
+  data:
+    redis:
+      live-time: 360
+
 indexing-settings:
   sites:
-    - url: https://sendel.ru/
-      name: Sendel.ru
+#    - url: https://sendel.ru
+#      name: Sendel.ru
+    - url: https://www.playback.ru
+      name: PlayBack.Ru
+#    - url: https://www.svetlovka.ru
+#      name: Svetlovka.ru
+#    - url: https://lenta.ru
+#      name: Lenta.ru

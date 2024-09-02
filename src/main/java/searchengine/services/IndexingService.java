@@ -2,9 +2,7 @@ package searchengine.services;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import searchengine.dao.model.Site;
 import searchengine.services.dto.SiteProperties;
 import searchengine.services.dto.site.CreateSiteDto;
 import searchengine.services.searcher.ParseContext;
@@ -12,7 +10,6 @@ import searchengine.services.searcher.SiteAnalyzerTask;
 import searchengine.services.searcher.SiteAnalyzerTaskFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -38,18 +35,7 @@ public class IndexingService {
     }
 
     public void startIndexing() {
-        List<ParseContext> contexts = new ArrayList<>();
-        for (Map.Entry<String, String> entry : sitesAndNames.entrySet()) {
-            String name = entry.getKey();
-            String url = entry.getValue();
-            CreateSiteDto dto = new CreateSiteDto(url, name);
-            System.out.println(dto);
-            Site savedSiteWithId = siteService.createSite(dto);
-            String id = String.valueOf(savedSiteWithId.getId());
-            ParseContext context = new ParseContext(id, name, url, factory);
-            contexts.add(context);
-        }
-
+        List<ParseContext> contexts = createContext();
 
         List<SiteAnalyzerTask> firstTaskList = new ArrayList<>();
         for (ParseContext context : contexts) {
@@ -59,9 +45,12 @@ public class IndexingService {
 
         ExecutorService threadPool = Executors.newCachedThreadPool();
         for (SiteAnalyzerTask task : firstTaskList) {
+            int countOfProcessors = Runtime.getRuntime().availableProcessors();
+            int processorsForOneTask = countOfProcessors / firstTaskList.size();
             threadPool.submit(() -> {
-                ForkJoinPool forkJoinPool = new ForkJoinPool();
+                ForkJoinPool forkJoinPool = new ForkJoinPool(processorsForOneTask);
                 forkJoinPool.invoke(task);
+                forkJoinPool.shutdown();
             });
 
         }
@@ -72,27 +61,21 @@ public class IndexingService {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
 
-        System.out.println(" ");
+    private List<ParseContext> createContext(){
+        List<ParseContext> contexts = new ArrayList<>();
 
-//        List<Thread> threadList = new ArrayList<>();
-//        for(SiteAnalyzerTask task : firstTaskList){
-//            Thread thread = new Thread(() -> {
-//                ForkJoinPool forkJoinPool = new ForkJoinPool();
-//                forkJoinPool.invoke(task);
-//            });
-//            threadList.add(thread);
-//        }
-//
-//        List<Thread> threads = threadList.stream().peek(Thread::start).toList();
-//
-//        for(Thread thread : threads){
-//            try {
-//                thread.join();
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
+        for (Map.Entry<String, String> entry : sitesAndNames.entrySet()) {
+            String name = entry.getKey();
+            String url = entry.getValue();
 
+            CreateSiteDto dto = new CreateSiteDto(url, name);
+            String siteId = String.valueOf(siteService.createSite(dto));
+
+            ParseContext context = new ParseContext(siteId, name, url, factory);
+            contexts.add(context);
+        }
+        return contexts;
     }
 }

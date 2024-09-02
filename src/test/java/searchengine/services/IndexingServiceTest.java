@@ -1,5 +1,6 @@
 package searchengine.services;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
@@ -15,6 +16,8 @@ public class IndexingServiceTest extends BaseTest {
 
     @Test
     void test(){
-        service.startIndexing();;
+        Assertions.assertDoesNotThrow(service::startIndexing);
+
+        System.out.println(" ");
     }
 }
