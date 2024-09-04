@@ -6,9 +6,15 @@ import lombok.Getter;
 public class Response {
 
 
-    private final String message;
+    private String result;
+    private String message;
 
-    public Response(String message) {
+    public Response(String result) {
+        this.result = result;
+    }
+
+    public Response(String result, String message) {
+        this.result = result;
         this.message = message;
     }
 }

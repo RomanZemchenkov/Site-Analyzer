@@ -7,7 +7,6 @@ import searchengine.dao.model.Site;
 import searchengine.dao.model.Status;
 import searchengine.dao.repository.SiteRepository;
 import searchengine.services.dto.site.CreateSiteDto;
-import searchengine.services.dto.site.ShowSiteDto;
 import searchengine.services.dto.site.UpdateSiteDto;
 import searchengine.services.mapper.SiteMapper;
 
@@ -42,7 +41,8 @@ public class SiteService {
     @Transactional
     public void updateSite(UpdateSiteDto dto){
         Integer id = Integer.valueOf(dto.getId());
-        Site existSite = repository.findById(id).get();
+        Optional<Site> mayBeSite = repository.findById(id);
+        Site existSite = mayBeSite.get();
 
         Site siteBeforeUpdate = mapper.mapToSite(dto, existSite);
 

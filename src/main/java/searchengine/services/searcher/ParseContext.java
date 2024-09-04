@@ -1,10 +1,10 @@
 package searchengine.services.searcher;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.Setter;
 
-import java.util.Set;
-
+@EqualsAndHashCode(of = "siteName")
 @Getter
 public class ParseContext {
 
@@ -12,6 +12,8 @@ public class ParseContext {
     private final String siteName;
     private final String mainUrl;
     private final SiteAnalyzerTaskFactory factory;
+    @Setter
+    private volatile boolean indexingStopFlag = false;
 
     public ParseContext(String siteId, String siteName, String mainUrl, SiteAnalyzerTaskFactory factory) {
         this.siteId = siteId;

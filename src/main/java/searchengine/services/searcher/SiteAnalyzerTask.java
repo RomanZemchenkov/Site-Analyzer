@@ -1,5 +1,7 @@
 package searchengine.services.searcher;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import searchengine.dao.model.Status;
 import searchengine.dao.repository.RedisRepository;
 import searchengine.services.dto.page.CreatePageDto;
@@ -16,8 +18,9 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
-import static searchengine.services.searcher.ConstantsCode.*;
+import static searchengine.services.searcher.GlobalVariables.*;
 
+@ToString
 public class SiteAnalyzerTask extends RecursiveAction {
 
     private final String url;
@@ -39,7 +42,7 @@ public class SiteAnalyzerTask extends RecursiveAction {
 
         boolean isNormalResponse = checkStatusCode(response);
         if (!isNormalResponse) {
-            ifErrorResponse((ErrorResponse) response, context);
+            ifErrorResponse((ErrorResponse) response);
         } else {
             Set<String> newUrls = ifNormalResponse((NormalResponse) response, context);
 
@@ -47,7 +50,6 @@ public class SiteAnalyzerTask extends RecursiveAction {
 
             createTask(availablePathForTask);
         }
-
     }
 
     private HttpResponseEntity analyzeUrl(String mainUrl) {
@@ -72,29 +74,32 @@ public class SiteAnalyzerTask extends RecursiveAction {
         return !errorStatusCodes.contains(response.getStatusCode());
     }
 
-    private void ifErrorResponse(ErrorResponse errorResponse, ParseContext context) {
+    private void ifErrorResponse(ErrorResponse errorResponse) {
         String content = errorResponse.getContent();
+        context.setIndexingStopFlag(true);
         ForkJoinPool pool = ForkJoinTask.getPool();
-        stopIndexing(context, pool ,content);
+        stop(pool, content);
     }
 
     private Set<String> ifNormalResponse(NormalResponse response, ParseContext context) {
         String siteId = context.getSiteId();
 
         Integer statusCode = response.getStatusCode();
-        String pageUrl = response.getUrl();
+        String pageUrl = response.getUrl().substring(context.getMainUrl().length());
         String content = response.getContent();
         String code = String.valueOf(statusCode);
 
         CreatePageDto dto = new CreatePageDto(siteId, pageUrl, code, content);
         publisher.publishEvent(new AnalyzedPageEvent(dto));
 
-        updateSiteState(context);
+        if (!context.isIndexingStopFlag()) {
+            updateSiteState(Status.INDEXING.toString());
+        }
 
         return response.getUrls();
     }
 
-    private void createTask(Set<String> availablePathForTask){
+    private void createTask(Set<String> availablePathForTask) {
         Set<SiteAnalyzerTask> futureTaskSet = new HashSet<>();
 
         for (String path : availablePathForTask) {
@@ -111,25 +116,34 @@ public class SiteAnalyzerTask extends RecursiveAction {
         }
     }
 
-    private void updateSiteState(ParseContext context){
-        if(!INDEX_STOP_GLOBAL_FLAG){
-            String mainUrl = context.getMainUrl();
-            String siteName = context.getSiteName();
-            String siteId = context.getSiteId();
-            UpdateSiteDto siteDto = new UpdateSiteDto(siteId, Status.INDEXING.toString(), mainUrl, siteName);
-            publisher.publishUpdateSiteEvent(new CreatePageEvent(siteDto));
-        }
-    }
-
-    public void stopIndexing(ParseContext context, ForkJoinPool usePool, String content){
+    public void updateSiteState(String status) {
         String mainUrl = context.getMainUrl();
         String siteName = context.getSiteName();
-        System.out.println(usePool);
+        String siteId = context.getSiteId();
+        System.out.println("Контекст при при обновлении: " + context);
+        System.out.println("ID сайта при обновлении: " + siteId);
+        UpdateSiteDto siteDto = new UpdateSiteDto(siteId, status, mainUrl, siteName);
+        publisher.publishUpdateSiteEvent(new CreatePageEvent(siteDto));
+    }
+
+    public void stopIndexing(ForkJoinPool usePool, String content) {
+        stop(usePool, content);
+    }
+
+    private void stop(ForkJoinPool usePool, String content) {
+        System.out.println("Вызвана остановка индексации");
+        String mainUrl = context.getMainUrl();
+        String siteName = context.getSiteName();
         String siteId = context.getSiteId();
         usePool.shutdownNow();
+        System.out.println("Контекст при остановке: " + context);
+        System.out.println("ID сайта при остановке: " + siteId);
 
         UpdateSiteDto dto = new UpdateSiteDto(siteId, Status.FAILED.toString(), content, mainUrl, siteName);
         CreatePageEvent createPageEvent = new CreatePageEvent(dto);
         publisher.publishUpdateSiteEvent(createPageEvent);
+        System.out.println("Пул остановлен, событие отправлено");
     }
+
+
 }

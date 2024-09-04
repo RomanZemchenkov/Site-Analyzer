@@ -1,11 +1,17 @@
 indexing-settings:
   sites:
-    - url: https://www.lenta.ru
-      name: Лента.ру
-#    - url: https://www.skillbox.ru
-#      name: Skillbox
-    - url: https://www.playback.ru
-      name: PlayBack.Ru
+    - url: https://sendel.ru
+      name: Sendel.ru
+    #    - url: https://itdeti.ru
+    #      name: ItDeti.ru
+    #    - url: https://www.playback.ru
+    #      name: PlayBack.Ru
+    #    - url: https://www.svetlovka.ru
+    #      name: Svetlovka.ru
+    #    - url: https://lenta.ru
+    #      name: Lenta.ru
+#    - url: https://sendel.ru/432434234234
+#      name: SendelWithException.ru
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/search_engine
@@ -14,8 +20,8 @@ spring:
   jpa:
     properties:
       hibernate:
-        show_sql: true
-        format_sql: true
+  #        show_sql: true
+  #        format_sql: true
 
 
   data:

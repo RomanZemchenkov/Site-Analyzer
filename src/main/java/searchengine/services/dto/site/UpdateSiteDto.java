@@ -1,11 +1,13 @@
 package searchengine.services.dto.site;
 
 import lombok.Getter;
+import lombok.ToString;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 
 @Getter
+@ToString
 public class UpdateSiteDto {
 
     private final String id;

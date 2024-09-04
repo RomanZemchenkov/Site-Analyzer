@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString(exclude = "pages")
-@EqualsAndHashCode(of = "id")
+@EqualsAndHashCode(of = {"url","name"})
 public class Site implements BaseEntity<Integer>{
 
     @Id

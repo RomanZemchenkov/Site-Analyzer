@@ -10,6 +10,8 @@ import searchengine.services.IndexingService;
 import searchengine.services.dto.statistics.StatisticsResponse;
 import searchengine.services.StatisticsService;
 
+import static searchengine.services.searcher.GlobalVariables.INDEXING_STARTED;
+
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -26,13 +28,21 @@ public class ApiController {
 
     @GetMapping("/startIndexing")
     public ResponseEntity<Response> startIndexing(){
-        indexingService.startIndexing();
-        return new ResponseEntity<>(new Response("true"), HttpStatus.OK);
+        if(!INDEXING_STARTED){
+            indexingService.startIndexing();
+            return new ResponseEntity<>(new Response("true"), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(new Response("false","Индексация уже запущена."),HttpStatus.CONFLICT);
+        }
     }
 
     @GetMapping("/stopIndexing")
     public ResponseEntity<Response> stopIndexing(){
-        indexingService.stopIndexing();
-        return new ResponseEntity<>(new Response("true"), HttpStatus.OK);
+        if(INDEXING_STARTED){
+            indexingService.stopIndexing();
+            return new ResponseEntity<>(new Response("true"), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(new Response("false", "Индексация не запущена."), HttpStatus.CONFLICT);
+        }
     }
 }

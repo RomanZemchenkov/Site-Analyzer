@@ -3,6 +3,7 @@ package searchengine.services;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import searchengine.dao.model.Status;
 import searchengine.services.dto.SiteProperties;
 import searchengine.services.dto.site.CreateSiteDto;
 import searchengine.services.event_listeners.event.FinishOrStopIndexingEvent;
@@ -18,7 +19,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static searchengine.services.searcher.ConstantsCode.*;
+import static searchengine.services.searcher.GlobalVariables.*;
 
 @Service
 @RequiredArgsConstructor
@@ -31,17 +32,18 @@ public class IndexingService {
     private Map<String, String> sitesAndNames;
     private List<ParseContext> contexts;
     private List<SiteAnalyzerTask> firstTasksList;
-    private Queue<ForkJoinPool> pools = new ArrayDeque<>();
+    private HashMap<SiteAnalyzerTask,ForkJoinPool> pools = new HashMap<>();
 
 
     @PostConstruct
-    private void initProperties(){
+    private void initProperties() {
         List<SiteProperties.Site> sites = properties.getSites();
         sitesAndNames = sites.stream()
-                .collect(Collectors.toMap(SiteProperties.Site::getName,SiteProperties.Site::getUrl));
+                .collect(Collectors.toMap(SiteProperties.Site::getName, SiteProperties.Site::getUrl));
     }
 
     public void startIndexing() {
+        INDEXING_STARTED = true;
         createContext();
 
         firstTasksList = new ArrayList<>();
@@ -50,47 +52,62 @@ public class IndexingService {
             firstTasksList.add(factory.createTask(startUrl, context));
         }
 
-        executeTasks();
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
 
-        clearRedisKeys();
-    }
-
-    public void stopIndexing(){
-        INDEX_STOP_GLOBAL_FLAG = true;
-        for(int i = 0; i < firstTasksList.size(); i++){
+        ExecutorService threadPool = Executors.newCachedThreadPool();
+        for (int i = 0; i < firstTasksList.size(); i++) {
             SiteAnalyzerTask task = firstTasksList.get(i);
             ParseContext context = contexts.get(i);
-            ForkJoinPool forkJoinPool = pools.poll();
-            task.stopIndexing(context, forkJoinPool, STOP_INDEXING_TEXT);
+            int countOfParallel = Math.max(1, availableProcessors / firstTasksList.size());
+            threadPool.submit(() -> executeTask(task, context, countOfParallel));
         }
-    }
-
-    private void executeTasks(){
-        int countOfFirstTask = firstTasksList.size();
-
-        ExecutorService threadPool = Executors.newFixedThreadPool(countOfFirstTask);
-        for (int i = 0; i < countOfFirstTask; i++) {
-            int countOfProcessors = Runtime.getRuntime().availableProcessors();
-            int processorsForOneTask = countOfProcessors / countOfFirstTask;
-            ForkJoinPool forkJoinPool = new ForkJoinPool(processorsForOneTask);
-            SiteAnalyzerTask task = firstTasksList.get(i);
-            pools.add(forkJoinPool);
-            threadPool.submit(() -> {
-                forkJoinPool.invoke(task);
-                forkJoinPool.shutdown();
-            });
-        }
-
         threadPool.shutdown();
+
+
         try {
             threadPool.awaitTermination(100L, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        } finally {
+            pools.clear();
+            INDEXING_STARTED = false;
         }
 
     }
 
-    private void createContext(){
+    public void stopIndexing() {
+        INDEX_STOP_GLOBAL_FLAG = true;
+        System.out.println("Список всех контекстов: " + contexts);
+        for(ParseContext context : contexts){
+            context.setIndexingStopFlag(true);
+        }
+
+        for(Map.Entry<SiteAnalyzerTask, ForkJoinPool> entry : pools.entrySet()){
+            SiteAnalyzerTask task = entry.getKey();
+            ForkJoinPool pool = entry.getValue();
+            System.out.println("Для остановки задачи " + task + " мы передаём пул: " + pool);
+            task.stopIndexing(pool,STOP_INDEXING_TEXT);
+        }
+    }
+
+    private void executeTask(SiteAnalyzerTask task, ParseContext context, int countOfParallel) {
+        ForkJoinPool forkJoinPool = new ForkJoinPool(countOfParallel);
+        pools.put(task,forkJoinPool);
+        System.out.printf("Для задачи %s назначается пул %s\n", task,forkJoinPool);
+        try {
+            forkJoinPool.invoke(task);
+        } finally {
+            forkJoinPool.shutdown();
+            if(!context.isIndexingStopFlag()){
+                task.updateSiteState(Status.INDEXED.toString());
+            }
+            clearRedisKeys(context.getSiteName());
+            System.out.printf("Поток %s закончил свою работу\n", Thread.currentThread().getName());
+        }
+    }
+
+
+    private void createContext() {
         contexts = new ArrayList<>();
 
         for (Map.Entry<String, String> entry : sitesAndNames.entrySet()) {
@@ -105,11 +122,8 @@ public class IndexingService {
         }
     }
 
-    private void clearRedisKeys(){
-        for(ParseContext context : contexts){
-            String siteUrl = context.getMainUrl();
-            FinishOrStopIndexingEvent event = new FinishOrStopIndexingEvent(siteUrl);
-            publisher.publishFinishAndStopIndexingEvent(event);
-        }
+    private void clearRedisKeys(String siteUrl) {
+        FinishOrStopIndexingEvent event = new FinishOrStopIndexingEvent(siteUrl);
+        publisher.publishFinishAndStopIndexingEvent(event);
     }
 }
