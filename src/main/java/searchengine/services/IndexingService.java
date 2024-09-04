@@ -7,7 +7,6 @@ import searchengine.services.dto.SiteProperties;
 import searchengine.services.dto.site.CreateSiteDto;
 import searchengine.services.event_listeners.event.FinishOrStopIndexingEvent;
 import searchengine.services.event_listeners.publisher.EventPublisher;
-import searchengine.services.searcher.ConstantsCode;
 import searchengine.services.searcher.ParseContext;
 import searchengine.services.searcher.SiteAnalyzerTask;
 import searchengine.services.searcher.SiteAnalyzerTaskFactory;
