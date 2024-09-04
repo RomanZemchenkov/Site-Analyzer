@@ -11,7 +11,7 @@ spring:
 
   data:
     redis:
-      live-time: 360
+      live-time: 10
 
 indexing-settings:
   sites:
@@ -21,5 +21,5 @@ indexing-settings:
       name: PlayBack.Ru
 #    - url: https://www.svetlovka.ru
 #      name: Svetlovka.ru
-#    - url: https://lenta.ru
-#      name: Lenta.ru
+    - url: https://lenta.ru
+      name: Lenta.ru

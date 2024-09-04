@@ -27,4 +27,8 @@ public class RedisRepository {
                 .map(url -> (String) url)
                 .toList();
     }
+
+    public void clearListByUrl(String siteUrl){
+        redis.delete(siteUrl);
+    }
 }

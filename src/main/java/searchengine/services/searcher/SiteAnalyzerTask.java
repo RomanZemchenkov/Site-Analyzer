@@ -44,6 +44,7 @@ public class SiteAnalyzerTask extends RecursiveAction {
             Set<String> newUrls = ifNormalResponse((NormalResponse) response, context);
 
             Set<String> availablePathForTask = checkAvailablePath(newUrls);
+
             createTask(availablePathForTask);
         }
 
@@ -72,20 +73,12 @@ public class SiteAnalyzerTask extends RecursiveAction {
     }
 
     private void ifErrorResponse(ErrorResponse errorResponse, ParseContext context) {
-        String mainUrl = context.getMainUrl();
-        String siteName = context.getSiteName();
-        String siteId = context.getSiteId();
-
         String content = errorResponse.getContent();
-        UpdateSiteDto siteDto = new UpdateSiteDto(siteId, Status.FAILED.toString(), content, mainUrl, siteName);
-
-        publisher.publicUpdateSiteEvent(new CreatePageEvent(siteDto));
-        ForkJoinTask.getPool().shutdownNow();
+        ForkJoinPool pool = ForkJoinTask.getPool();
+        stopIndexing(context, pool ,content);
     }
 
     private Set<String> ifNormalResponse(NormalResponse response, ParseContext context) {
-        String mainUrl = context.getMainUrl();
-        String siteName = context.getSiteName();
         String siteId = context.getSiteId();
 
         Integer statusCode = response.getStatusCode();
@@ -96,8 +89,8 @@ public class SiteAnalyzerTask extends RecursiveAction {
         CreatePageDto dto = new CreatePageDto(siteId, pageUrl, code, content);
         publisher.publishEvent(new AnalyzedPageEvent(dto));
 
-        UpdateSiteDto siteDto = new UpdateSiteDto(siteId, Status.INDEXING.toString(), mainUrl, siteName);
-        publisher.publicUpdateSiteEvent(new CreatePageEvent(siteDto));
+        updateSiteState(context);
+
         return response.getUrls();
     }
 
@@ -109,21 +102,34 @@ public class SiteAnalyzerTask extends RecursiveAction {
             futureTaskSet.add(newTask);
         }
 
-
         for (SiteAnalyzerTask task : futureTaskSet) {
             task.fork();
         }
-        ForkJoinPool currentPool = ForkJoinTask.getPool();
-
-        long queuedTaskCount = currentPool.getQueuedTaskCount();
-        int parallelism = currentPool.getParallelism();
-
-//        System.out.printf("По url %s ожидается выполнение ещё %d задач.\n", context.getMainUrl(), queuedTaskCount);
-//        System.out.printf("Параллельно запущено %d потоков\n", parallelism);
-
 
         for (SiteAnalyzerTask task : futureTaskSet) {
             task.join();
         }
+    }
+
+    private void updateSiteState(ParseContext context){
+        if(!INDEX_STOP_GLOBAL_FLAG){
+            String mainUrl = context.getMainUrl();
+            String siteName = context.getSiteName();
+            String siteId = context.getSiteId();
+            UpdateSiteDto siteDto = new UpdateSiteDto(siteId, Status.INDEXING.toString(), mainUrl, siteName);
+            publisher.publishUpdateSiteEvent(new CreatePageEvent(siteDto));
+        }
+    }
+
+    public void stopIndexing(ParseContext context, ForkJoinPool usePool, String content){
+        String mainUrl = context.getMainUrl();
+        String siteName = context.getSiteName();
+        System.out.println(usePool);
+        String siteId = context.getSiteId();
+        usePool.shutdownNow();
+
+        UpdateSiteDto dto = new UpdateSiteDto(siteId, Status.FAILED.toString(), content, mainUrl, siteName);
+        CreatePageEvent createPageEvent = new CreatePageEvent(dto);
+        publisher.publishUpdateSiteEvent(createPageEvent);
     }
 }
