@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "page")
 @Getter
@@ -30,6 +33,9 @@ public class Page implements BaseEntity<Integer>{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id")
     private Site site;
+
+    @OneToMany(mappedBy = "page", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<Index> indexes = new ArrayList<>();
 
     public Page(){}
 

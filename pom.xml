@@ -7,6 +7,7 @@
     <artifactId>SearchEngine</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -84,6 +85,9 @@
             <artifactId>mapstruct</artifactId>
             <version>1.5.5.Final</version>
         </dependency>
+
+<!--        lemmas-->
+
     </dependencies>
 
     <build>

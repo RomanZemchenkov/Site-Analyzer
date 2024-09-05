@@ -27,6 +27,10 @@ public class PageAnalyzer {
         return createConnect(url);
     }
 
+    public static String parseToText(String htmlText){
+        return Jsoup.parse(htmlText).text();
+    }
+
     private HttpResponseEntity createConnect(String url){
         try {
             Connection.Response response = Jsoup.connect(url)

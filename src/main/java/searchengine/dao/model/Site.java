@@ -41,6 +41,9 @@ public class Site implements BaseEntity<Integer>{
     @OneToMany(mappedBy = "site", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Page> pages = new ArrayList<>();
 
+    @OneToMany(mappedBy = "site", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Lemma> lemmas = new ArrayList<>();
+
     public Site(){}
 
     public Site(Status status, OffsetDateTime statusTime, String lastError, String url, String name) {

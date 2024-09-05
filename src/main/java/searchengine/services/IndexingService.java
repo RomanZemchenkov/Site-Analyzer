@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.dao.model.Status;
 import searchengine.services.dto.SiteProperties;
+import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.dto.site.CreateSiteDto;
 import searchengine.services.event_listeners.event.FinishOrStopIndexingEvent;
 import searchengine.services.event_listeners.publisher.EventPublisher;
@@ -90,6 +91,10 @@ public class IndexingService {
         }
     }
 
+    public void onePageIndexing(FindPageDto dto) {
+        
+    }
+
     private void executeTask(SiteAnalyzerTask task, ParseContext context, int countOfParallel) {
         ForkJoinPool forkJoinPool = new ForkJoinPool(countOfParallel);
         pools.put(task,forkJoinPool);
@@ -126,4 +131,6 @@ public class IndexingService {
         FinishOrStopIndexingEvent event = new FinishOrStopIndexingEvent(siteUrl);
         publisher.publishFinishAndStopIndexingEvent(event);
     }
+
+
 }
