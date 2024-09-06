@@ -1,5 +1,6 @@
 package searchengine.dao.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -41,6 +42,7 @@ public class Site implements BaseEntity<Integer>{
     @OneToMany(mappedBy = "site", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Page> pages = new ArrayList<>();
 
+    @JsonManagedReference("site_lemma")
     @OneToMany(mappedBy = "site", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Lemma> lemmas = new ArrayList<>();
 

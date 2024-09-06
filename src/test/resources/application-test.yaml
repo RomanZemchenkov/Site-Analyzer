@@ -11,7 +11,7 @@ spring:
 
   data:
     redis:
-      live-time: 3600
+      live-time: 10
 
 indexing-settings:
   sites:

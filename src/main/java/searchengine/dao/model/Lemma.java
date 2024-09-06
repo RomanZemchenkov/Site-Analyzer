@@ -1,5 +1,7 @@
 package searchengine.dao.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -14,7 +16,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString(exclude = {"site","indexes"})
-@EqualsAndHashCode(of = "id")
+@EqualsAndHashCode(of = {"lemma","site"})
 public class Lemma implements BaseEntity<Integer>{
 
     @Id
@@ -27,14 +29,22 @@ public class Lemma implements BaseEntity<Integer>{
     @Column(name = "frequency")
     private Integer frequency;
 
+    @JsonBackReference("site_lemma")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id")
     private Site site;
 
+    @JsonManagedReference("lemma_index")
     @OneToMany(mappedBy = "lemma", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Index> indexes = new ArrayList<>();
 
     public Lemma(){}
+
+    public Lemma(String lemma, Site site) {
+        this.lemma = lemma;
+        this.site = site;
+        this.frequency = 1;
+    }
 
     public Lemma(String lemma, Integer frequency, Site site) {
         this.lemma = lemma;

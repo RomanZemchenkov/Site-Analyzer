@@ -1,6 +1,7 @@
 package searchengine.dao.model;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -23,6 +24,7 @@ public class Index implements BaseEntity<Integer>{
     @JoinColumn(name = "page_id")
     private Page page;
 
+    @JsonBackReference("lemma_index")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lemma_id")
     private Lemma lemma;

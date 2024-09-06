@@ -1,3 +1,7 @@
 databaseChangeLog:
   - include:
       file : db/changelog/db.changelog-29.08.24.1.0.sql
+  - include:
+      file : db/changelog/db.changelog-04.09.24.1.1.sql
+  - include:
+      file : db/changelog/db.changelog-06.09.24.1.2.sql
