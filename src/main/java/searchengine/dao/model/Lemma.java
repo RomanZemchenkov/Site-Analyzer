@@ -13,8 +13,8 @@ import java.util.List;
 @Table(name = "lemma")
 @Getter
 @Setter
-@ToString(exclude = {"site"})
-@EqualsAndHashCode
+@ToString(exclude = {"site","indexes"})
+@EqualsAndHashCode(of = "id")
 public class Lemma implements BaseEntity<Integer>{
 
     @Id

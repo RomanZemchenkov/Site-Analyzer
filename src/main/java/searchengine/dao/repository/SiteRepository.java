@@ -15,4 +15,6 @@ public interface SiteRepository extends JpaRepository<Site, Integer> {
 
     Optional<Site> findSiteByName(String name);
 
+    Site findSiteByUrl(String url);
+
 }

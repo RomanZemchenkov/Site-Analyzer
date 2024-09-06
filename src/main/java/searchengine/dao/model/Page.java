@@ -13,7 +13,7 @@ import java.util.List;
 @Table(name = "page")
 @Getter
 @Setter
-@ToString(exclude = "site")
+@ToString(exclude = {"site", "indexes"})
 @EqualsAndHashCode(of = {"id","path"})
 public class Page implements BaseEntity<Integer>{
 

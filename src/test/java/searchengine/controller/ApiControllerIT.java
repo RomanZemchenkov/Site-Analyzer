@@ -8,14 +8,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import searchengine.BaseTest;
+import searchengine.services.exception.ExceptionMessage;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @AutoConfigureMockMvc
@@ -35,8 +39,8 @@ public class ApiControllerIT extends BaseTest {
     void fullIndexingSiteTest() throws Exception {
         ResultActions actions = mock.perform(get("/api/startIndexing"));
 
-        actions.andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.result", Matchers.is("true")));
+        actions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.result", Matchers.is("true")));
 
     }
 
@@ -45,8 +49,8 @@ public class ApiControllerIT extends BaseTest {
     void indexingWithStatusError() throws Exception {
         ResultActions actions = mock.perform(get("/api/startIndexing"));
 
-        actions.andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.result", Matchers.is("true")));
+        actions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.result", Matchers.is("true")));
 
     }
 
@@ -65,9 +69,9 @@ public class ApiControllerIT extends BaseTest {
         Thread threadOneMoreStartIndexing = new Thread(() -> {
             try {
                 ResultActions tryAction = mock.perform(get("/api/startIndexing"));
-                tryAction.andExpect(MockMvcResultMatchers.status().isConflict())
-                        .andExpect(MockMvcResultMatchers.jsonPath("$.result", Matchers.is("false")))
-                        .andExpect(MockMvcResultMatchers.jsonPath("$.message", Matchers.is("Индексация уже запущена.")));
+                tryAction.andExpect(status().isConflict())
+                        .andExpect(jsonPath("$.result", Matchers.is("false")))
+                        .andExpect(jsonPath("$.message", Matchers.is("Индексация уже запущена.")));
                 checkTryAction.set(true);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -101,8 +105,8 @@ public class ApiControllerIT extends BaseTest {
         Thread threadStopIndexing = new Thread(() -> {
             try {
                 ResultActions tryAction = mock.perform(get("/api/stopIndexing"));
-                tryAction.andExpect(MockMvcResultMatchers.status().isOk())
-                        .andExpect(MockMvcResultMatchers.jsonPath("$.result", Matchers.is("true")));
+                tryAction.andExpect(status().isOk())
+                        .andExpect(jsonPath("$.result", Matchers.is("true")));
                 checkTryAction.set(true);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -125,9 +129,40 @@ public class ApiControllerIT extends BaseTest {
     @DisplayName("Тестирование неработающей индексации с остановкой")
     void noIndexingWithStopTest() throws Exception {
         ResultActions tryAction = mock.perform(get("/api/stopIndexing"));
-        tryAction.andExpect(MockMvcResultMatchers.status().isConflict())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.result", Matchers.is("false")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message", Matchers.is("Индексация не запущена.")));
+        tryAction.andExpect(status().isConflict())
+                .andExpect(jsonPath("$.result", Matchers.is("false")))
+                .andExpect(jsonPath("$.message", Matchers.is("Индексация не запущена.")));
 
+    }
+
+    @Test
+    @DisplayName("Удачное тестирование индексации одной страницы")
+    void successfulOnePageIndexingTest() throws Exception {
+        ResultActions actions = mock.perform(post("/api/indexPage")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                           "url" : "https://sendel.ru/posts/java-with-vscode/"
+                        }
+                        """));
+
+        actions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.result",Matchers.is("true")));
+    }
+
+    @Test
+    @DisplayName("Недачное тестирование индексации одной страницы")
+    void unsuccessfulOnePageIndexingTest() throws Exception {
+        ResultActions actions = mock.perform(post("/api/indexPage")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                           "url" : "https://ru.wikipedia.org/wiki/Заглавная_страница"
+                        }
+                        """));
+
+        actions.andExpect(status().isConflict())
+                .andExpect(jsonPath("$.result",Matchers.is("false")))
+                .andExpect(jsonPath("$.message", Matchers.is("Данная страница находится за пределами сайтов, указанных в конфигурационном файле.")));
     }
 }

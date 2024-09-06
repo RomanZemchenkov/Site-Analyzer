@@ -11,8 +11,8 @@ import lombok.ToString;
 @Table(name = "index")
 @Getter
 @Setter
-@ToString()
-@EqualsAndHashCode
+@ToString(exclude = {"page","lemma"})
+@EqualsAndHashCode(of = "id")
 public class Index implements BaseEntity<Integer>{
 
     @Id

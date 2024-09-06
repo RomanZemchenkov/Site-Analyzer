@@ -1,6 +1,5 @@
 package searchengine.services;
 
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -10,6 +9,7 @@ import searchengine.dao.model.Site;
 import searchengine.dao.repository.PageRepository;
 import searchengine.dao.repository.SiteRepository;
 import searchengine.services.dto.page.CreatePageDto;
+import searchengine.services.dto.page.CreatePageWithMainSiteUrlDto;
 import searchengine.services.mapper.PageMapper;
 
 @Service
@@ -33,4 +33,18 @@ public class PageService {
         Page savedPage = repository.save(page);
         return savedPage.getPath();
     }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public String createPage(CreatePageWithMainSiteUrlDto dto){
+
+        String mainUrl = dto.getMainUrl();
+
+        Site site = siteRepository.findSiteByUrl(mainUrl);
+
+        Page page = mapper.mapToPage(dto, site);
+
+        Page savedPage = repository.save(page);
+        return savedPage.getPath();
+    }
+
 }

@@ -5,13 +5,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.dao.model.Status;
 import searchengine.services.dto.SiteProperties;
+import searchengine.services.dto.page.CreatePageDto;
+import searchengine.services.dto.page.CreatePageWithMainSiteUrlDto;
 import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.dto.site.CreateSiteDto;
+import searchengine.services.event_listeners.event.AnalyzedPageEvent;
 import searchengine.services.event_listeners.event.FinishOrStopIndexingEvent;
 import searchengine.services.event_listeners.publisher.EventPublisher;
+import searchengine.services.exception.IllegalPageException;
+import searchengine.services.searcher.PageAnalyzer;
 import searchengine.services.searcher.ParseContext;
 import searchengine.services.searcher.SiteAnalyzerTask;
 import searchengine.services.searcher.SiteAnalyzerTaskFactory;
+import searchengine.services.searcher.entity.HttpResponseEntity;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -30,7 +36,7 @@ public class IndexingService {
     private final SiteAnalyzerTaskFactory factory;
     private final SiteProperties properties;
     private final EventPublisher publisher;
-    private Map<String, String> sitesAndNames;
+    private Map<String, String> namesAndSites;
     private List<ParseContext> contexts;
     private List<SiteAnalyzerTask> firstTasksList;
     private HashMap<SiteAnalyzerTask,ForkJoinPool> pools = new HashMap<>();
@@ -39,7 +45,7 @@ public class IndexingService {
     @PostConstruct
     private void initProperties() {
         List<SiteProperties.Site> sites = properties.getSites();
-        sitesAndNames = sites.stream()
+        namesAndSites = sites.stream()
                 .collect(Collectors.toMap(SiteProperties.Site::getName, SiteProperties.Site::getUrl));
     }
 
@@ -77,7 +83,6 @@ public class IndexingService {
     }
 
     public void stopIndexing() {
-        INDEX_STOP_GLOBAL_FLAG = true;
         System.out.println("Список всех контекстов: " + contexts);
         for(ParseContext context : contexts){
             context.setIndexingStopFlag(true);
@@ -91,8 +96,19 @@ public class IndexingService {
         }
     }
 
-    public void onePageIndexing(FindPageDto dto) {
-        
+    public CreatePageWithMainSiteUrlDto onePageIndexing(FindPageDto dto) {
+        String url = dto.getUrl();
+        String mainUrl = "";
+        for(Map.Entry<String,String> entry : namesAndSites.entrySet()){
+            String siteUrl = entry.getValue();
+            if(!url.startsWith(siteUrl)){
+                throw new IllegalPageException();
+            }
+            mainUrl = siteUrl;
+        }
+        PageAnalyzer analyzer = new PageAnalyzer(url);
+        HttpResponseEntity response = analyzer.searchLink(url);
+        return new CreatePageWithMainSiteUrlDto(mainUrl,url,String.valueOf(response.getStatusCode()),response.getContent());
     }
 
     private void executeTask(SiteAnalyzerTask task, ParseContext context, int countOfParallel) {
@@ -115,7 +131,7 @@ public class IndexingService {
     private void createContext() {
         contexts = new ArrayList<>();
 
-        for (Map.Entry<String, String> entry : sitesAndNames.entrySet()) {
+        for (Map.Entry<String, String> entry : namesAndSites.entrySet()) {
             String name = entry.getKey();
             String url = entry.getValue();
 

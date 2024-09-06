@@ -5,6 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.services.IndexingService;
+import searchengine.services.PageService;
+import searchengine.services.dto.page.CreatePageWithMainSiteUrlDto;
 import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.dto.statistics.StatisticsResponse;
 import searchengine.services.StatisticsService;
@@ -18,6 +20,7 @@ public class ApiController {
 
     private final StatisticsService statisticsService;
     private final IndexingService indexingService;
+    private final PageService pageService;
 
 
     @GetMapping("/statistics")
@@ -47,6 +50,8 @@ public class ApiController {
 
     @PostMapping("/indexPage")
     public ResponseEntity<Response> indexPage(@RequestBody FindPageDto dto){
-        indexingService.onePageIndexing(dto);
+        CreatePageWithMainSiteUrlDto createPageDto = indexingService.onePageIndexing(dto);
+        pageService.createPage(createPageDto);
+        return new ResponseEntity<>(new Response("true"),HttpStatus.OK);
     }
 }
