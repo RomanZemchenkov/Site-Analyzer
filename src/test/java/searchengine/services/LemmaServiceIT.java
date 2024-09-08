@@ -1,6 +1,7 @@
 package searchengine.services;
 
 import jakarta.persistence.EntityManager;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,7 @@ import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 import searchengine.dao.repository.PageRepository;
 import searchengine.dao.repository.SiteRepository;
-import searchengine.services.searcher.LemmaService;
+import searchengine.services.searcher.lemma.LemmaService;
 
 import java.util.List;
 
@@ -42,9 +43,12 @@ public class LemmaServiceIT extends BaseTest {
         Site site = siteRepository.findSiteByName(SITE_NAME).get();
         Page page = pageRepository.findById(10).get();
 
-        lemmaService.createLemma(page,site);
+        lemmaService.createLemma(page, site);
 
-        List<Lemma> lemmas = entityManager.createQuery("SELECT l FROM Lemma AS l", Lemma.class).getResultList();
-        System.out.println(lemmas);
+        List<Lemma> lemma = lemmaService.getAllLemmasOnSite(site);
+
+        System.out.println(lemma.size());
+        Assertions.assertThat(lemma).isNotEmpty();
+
     }
 }

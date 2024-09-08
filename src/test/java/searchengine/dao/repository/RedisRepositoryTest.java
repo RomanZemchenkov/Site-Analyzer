@@ -67,11 +67,7 @@ public class RedisRepositoryTest {
             lemmas.add(lemma);
         }
 
-        List<Lemma> lemmaFromRedis = new ArrayList<>();
-        for(String lem : lemmas){
-            Lemma lemma = assertDoesNotThrow(() -> redisRepository.getLemma(siteName, lem).get());
-            lemmaFromRedis.add(lemma);
-        }
+        List<Lemma> lemmaFromRedis = redisRepository.getAllLemmasOnSite(siteName);
 
 
         assertThat(lemmaFromRedis).hasSize(100);
