@@ -11,14 +11,14 @@ import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 import searchengine.dao.repository.PageRepository;
 import searchengine.dao.repository.SiteRepository;
-import searchengine.services.searcher.lemma.LemmaService;
+import searchengine.services.searcher.lemma.LemmaWriter;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 
-public class LemmaServiceIT extends BaseTest {
+public class LemmaWriterIT extends BaseTest {
 
-    private final LemmaService lemmaService;
     private final IndexingService indexingService;
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
@@ -27,8 +27,7 @@ public class LemmaServiceIT extends BaseTest {
     private static final String EXIST_SITE_ID = "2";
 
     @Autowired
-    public LemmaServiceIT(LemmaService service, IndexingService indexingService, SiteRepository siteRepository, PageRepository pageRepository, EntityManager entityManager) {
-        this.lemmaService = service;
+    public LemmaWriterIT(IndexingService indexingService, SiteRepository siteRepository, PageRepository pageRepository, EntityManager entityManager) {
         this.indexingService = indexingService;
         this.siteRepository = siteRepository;
         this.pageRepository = pageRepository;
@@ -38,17 +37,18 @@ public class LemmaServiceIT extends BaseTest {
     @Test
     @DisplayName("Тест создания лемм для одной страницы сайта")
     void createLemmaFromOnePageTest(){
+        LemmaWriter lemmaWriter = new LemmaWriter(new ConcurrentHashMap<>());
         indexingService.startIndexing();
 
         Site site = siteRepository.findSiteByName(SITE_NAME).get();
         Page page = pageRepository.findById(10).get();
 
-        lemmaService.createLemma(page, site);
+        lemmaWriter.createLemma(page, site);
 
-        List<Lemma> lemma = lemmaService.getAllLemmasOnSite(site);
+        ConcurrentHashMap<Lemma, Integer> allLemmasOnSite = lemmaWriter.getLemmasAndCounts();
 
-        System.out.println(lemma.size());
-        Assertions.assertThat(lemma).isNotEmpty();
+        System.out.println(allLemmasOnSite.size());
+        Assertions.assertThat(allLemmasOnSite).isNotEmpty();
 
     }
 }

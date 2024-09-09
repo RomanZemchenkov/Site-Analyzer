@@ -3,7 +3,7 @@ package searchengine.services.parser;
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.english.EnglishLuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
-import searchengine.services.searcher.PageAnalyzer;
+import searchengine.services.searcher.indexing.PageAnalyzer;
 
 import java.io.IOException;
 import java.util.HashMap;

@@ -1,26 +1,24 @@
 package searchengine.services.searcher.lemma;
 
+import lombok.Getter;
 import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
-import searchengine.dao.repository.RedisRepository;
-import searchengine.services.parser.TextToLemmaParser;
+import searchengine.services.event_listeners.publisher.EventPublisher;
 
 import java.util.*;
 import java.util.concurrent.*;
 
 
+@Getter
 public class LemmaCreatorTask extends RecursiveTask<List<Lemma>> {
 
-    private final RedisRepository redis;
-    private final static ConcurrentHashMap<Lemma, Integer> countsOfLemma = new ConcurrentHashMap<>();
     private final LemmaCreatorContext context;
-    private final LemmaService lemmaService;
+    private final EventPublisher publisher;
 
-    public LemmaCreatorTask(RedisRepository redis, LemmaCreatorContext context, LemmaService lemmaService) {
-        this.redis = redis;
+    public LemmaCreatorTask(LemmaCreatorContext context, EventPublisher publisher) {
         this.context = context;
-        this.lemmaService = lemmaService;
+        this.publisher = publisher;
     }
 
     @Override
@@ -30,9 +28,11 @@ public class LemmaCreatorTask extends RecursiveTask<List<Lemma>> {
 
         createTask(pageList, site);
 
-//        return countsOfLemma.keys();
         List<Lemma> lemmaList = new ArrayList<>();
-        countsOfLemma.forEach((Lemma, Integer) -> {
+
+        ConcurrentHashMap<Lemma, Integer> countOfLemmas = context.getCountOfLemmas();
+
+        countOfLemmas.forEach((Lemma, Integer) -> {
             Lemma.setFrequency(Integer);
             lemmaList.add(Lemma);
         });
@@ -42,10 +42,10 @@ public class LemmaCreatorTask extends RecursiveTask<List<Lemma>> {
     private void createTask(ConcurrentLinkedDeque<Page> pages, Site site) {
         int pageSize = pages.size();
         if (pageSize <= 2) {
-            Iterator<Page> iterator = pages.iterator();
-            while (iterator.hasNext()) {
-                Page next = iterator.next();
-                createLemma(next, site);
+            for (Page page : pages) {
+                ConcurrentHashMap<Lemma, Integer> countOfLemmas = context.getCountOfLemmas();
+                LemmaWriter lemmaWriter = new LemmaWriter(countOfLemmas);
+                lemmaWriter.createLemma(page, site);
             }
             return;
         }
@@ -63,8 +63,10 @@ public class LemmaCreatorTask extends RecursiveTask<List<Lemma>> {
 
         LemmaCreatorTaskFactory creatorTaskFactory = context.getCreatorTaskFactory();
 
-        LemmaCreatorContext leftContext = new LemmaCreatorContext(site, leftPages, creatorTaskFactory);
-        LemmaCreatorContext rightContext = new LemmaCreatorContext(site, rightPages, creatorTaskFactory);
+        ConcurrentHashMap<Lemma, Integer> countOfLemmas = context.getCountOfLemmas();
+
+        LemmaCreatorContext leftContext = new LemmaCreatorContext(site, leftPages, creatorTaskFactory, countOfLemmas);
+        LemmaCreatorContext rightContext = new LemmaCreatorContext(site, rightPages, creatorTaskFactory, countOfLemmas);
 
         LemmaCreatorTask leftTask = creatorTaskFactory.createTask(leftContext);
         LemmaCreatorTask rightTask = creatorTaskFactory.createTask(rightContext);
@@ -74,47 +76,12 @@ public class LemmaCreatorTask extends RecursiveTask<List<Lemma>> {
 
         leftTask.join();
         rightTask.join();
+        /*
+
+        Единственный оставшийся вариант - при помощи слушателей событий сохранять по одной леммы,
+         а потом сохранять и индексы
+         А потом, выйдя из потоков - пересохранить леммы ещё раз
+         */
 
     }
-
-    public void createLemma(Page page, Site site) {
-        TextToLemmaParser parser = new TextToLemmaParser();
-        String htmlContent = page.getContent();
-        HashMap<String, Integer> mapOfLemmas = parser.parse(htmlContent);
-
-        addLemmas(mapOfLemmas, site);
-        System.out.println("Лемма создана");
-    }
-
-    private void addLemmas(HashMap<String, Integer> mapOfLemmas, Site site) {
-        String siteName = site.getName();
-        for (Map.Entry<String, Integer> entry : mapOfLemmas.entrySet()) {
-            String lemma = entry.getKey();
-            Lemma saveLemma = new Lemma(lemma, site);
-            countsOfLemma.put(saveLemma, countsOfLemma.getOrDefault(saveLemma, 0) + 1);
-        }
-    }
-
-//    public void createLemma(Page page, Site site){
-//        TextToLemmaParser parser = new TextToLemmaParser();
-//        String htmlContent = page.getContent();
-//        HashMap<String, Integer> mapOfLemmas = parser.parse(htmlContent);
-//
-//        checkLemmas(mapOfLemmas,site);
-//        System.out.println("Лемма создана");
-//    }
-//
-//    private void checkLemmas(HashMap<String,Integer> mapOfLemmas, Site site){
-//        String siteName = site.getName();
-//        for(Map.Entry<String,Integer> entry : mapOfLemmas.entrySet()){
-//            String lemma = entry.getKey();
-//            Lemma saveLemma = new Lemma(lemma, site);
-//            redis.saveUseLemma(siteName,saveLemma);
-//        }
-//    }
-
-//    public List<Lemma> getAllLemmasOnSite(Site site){
-//        return redis.getAllLemmasOnSite(site.getName());
-//    }
-
 }

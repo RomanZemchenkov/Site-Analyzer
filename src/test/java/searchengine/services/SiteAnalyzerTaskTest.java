@@ -2,7 +2,6 @@ package searchengine.services;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
-import jakarta.persistence.TupleElement;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,9 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import searchengine.BaseTest;
 import searchengine.dao.model.Status;
-import searchengine.services.searcher.ParseContext;
-import searchengine.services.searcher.SiteAnalyzerTask;
-import searchengine.services.searcher.SiteAnalyzerTaskFactory;
+import searchengine.services.searcher.indexing.ParseContext;
+import searchengine.services.searcher.indexing.SiteAnalyzerTask;
+import searchengine.services.searcher.indexing.SiteAnalyzerTaskFactory;
 
 import java.util.concurrent.ForkJoinPool;
 

@@ -1,14 +1,11 @@
 package searchengine.services.parser;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import searchengine.services.searcher.PageAnalyzer;
+import searchengine.services.searcher.indexing.PageAnalyzer;
 import searchengine.services.searcher.entity.HttpResponseEntity;
 
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 
 public class TextToLemmaParserIT {
 

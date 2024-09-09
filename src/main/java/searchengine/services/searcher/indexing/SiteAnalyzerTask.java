@@ -1,6 +1,5 @@
-package searchengine.services.searcher;
+package searchengine.services.searcher.indexing;
 
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import searchengine.dao.model.Status;
 import searchengine.dao.repository.RedisRepository;

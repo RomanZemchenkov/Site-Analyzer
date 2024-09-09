@@ -4,15 +4,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
-import searchengine.services.searcher.lemma.IndexingAndLemmaService;
+import searchengine.services.searcher.IndexingAndLemmaService;
 
 
-public class IndexingAndLemmaServiceIT extends BaseTest{
+public class IndexingAndLemmaWriterIT extends BaseTest{
 
     private final IndexingAndLemmaService service;
 
     @Autowired
-    public IndexingAndLemmaServiceIT(IndexingAndLemmaService service) {
+    public IndexingAndLemmaWriterIT(IndexingAndLemmaService service) {
         this.service = service;
     }
 

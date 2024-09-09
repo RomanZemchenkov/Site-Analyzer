@@ -1,4 +1,4 @@
-package searchengine.services.searcher.lemma;
+package searchengine.services.searcher;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -6,6 +6,7 @@ import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 import searchengine.dao.repository.SiteRepository;
 import searchengine.services.IndexingService;
+import searchengine.services.searcher.lemma.LemmaWriter;
 
 import java.util.List;
 
@@ -14,7 +15,6 @@ import java.util.List;
 public class IndexingAndLemmaService {
 
     private final IndexingService indexingService;
-    private final LemmaService lemmaService;
     private final SiteRepository siteRepository;
 
     public void startIndexingAndCreateLemma(){
@@ -24,7 +24,6 @@ public class IndexingAndLemmaService {
         for(Site site : sites){
             List<Page> pages = site.getPages();
             for(Page page : pages){
-                lemmaService.createLemma(page,site);
             }
         }
     }

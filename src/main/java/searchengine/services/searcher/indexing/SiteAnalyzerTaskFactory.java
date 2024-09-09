@@ -1,11 +1,9 @@
-package searchengine.services.searcher;
+package searchengine.services.searcher.indexing;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import searchengine.dao.repository.RedisRepository;
 import searchengine.services.event_listeners.publisher.EventPublisher;
-
-import java.util.concurrent.ForkJoinPool;
 
 
 @Component

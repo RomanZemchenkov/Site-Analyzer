@@ -1,4 +1,4 @@
-package searchengine.services.searcher;
+package searchengine.services.searcher.indexing;
 
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;

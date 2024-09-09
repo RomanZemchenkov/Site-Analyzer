@@ -3,6 +3,7 @@ package searchengine.services.event_listeners.publisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import searchengine.services.event_listeners.IndexCreateEvent;
 import searchengine.services.event_listeners.event.AnalyzedPageEvent;
 import searchengine.services.event_listeners.event.CreatePageEvent;
 import searchengine.services.event_listeners.event.FinishOrStopIndexingEvent;
@@ -22,6 +23,10 @@ public class EventPublisher {
     }
 
     public void publishFinishAndStopIndexingEvent(FinishOrStopIndexingEvent event){
+        publisher.publishEvent(event);
+    }
+
+    public void publishIndexCreateEvent(IndexCreateEvent event){
         publisher.publishEvent(event);
     }
 }
