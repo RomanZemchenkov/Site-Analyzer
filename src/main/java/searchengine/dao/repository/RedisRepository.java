@@ -1,16 +1,11 @@
 package searchengine.dao.repository;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
-import searchengine.dao.model.Lemma;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -21,9 +16,6 @@ public class RedisRepository {
     private final RedisTemplate<String, Object> redis;
     @Value("${spring.data.redis.live-time}")
     private long redisLiveTime;
-    private final ObjectMapper mapper;
-    private static final String FREQUENCY_COUNTER = "frequency";
-    private static final int INCREMENT = 1;
 
     public void saveUsePage(String siteName, String usePageUrl) {
         redis.opsForList().leftPush(siteName, usePageUrl);
@@ -38,55 +30,57 @@ public class RedisRepository {
     }
 
 
-    public synchronized void saveUseLemma(String siteName, Lemma lemma) {
-        String lemmaByString;
-        String mapName = "mapOf" + siteName;
-        try {
-            lemmaByString = mapper.writeValueAsString(lemma);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        lemma.setFrequency(lemma.getFrequency() + INCREMENT);
-        try {
-            redis.opsForHash().put(mapName, lemma.getLemma(), lemmaByString);
-        } catch (Throwable throwable){
-
-        }
-        redis.expire(mapName, redisLiveTime, TimeUnit.SECONDS);
-    }
-
-    public Optional<Lemma> getLemma(String siteName, String lemma) {
-        String mapName = "mapOf" + siteName;
-        Optional<String> mayBeLemma = Optional.ofNullable((String) redis.opsForHash().get(mapName, lemma));
-        Optional<Lemma> lemmaByObject;
-        if (mayBeLemma.isEmpty()) {
-            lemmaByObject = Optional.empty();
-        } else {
-            try {
-                lemmaByObject = Optional.ofNullable(mapper.readValue(mayBeLemma.get(), Lemma.class));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return lemmaByObject;
-    }
-
-    public List<Lemma> getAllLemmasOnSite(String siteName){
-        String mapName = "mapOf" + siteName;
-        List<Object> lemmasByObject = redis.opsForHash().values(mapName);
-        List<Lemma> lemmaList = new ArrayList<>();
-        for(Object o : lemmasByObject){
-            try {
-                lemmaList.add(mapper.readValue(o.toString(),Lemma.class));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return lemmaList;
-    }
+//    public synchronized void saveUseLemma(String siteName, Lemma lemma) {
+//        String lemmaByString;
+//        String mapName = "mapOf" + siteName;
+//        try {
+//            lemmaByString = mapper.writeValueAsString(lemma);
+//        } catch (JsonProcessingException e) {
+//            throw new RuntimeException(e);
+//        }
+//        lemma.setFrequency(lemma.getFrequency() + INCREMENT);
+//        try {
+//            redis.opsForHash().put(mapName, lemma.getLemma(), lemmaByString);
+//        } catch (Throwable throwable){
+//
+//        }
+//        redis.expire(mapName, redisLiveTime, TimeUnit.SECONDS);
+//    }
+//
+//    public Optional<Lemma> getLemma(String siteName, String lemma) {
+//        String mapName = "mapOf" + siteName;
+//        Optional<String> mayBeLemma = Optional.ofNullable((String) redis.opsForHash().get(mapName, lemma));
+//        Optional<Lemma> lemmaByObject;
+//        if (mayBeLemma.isEmpty()) {
+//            lemmaByObject = Optional.empty();
+//        } else {
+//            try {
+//                lemmaByObject = Optional.ofNullable(mapper.readValue(mayBeLemma.get(), Lemma.class));
+//            } catch (JsonProcessingException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//        return lemmaByObject;
+//    }
+//
+//    public List<Lemma> getAllLemmasOnSite(String siteName){
+//        String mapName = "mapOf" + siteName;
+//        List<Object> lemmasByObject = redis.opsForHash().values(mapName);
+//        List<Lemma> lemmaList = new ArrayList<>();
+//        for(Object o : lemmasByObject){
+//            try {
+//                lemmaList.add(mapper.readValue(o.toString(),Lemma.class));
+//            } catch (JsonProcessingException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//        return lemmaList;
+//    }
 
     public void clearListByUrl(String siteUrl) {
         Set<String> keys = redis.keys(siteUrl);
-        keys.stream().peek(redis::delete);
+        for(String key : keys){
+            redis.delete(key);
+        }
     }
 }

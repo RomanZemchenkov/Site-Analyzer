@@ -1,24 +1,22 @@
-package searchengine.dao.repository.lemma;
+package searchengine.dao.repository.index;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-import searchengine.dao.model.Lemma;
+import searchengine.dao.model.Index;
 
 import java.util.List;
 
-@Repository
 @RequiredArgsConstructor
-public class CustomLemmaRepositoryImpl implements CustomLemmaRepository{
+public class CustomIndexRepositoryImpl implements CustomIndexRepository{
 
     private final EntityManager entityManager;
 
     @Override
-    public List<Lemma> batchSave(List<Lemma> lemmaList) {
+    public void createBatch(List<Index> indexList) {
         int batchSize = 1000;
         int counter = 0;
-        for(Lemma lemma : lemmaList){
-            entityManager.persist(lemma);
+        for(Index index : indexList){
+            entityManager.persist(index);
             counter++;
             if(counter == batchSize){
                 entityManager.flush();
@@ -28,7 +26,6 @@ public class CustomLemmaRepositoryImpl implements CustomLemmaRepository{
         }
         entityManager.flush();
         entityManager.clear();
-        System.out.println("Сохранение лемм произошло");
-        return lemmaList;
+        System.out.println("Сохранение индексов произошло");
     }
 }

@@ -19,7 +19,7 @@ public interface SiteRepository extends JpaRepository<Site, Integer> {
 
     Site findSiteByUrl(String url);
 
-    @EntityGraph(type = EntityGraph.EntityGraphType.LOAD, attributePaths = "pages")
+    @EntityGraph(type = EntityGraph.EntityGraphType.LOAD, value = "Site.withAllPages")
     List<Site> findAll();
 
 }

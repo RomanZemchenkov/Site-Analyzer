@@ -27,11 +27,11 @@ public class PageAnalyzer {
         return createConnect(url);
     }
 
-    public static String parseToText(String htmlText){
+    public static String parseToText(String htmlText) {
         return Jsoup.parse(htmlText).text();
     }
 
-    private HttpResponseEntity createConnect(String url){
+    private HttpResponseEntity createConnect(String url) {
         try {
             Connection.Response response = Jsoup.connect(url)
                     .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
@@ -43,8 +43,8 @@ public class PageAnalyzer {
             HttpResponse httpResponse = new HttpResponse(statusCode, document);
 
             return createResponse(httpResponse, url);
-        } catch (HttpStatusException statusException){
-            return statusAnalyzed(statusException.getStatusCode(),statusException.getMessage(), url);
+        } catch (HttpStatusException statusException) {
+            return statusAnalyzed(statusException.getStatusCode(), statusException.getMessage(), url);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -68,6 +68,9 @@ public class PageAnalyzer {
         for (Element el : elements) {
             String page = el.attr("abs:href");
             if (isValidUrl(page)) {
+                if(page.endsWith("/")){
+                    page = page.substring(0, page.length() - 1);
+                }
                 links.add(page);
             }
         }
@@ -75,7 +78,7 @@ public class PageAnalyzer {
     }
 
     private HttpResponseEntity statusAnalyzed(int statusCode, String message, String url) {
-        return new ErrorResponse(statusCode,url, message);
+        return new ErrorResponse(statusCode, url, message);
     }
 
     private boolean isValidUrl(String url) {

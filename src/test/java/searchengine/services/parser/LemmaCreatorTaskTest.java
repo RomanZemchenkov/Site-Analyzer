@@ -12,6 +12,7 @@ import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Site;
 import searchengine.dao.repository.SiteRepository;
 import searchengine.services.IndexingService;
+import searchengine.services.searcher.GlobalVariables;
 import searchengine.services.searcher.lemma.LemmaCreatorContext;
 import searchengine.services.searcher.lemma.LemmaCreatorTask;
 import searchengine.services.searcher.lemma.LemmaCreatorTaskFactory;
@@ -97,5 +98,6 @@ public class LemmaCreatorTaskTest extends BaseTest {
         }
 
         System.out.println(results);
+
     }
 }

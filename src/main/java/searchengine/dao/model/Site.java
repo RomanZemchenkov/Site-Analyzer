@@ -16,8 +16,16 @@ import java.util.List;
 @Getter
 @Setter
 @ToString(exclude = {"pages", "lemmas"})
-@EqualsAndHashCode(of = {"url","name"})
-public class Site implements BaseEntity<Integer>{
+@EqualsAndHashCode(of = {"url", "name"})
+@NamedEntityGraph(
+        name = "Site.withAllPages",
+        attributeNodes =
+                {
+                        @NamedAttributeNode(
+                                value = "pages")
+                }
+)
+public class Site implements BaseEntity<Integer> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,7 +54,8 @@ public class Site implements BaseEntity<Integer>{
     @OneToMany(mappedBy = "site", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Lemma> lemmas = new ArrayList<>();
 
-    public Site(){}
+    public Site() {
+    }
 
     public Site(Status status, OffsetDateTime statusTime, String lastError, String url, String name) {
         this.status = status;

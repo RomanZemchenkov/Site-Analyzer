@@ -7,12 +7,12 @@ import searchengine.BaseTest;
 import searchengine.services.searcher.IndexingAndLemmaService;
 
 
-public class IndexingAndLemmaWriterIT extends BaseTest{
+public class IndexingAndLemmaCreatorIT extends BaseTest{
 
     private final IndexingAndLemmaService service;
 
     @Autowired
-    public IndexingAndLemmaWriterIT(IndexingAndLemmaService service) {
+    public IndexingAndLemmaCreatorIT(IndexingAndLemmaService service) {
         this.service = service;
     }
 

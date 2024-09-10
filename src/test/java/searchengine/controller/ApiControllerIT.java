@@ -2,7 +2,6 @@ package searchengine.controller;
 
 import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import searchengine.BaseTest;
-import searchengine.services.exception.ExceptionMessage;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

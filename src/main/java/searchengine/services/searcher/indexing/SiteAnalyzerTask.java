@@ -13,6 +13,7 @@ import searchengine.services.searcher.entity.HttpResponseEntity;
 import searchengine.services.searcher.entity.NormalResponse;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
@@ -26,12 +27,14 @@ public class SiteAnalyzerTask extends RecursiveAction {
     private final ParseContext context;
     private final EventPublisher publisher;
     private final RedisRepository redis;
+    private final ConcurrentSkipListSet<String> useUrlsSet;
 
-    public SiteAnalyzerTask(String url, ParseContext context, EventPublisher publisher, RedisRepository redis) {
+    public SiteAnalyzerTask(String url, ParseContext context, EventPublisher publisher, RedisRepository redis, ConcurrentSkipListSet<String> useUrlsSet) {
         this.url = url;
         this.context = context;
         this.publisher = publisher;
         this.redis = redis;
+        this.useUrlsSet = useUrlsSet;
     }
 
     @Override
@@ -59,14 +62,25 @@ public class SiteAnalyzerTask extends RecursiveAction {
     private Set<String> checkAvailablePath(Set<String> paths) {
         Set<String> availablePaths = new HashSet<>();
         String siteName = context.getSiteName();
-        List<String> usePages = redis.getUsePages(siteName);
         for (String path : paths) {
-            if (!usePages.contains(path)) {
+            if (hasAlreadyExistPath(siteName,path)) {
                 availablePaths.add(path);
-                redis.saveUsePage(siteName, path);
+//                redis.saveUsePage(siteName, path);
+                useUrlsSet.add(path);
             }
         }
         return availablePaths;
+    }
+
+    private boolean hasAlreadyExistPath(String siteName, String path){
+//        List<String> usePages = redis.getUsePages(siteName);
+        List<String> usePages = useUrlsSet.stream().toList();
+        for(String usePath : usePages){
+            if(path.equals(usePath)){
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean checkStatusCode(HttpResponseEntity response) {
@@ -84,12 +98,16 @@ public class SiteAnalyzerTask extends RecursiveAction {
         String siteId = context.getSiteId();
 
         Integer statusCode = response.getStatusCode();
-        String pageUrl = response.getUrl().substring(context.getMainUrl().length());
+        String urlPage = response.getUrl();
+        String urlForSave = urlPage.substring(context.getMainUrl().length());
         String content = response.getContent();
         String code = String.valueOf(statusCode);
 
-        CreatePageDto dto = new CreatePageDto(siteId, pageUrl, code, content);
+
+        CreatePageDto dto = new CreatePageDto(siteId, urlForSave, code, content);
         publisher.publishEvent(new AnalyzedPageEvent(dto));
+//        redis.saveUsePage(context.getSiteName(), urlPage);
+        useUrlsSet.add(urlPage);
 
         if (!context.isIndexingStopFlag()) {
             updateSiteState(Status.INDEXING.toString());
@@ -102,7 +120,7 @@ public class SiteAnalyzerTask extends RecursiveAction {
         Set<SiteAnalyzerTask> futureTaskSet = new HashSet<>();
 
         for (String path : availablePathForTask) {
-            SiteAnalyzerTask newTask = context.getFactory().createTask(path, context);
+            SiteAnalyzerTask newTask = context.getFactory().createTask(path, context, useUrlsSet);
             futureTaskSet.add(newTask);
         }
 
@@ -119,8 +137,6 @@ public class SiteAnalyzerTask extends RecursiveAction {
         String mainUrl = context.getMainUrl();
         String siteName = context.getSiteName();
         String siteId = context.getSiteId();
-        System.out.println("Контекст при при обновлении: " + context);
-        System.out.println("ID сайта при обновлении: " + siteId);
         UpdateSiteDto siteDto = new UpdateSiteDto(siteId, status, mainUrl, siteName);
         publisher.publishUpdateSiteEvent(new CreatePageEvent(siteDto));
     }
@@ -130,18 +146,14 @@ public class SiteAnalyzerTask extends RecursiveAction {
     }
 
     private void stop(ForkJoinPool usePool, String content) {
-        System.out.println("Вызвана остановка индексации");
         String mainUrl = context.getMainUrl();
         String siteName = context.getSiteName();
         String siteId = context.getSiteId();
         usePool.shutdownNow();
-        System.out.println("Контекст при остановке: " + context);
-        System.out.println("ID сайта при остановке: " + siteId);
 
         UpdateSiteDto dto = new UpdateSiteDto(siteId, Status.FAILED.toString(), content, mainUrl, siteName);
         CreatePageEvent createPageEvent = new CreatePageEvent(dto);
         publisher.publishUpdateSiteEvent(createPageEvent);
-        System.out.println("Пул остановлен, событие отправлено");
     }
 
 

@@ -3,6 +3,8 @@ package searchengine.services;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import searchengine.dao.model.Status;
 import searchengine.services.dto.SiteProperties;
 import searchengine.services.dto.page.CreatePageWithMainSiteUrlDto;
@@ -18,10 +20,7 @@ import searchengine.services.searcher.indexing.SiteAnalyzerTaskFactory;
 import searchengine.services.searcher.entity.HttpResponseEntity;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import static searchengine.services.searcher.GlobalVariables.*;
@@ -54,7 +53,7 @@ public class IndexingService {
         firstTasksList = new ArrayList<>();
         for (ParseContext context : contexts) {
             String startUrl = context.getMainUrl();
-            firstTasksList.add(factory.createTask(startUrl, context));
+            firstTasksList.add(factory.createTask(startUrl, context, new ConcurrentSkipListSet<>()));
         }
 
         int availableProcessors = Runtime.getRuntime().availableProcessors();

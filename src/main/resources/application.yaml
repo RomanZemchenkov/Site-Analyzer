@@ -22,8 +22,8 @@ spring:
       hibernate:
         jdbc:
           batch_size: 50
-#          show_sql: true
-#          format_sql: true
+          show_sql: true
+          format_sql: true
         order_updates: true
 
 

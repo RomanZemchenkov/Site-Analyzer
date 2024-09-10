@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
+import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 import searchengine.dao.model.Status;
 import searchengine.dao.repository.RedisRepository;
@@ -34,10 +35,17 @@ public class IndexingServiceTest extends BaseTest {
     void startIndexingWithoutProblemTest() {
         Assertions.assertDoesNotThrow(service::startIndexing);
 
-        List<Site> sites = manager.createQuery("SELECT s FROM Site AS s WHERE s.id >= 3", Site.class)
+        List<Site> sites = manager.createQuery("SELECT s FROM Site AS s WHERE s.id >= 4", Site.class)
                 .getResultList();
 
+        List<Page> resultListSendel = manager.createQuery("SELECT p FROM Page AS p WHERE p.site.id = 4", Page.class).getResultList();
+        List<Page> resultListItDete = manager.createQuery("SELECT p FROM Page AS p WHERE p.site.id = 5", Page.class).getResultList();
+
+
+
         System.out.println(sites);
+        System.out.println(resultListSendel.size());
+        System.out.println(resultListItDete.size());
 
         sites.forEach(er -> {
             assertThat(er.getLastError()).isNull();

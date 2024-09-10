@@ -34,7 +34,7 @@ public class Page implements BaseEntity<Integer>{
     @JoinColumn(name = "site_id")
     private Site site;
 
-    @OneToMany(mappedBy = "page", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "page", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private List<Index> indexes = new ArrayList<>();
 
     public Page(){}
