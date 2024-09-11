@@ -17,7 +17,6 @@ public class LemmaService {
     private final LemmaRepository lemmaRepository;
 
     public List<Lemma> createBatch(List<Lemma> lemmaList){
-
         return lemmaRepository.batchSave(lemmaList);
     }
 
