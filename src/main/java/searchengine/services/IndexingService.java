@@ -1,13 +1,13 @@
 package searchengine.services;
 
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import searchengine.dao.model.Status;
 import searchengine.services.dto.SiteProperties;
 import searchengine.services.dto.page.CreatePageWithMainSiteUrlDto;
+import searchengine.services.dto.page.CreatedPageInfoDto;
 import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.dto.site.CreateSiteDto;
 import searchengine.services.event_listeners.event.FinishOrStopIndexingEvent;
@@ -30,13 +30,15 @@ import static searchengine.services.searcher.GlobalVariables.*;
 public class IndexingService {
 
     private final SiteService siteService;
+    private final PageService pageService;
     private final SiteAnalyzerTaskFactory factory;
     private final SiteProperties properties;
     private final EventPublisher publisher;
+    @Getter
     private Map<String, String> namesAndSites;
     private List<ParseContext> contexts;
     private List<SiteAnalyzerTask> firstTasksList;
-    private HashMap<SiteAnalyzerTask,ForkJoinPool> pools = new HashMap<>();
+    private HashMap<SiteAnalyzerTask, ForkJoinPool> pools = new HashMap<>();
 
 
     @PostConstruct
@@ -80,43 +82,51 @@ public class IndexingService {
     }
 
     public void stopIndexing() {
-        System.out.println("Список всех контекстов: " + contexts);
-        for(ParseContext context : contexts){
+        System.out.println("Остановка задачи");
+        for (ParseContext context : contexts) {
             context.setIndexingStopFlag(true);
         }
 
-        for(Map.Entry<SiteAnalyzerTask, ForkJoinPool> entry : pools.entrySet()){
+        for (Map.Entry<SiteAnalyzerTask, ForkJoinPool> entry : pools.entrySet()) {
             SiteAnalyzerTask task = entry.getKey();
             ForkJoinPool pool = entry.getValue();
-            System.out.println("Для остановки задачи " + task + " мы передаём пул: " + pool);
-            task.stopIndexing(pool,STOP_INDEXING_TEXT);
+            task.stopIndexing(pool, STOP_INDEXING_TEXT);
         }
     }
 
-    public CreatePageWithMainSiteUrlDto onePageIndexing(FindPageDto dto) {
-        String url = dto.getUrl();
-        String mainUrl = "";
-        for(Map.Entry<String,String> entry : namesAndSites.entrySet()){
-            String siteUrl = entry.getValue();
-            if(!url.startsWith(siteUrl)){
-                throw new IllegalPageException();
+    public CreatedPageInfoDto onePageIndexing(FindPageDto dto) {
+        String pageUrl = dto.getUrl();
+        String siteUrl = "";
+        String siteName = "";
+        for (Map.Entry<String, String> entry : namesAndSites.entrySet()) {
+            String url = entry.getValue();
+            String name = entry.getKey();
+            if (pageUrl.startsWith(url)) {
+                siteUrl = url;
+                siteName = name;
+                break;
             }
-            mainUrl = siteUrl;
         }
-        PageAnalyzer analyzer = new PageAnalyzer(url);
-        HttpResponseEntity response = analyzer.searchLink(url);
-        return new CreatePageWithMainSiteUrlDto(mainUrl,url,String.valueOf(response.getStatusCode()),response.getContent());
+        if (siteUrl.isEmpty()) {
+            throw new IllegalPageException();
+        }
+        PageAnalyzer analyzer = new PageAnalyzer(pageUrl);
+        HttpResponseEntity response = analyzer.searchLink(pageUrl);
+        CreatePageWithMainSiteUrlDto page = new CreatePageWithMainSiteUrlDto(siteUrl,siteName, pageUrl, String.valueOf(response.getStatusCode()), response.getContent());
+        CreatedPageInfoDto infoDto = pageService.createPage(page);
+        infoDto.getSite().setStatus(Status.INDEXED);
+        return infoDto;
     }
 
     private void executeTask(SiteAnalyzerTask task, ParseContext context, int countOfParallel) {
         ForkJoinPool forkJoinPool = new ForkJoinPool(countOfParallel);
-        pools.put(task,forkJoinPool);
-        System.out.printf("Для задачи %s назначается пул %s\n", task,forkJoinPool);
+        pools.put(task, forkJoinPool);
+        System.out.printf("Для задачи %s назначается пул %s\n", task, forkJoinPool);
         try {
             forkJoinPool.invoke(task);
         } finally {
             forkJoinPool.shutdown();
-            if(!context.isIndexingStopFlag()){
+            if (!context.isIndexingStopFlag()) {
                 task.updateSiteState(Status.INDEXED.toString());
             }
             clearRedisKeys(context.getSiteName());

@@ -10,6 +10,7 @@ import searchengine.services.dto.page.CreatePageWithMainSiteUrlDto;
 import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.dto.statistics.StatisticsResponse;
 import searchengine.services.StatisticsService;
+import searchengine.services.searcher.IndexingAndLemmaService;
 
 import static searchengine.services.searcher.GlobalVariables.INDEXING_STARTED;
 
@@ -20,7 +21,7 @@ public class ApiController {
 
     private final StatisticsService statisticsService;
     private final IndexingService indexingService;
-    private final PageService pageService;
+    private final IndexingAndLemmaService indexingAndLemmaService;
 
 
     @GetMapping("/statistics")
@@ -31,7 +32,7 @@ public class ApiController {
     @GetMapping("/startIndexing")
     public ResponseEntity<Response> startIndexing(){
         if(!INDEXING_STARTED){
-            indexingService.startIndexing();
+            indexingAndLemmaService.startIndexingAndCreateLemma();
             return new ResponseEntity<>(new Response("true"), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(new Response("false","Индексация уже запущена."),HttpStatus.CONFLICT);
@@ -50,8 +51,7 @@ public class ApiController {
 
     @PostMapping("/indexPage")
     public ResponseEntity<Response> indexPage(@RequestBody FindPageDto dto){
-        CreatePageWithMainSiteUrlDto createPageDto = indexingService.onePageIndexing(dto);
-        pageService.createPage(createPageDto);
+        indexingAndLemmaService.startIndexingAndCreateLemmaForOnePage(dto);
         return new ResponseEntity<>(new Response("true"),HttpStatus.OK);
     }
 }

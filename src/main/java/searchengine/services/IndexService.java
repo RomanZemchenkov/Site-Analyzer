@@ -26,7 +26,6 @@ public class IndexService {
     public void createIndex(){
         ConcurrentHashMap<Page, HashMap<Lemma, Integer>> pageAndLemmasWithCount = GlobalVariables.pageAndLemmasWithCount;
         List<Index> indexList = new ArrayList<>();
-        System.out.println("Начало создания индексов");
         pageAndLemmasWithCount.forEach(
                 (Page p, HashMap<Lemma, Integer> map) ->
                 {
@@ -35,7 +34,6 @@ public class IndexService {
                 }
         );
 
-        System.out.println("Начала сохранения батчем");
         indexRepository.createBatch(indexList);
     }
 

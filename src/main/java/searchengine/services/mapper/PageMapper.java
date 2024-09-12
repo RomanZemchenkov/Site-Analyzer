@@ -19,6 +19,7 @@ public interface PageMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "code", source = "dto.code")
     @Mapping(target = "content", source = "dto.content")
+    @Mapping(target = "path", source = "dto.pageUrl")
     @Mapping(target = "site", source = "site")
     Page mapToPage(CreatePageWithMainSiteUrlDto dto, Site site);
 }

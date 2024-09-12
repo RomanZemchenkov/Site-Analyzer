@@ -1,18 +1,13 @@
 package searchengine.services.parser;
 
-import org.apache.logging.log4j.util.PropertySource;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
-import searchengine.dao.model.Index;
 import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Site;
-import searchengine.dao.repository.SiteRepository;
+import searchengine.dao.repository.site.SiteRepository;
 import searchengine.services.IndexingService;
-import searchengine.services.searcher.GlobalVariables;
 import searchengine.services.searcher.lemma.LemmaCreatorContext;
 import searchengine.services.searcher.lemma.LemmaCreatorTask;
 import searchengine.services.searcher.lemma.LemmaCreatorTaskFactory;

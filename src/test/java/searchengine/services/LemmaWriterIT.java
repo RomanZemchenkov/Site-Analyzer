@@ -10,10 +10,9 @@ import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 import searchengine.dao.repository.PageRepository;
-import searchengine.dao.repository.SiteRepository;
+import searchengine.dao.repository.site.SiteRepository;
 import searchengine.services.searcher.lemma.LemmaWriter;
 
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 

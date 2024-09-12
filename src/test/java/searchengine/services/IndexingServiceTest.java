@@ -9,6 +9,7 @@ import searchengine.dao.model.Site;
 import searchengine.dao.model.Status;
 import searchengine.dao.repository.RedisRepository;
 import searchengine.services.dto.page.CreatePageWithMainSiteUrlDto;
+import searchengine.services.dto.page.CreatedPageInfoDto;
 import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.exception.IllegalPageException;
 
@@ -113,11 +114,14 @@ public class IndexingServiceTest extends BaseTest {
     @DisplayName("Удачное тестирование индексации одной страницы")
     void successfulIndexingOnePageTest(){
         FindPageDto findPageDto = new FindPageDto("https://sendel.ru/posts/java-with-vscode/");
-        CreatePageWithMainSiteUrlDto createPageDto = service.onePageIndexing(findPageDto);
+        CreatedPageInfoDto infoDto = service.onePageIndexing(findPageDto);
+        Page savedPage = infoDto.getSavedPage();
+        Site site = infoDto.getSite();
 
-        assertThat(createPageDto.getCode()).isEqualTo("200");
-        assertThat(createPageDto.getMainUrl()).isEqualTo("https://sendel.ru");
-        assertThat(createPageDto.getPath()).isNotBlank();
+        assertThat(savedPage.getCode()).isEqualTo(200);
+        assertThat(savedPage.getSite().getUrl()).isEqualTo("https://sendel.ru");
+        assertThat(savedPage.getPath()).isNotBlank();
+        assertThat(site.getStatus()).isEqualTo(Status.INDEXED);
     }
 
     @Test

@@ -5,14 +5,16 @@ import lombok.Getter;
 @Getter
 public class CreatePageWithMainSiteUrlDto {
 
-    private final String mainUrl;
-    private final String path;
+    private final String siteUrl;
+    private final String siteName;
+    private final String pageUrl;
     private final String code;
     private final String content;
 
-    public CreatePageWithMainSiteUrlDto(String mainUrl, String path, String code, String content) {
-        this.mainUrl = mainUrl;
-        this.path = path;
+    public CreatePageWithMainSiteUrlDto(String siteUrl, String siteName, String pageUrl, String code, String content) {
+        this.siteUrl = siteUrl;
+        this.siteName = siteName;
+        this.pageUrl = pageUrl;
         this.code = code;
         this.content = content;
     }

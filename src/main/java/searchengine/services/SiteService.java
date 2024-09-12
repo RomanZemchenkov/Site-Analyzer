@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.dao.model.Site;
 import searchengine.dao.model.Status;
-import searchengine.dao.repository.SiteRepository;
+import searchengine.dao.repository.site.SiteRepository;
 import searchengine.services.dto.site.CreateSiteDto;
 import searchengine.services.dto.site.UpdateSiteDto;
 import searchengine.services.mapper.SiteMapper;

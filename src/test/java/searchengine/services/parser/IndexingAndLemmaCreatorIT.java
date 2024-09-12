@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 import searchengine.BaseTest;
+import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.searcher.IndexingAndLemmaService;
 
 
@@ -23,6 +24,12 @@ public class IndexingAndLemmaCreatorIT extends BaseTest{
     @DisplayName("Тестирование работы для одного сайта")
     void startIndexingAndCreateLemmaForOneSite(){
         service.startIndexingAndCreateLemma();
-        System.out.println(" ");
+    }
+
+    @Test
+    @DisplayName("Тестирование сохранения лемм и индексов для одной страницы")
+    void startIndexingAndCreateLemmaForOnePage(){
+        FindPageDto findPageDto = new FindPageDto("https://sendel.ru/books/");
+        service.startIndexingAndCreateLemmaForOnePage(findPageDto);
     }
 }
