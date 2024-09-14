@@ -5,7 +5,7 @@ import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 import searchengine.services.parser.TextToLemmaParser;
-import searchengine.services.searcher.GlobalVariables;
+import searchengine.services.GlobalVariables;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,6 +32,7 @@ public class LemmaWriter {
         HashMap<Lemma,Integer> lemmasAndCount = new HashMap<>();
         for (Map.Entry<String, Integer> entry : mapOfLemmas.entrySet()) {
             String lemma = entry.getKey();
+            int countOfLemma = entry.getValue();
             Lemma saveLemma = new Lemma(lemma, site);
 
             for (Map.Entry<Lemma,Integer> existLemmas : lemmasAndCounts.entrySet()){
@@ -42,8 +43,26 @@ public class LemmaWriter {
                 }
             }
             lemmasAndCounts.put(saveLemma, lemmasAndCounts.getOrDefault(saveLemma, 0) + 1);
-            lemmasAndCount.put(saveLemma,entry.getValue());
+            lemmasAndCount.put(saveLemma,countOfLemma);
         }
         return lemmasAndCount;
     }
+
+ //    private HashMap<Lemma, Integer> addLemmas(HashMap<String, Integer> mapOfLemmas, Site site) {
+//        HashMap<Lemma,Integer> lemmasAndCount = new HashMap<>();
+//        for (Map.Entry<String, Integer> entry : mapOfLemmas.entrySet()) {
+//            String lemma = entry.getKey();
+//            int countOfLemma = entry.getValue();
+//            Lemma saveLemma = new Lemma(lemma, site);
+//
+//            Lemma existingLemma = lemmasAndCounts.keySet().stream()
+//                    .filter(lem -> lem.getLemma().equals(lemma))
+//                    .findFirst()
+//                    .orElseGet(() -> new Lemma(lemma,site));
+//
+//            lemmasAndCounts.merge(existingLemma, 1 , Integer::sum);
+//            lemmasAndCount.put(saveLemma,countOfLemma);
+//        }
+//        return lemmasAndCount;
+//    }
 }

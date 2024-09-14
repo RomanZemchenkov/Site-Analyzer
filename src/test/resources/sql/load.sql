@@ -9,3 +9,6 @@ VALUES (1, '/path', 200, 'content'),
        (1, '/path1', 200, 'content'),
        (1, '/path2', 200, 'content'),
        (1, '/path3', 200, 'content');
+
+INSERT INTO lemma(site_id, lemma, frequency)
+VALUES (1, 'lemma', 10);

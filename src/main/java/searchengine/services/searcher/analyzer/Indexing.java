@@ -1,43 +1,37 @@
-package searchengine.services;
+package searchengine.services.searcher.analyzer;
 
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.dao.model.Status;
+import searchengine.services.service.PageService;
+import searchengine.services.service.SiteService;
 import searchengine.services.dto.SiteProperties;
 import searchengine.services.dto.page.CreatePageWithMainSiteUrlDto;
 import searchengine.services.dto.page.CreatedPageInfoDto;
 import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.dto.site.CreateSiteDto;
-import searchengine.services.event_listeners.event.FinishOrStopIndexingEvent;
-import searchengine.services.event_listeners.publisher.EventPublisher;
 import searchengine.services.exception.IllegalPageException;
-import searchengine.services.searcher.indexing.PageAnalyzer;
-import searchengine.services.searcher.indexing.ParseContext;
-import searchengine.services.searcher.indexing.SiteAnalyzerTask;
-import searchengine.services.searcher.indexing.SiteAnalyzerTaskFactory;
 import searchengine.services.searcher.entity.HttpResponseEntity;
 
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
-import static searchengine.services.searcher.GlobalVariables.*;
+import static searchengine.services.GlobalVariables.*;
 
 @Service
 @RequiredArgsConstructor
-public class IndexingService {
+public class Indexing {
 
     private final SiteService siteService;
     private final PageService pageService;
     private final SiteAnalyzerTaskFactory factory;
     private final SiteProperties properties;
-    private final EventPublisher publisher;
     @Getter
     private Map<String, String> namesAndSites;
     private List<ParseContext> contexts;
-    private List<SiteAnalyzerTask> firstTasksList;
     private HashMap<SiteAnalyzerTask, ForkJoinPool> pools = new HashMap<>();
 
 
@@ -52,7 +46,7 @@ public class IndexingService {
         INDEXING_STARTED = true;
         createContext();
 
-        firstTasksList = new ArrayList<>();
+        List<SiteAnalyzerTask> firstTasksList = new ArrayList<>();
         for (ParseContext context : contexts) {
             String startUrl = context.getMainUrl();
             firstTasksList.add(factory.createTask(startUrl, context, new ConcurrentSkipListSet<>()));
@@ -68,7 +62,6 @@ public class IndexingService {
             threadPool.submit(() -> executeTask(task, context, countOfParallel));
         }
         threadPool.shutdown();
-
 
         try {
             threadPool.awaitTermination(100L, TimeUnit.MINUTES);
@@ -121,7 +114,6 @@ public class IndexingService {
     private void executeTask(SiteAnalyzerTask task, ParseContext context, int countOfParallel) {
         ForkJoinPool forkJoinPool = new ForkJoinPool(countOfParallel);
         pools.put(task, forkJoinPool);
-        System.out.printf("Для задачи %s назначается пул %s\n", task, forkJoinPool);
         try {
             forkJoinPool.invoke(task);
         } finally {
@@ -129,11 +121,8 @@ public class IndexingService {
             if (!context.isIndexingStopFlag()) {
                 task.updateSiteState(Status.INDEXED.toString());
             }
-            clearRedisKeys(context.getSiteName());
-            System.out.printf("Поток %s закончил свою работу\n", Thread.currentThread().getName());
         }
     }
-
 
     private void createContext() {
         contexts = new ArrayList<>();
@@ -150,10 +139,6 @@ public class IndexingService {
         }
     }
 
-    private void clearRedisKeys(String siteUrl) {
-        FinishOrStopIndexingEvent event = new FinishOrStopIndexingEvent(siteUrl);
-        publisher.publishFinishAndStopIndexingEvent(event);
-    }
 
 
 }

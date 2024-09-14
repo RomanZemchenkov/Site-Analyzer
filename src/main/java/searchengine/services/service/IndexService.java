@@ -1,4 +1,4 @@
-package searchengine.services;
+package searchengine.services.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -8,7 +8,7 @@ import searchengine.dao.model.Index;
 import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Page;
 import searchengine.dao.repository.index.IndexRepository;
-import searchengine.services.searcher.GlobalVariables;
+import searchengine.services.GlobalVariables;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ public class IndexService {
 
     private final IndexRepository indexRepository;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional()
     public void createIndex(){
         ConcurrentHashMap<Page, HashMap<Lemma, Integer>> pageAndLemmasWithCount = GlobalVariables.pageAndLemmasWithCount;
         List<Index> indexList = new ArrayList<>();

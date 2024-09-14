@@ -12,10 +12,10 @@ import java.util.Optional;
 /*
 Подумать о создании запроса на обновление только статуса и времени
  */
-
-@Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
+@Transactional(readOnly = true)
 public interface SiteRepository extends JpaRepository<Site, Integer>, CustomSiteRepository {
 
+    @EntityGraph(type = EntityGraph.EntityGraphType.LOAD, value = "Site.withAllPages")
     Optional<Site> findSiteByName(String name);
 
     Optional<Site> findSiteByUrl(String url);

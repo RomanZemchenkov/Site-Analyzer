@@ -4,15 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import searchengine.services.IndexingService;
-import searchengine.services.PageService;
-import searchengine.services.dto.page.CreatePageWithMainSiteUrlDto;
+import searchengine.services.searcher.analyzer.Indexing;
 import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.dto.statistics.StatisticsResponse;
 import searchengine.services.StatisticsService;
-import searchengine.services.searcher.IndexingAndLemmaService;
+import searchengine.services.IndexingAndLemmaService;
 
-import static searchengine.services.searcher.GlobalVariables.INDEXING_STARTED;
+import static searchengine.services.GlobalVariables.INDEXING_STARTED;
 
 @RestController
 @RequestMapping("/api")
@@ -20,7 +18,7 @@ import static searchengine.services.searcher.GlobalVariables.INDEXING_STARTED;
 public class ApiController {
 
     private final StatisticsService statisticsService;
-    private final IndexingService indexingService;
+    private final Indexing indexingService;
     private final IndexingAndLemmaService indexingAndLemmaService;
 
 

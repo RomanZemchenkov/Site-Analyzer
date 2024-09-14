@@ -4,7 +4,6 @@ import lombok.Getter;
 import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
-import searchengine.services.event_listeners.publisher.EventPublisher;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -14,11 +13,9 @@ import java.util.concurrent.*;
 public class LemmaCreatorTask extends RecursiveTask<List<Lemma>> {
 
     private final LemmaCreatorContext context;
-    private final EventPublisher publisher;
 
-    public LemmaCreatorTask(LemmaCreatorContext context, EventPublisher publisher) {
+    public LemmaCreatorTask(LemmaCreatorContext context) {
         this.context = context;
-        this.publisher = publisher;
     }
 
     @Override
@@ -76,12 +73,7 @@ public class LemmaCreatorTask extends RecursiveTask<List<Lemma>> {
 
         leftTask.join();
         rightTask.join();
-        /*
-
-        Единственный оставшийся вариант - при помощи слушателей событий сохранять по одной леммы,
-         а потом сохранять и индексы
-         А потом, выйдя из потоков - пересохранить леммы ещё раз
-         */
 
     }
+
 }

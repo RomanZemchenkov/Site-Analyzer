@@ -4,13 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
-import searchengine.services.dto.page.CreatePageDto;
-import searchengine.services.dto.site.CreateSiteDto;
-import searchengine.services.dto.site.ShowSiteDto;
 import searchengine.services.dto.statistics.DetailedStatisticsItem;
 import searchengine.services.dto.statistics.StatisticsData;
 import searchengine.services.dto.statistics.StatisticsResponse;
 import searchengine.services.dto.statistics.TotalStatistics;
+import searchengine.services.service.PageService;
+import searchengine.services.service.SiteService;
 
 import java.util.ArrayList;
 import java.util.List;

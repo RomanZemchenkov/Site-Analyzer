@@ -1,12 +1,10 @@
-package searchengine.services;
+package searchengine.services.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
-import searchengine.dao.model.Site;
 import searchengine.services.dto.site.CreateSiteDto;
-import searchengine.services.dto.site.ShowSiteDto;
 import searchengine.services.dto.site.UpdateSiteDto;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,22 +23,22 @@ public class SiteServiceTest extends BaseTest {
     }
 
     @Test
-    @DisplayName("Тест создания сайта")
+    @DisplayName("Testing the create site")
     void createSite(){
         Integer siteId = assertDoesNotThrow(() -> service.createSite(new CreateSiteDto("/url/test", "Site name")));
 
-        assertThat(siteId).isEqualTo(3);
+        assertThat(siteId).isEqualTo(4);
     }
 
     @Test
-    @DisplayName("Тест удачного обновления сайта")
+    @DisplayName("Testing the successful update site")
     void successfulUpdateSite(){
         UpdateSiteDto dto = new UpdateSiteDto(EXIST_SITE_ID, "INDEXING", "", EXIST_URL, EXIST_SITE_NAME);
         assertDoesNotThrow(() -> service.updateSite(dto));
     }
 
     @Test
-    @DisplayName("Тест неудачного обновления сайта")
+    @DisplayName("Testing the unsuccessful update site")
     void unsuccessfulUpdateSite(){
         UpdateSiteDto dto = new UpdateSiteDto(EXIST_SITE_ID, "INDEXING", "Error",EXIST_URL , EXIST_SITE_NAME);
         assertDoesNotThrow(() -> service.updateSite(dto));

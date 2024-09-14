@@ -1,4 +1,4 @@
-package searchengine.services.event_listeners;
+package searchengine.services.event_listeners.event;
 
 import lombok.Getter;
 import lombok.ToString;

@@ -51,7 +51,7 @@ public class Site implements BaseEntity<Integer> {
     private List<Page> pages = new ArrayList<>();
 
     @JsonManagedReference("site_lemma")
-    @OneToMany(mappedBy = "site", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "site", fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE})
     private List<Lemma> lemmas = new ArrayList<>();
 
     public Site() {

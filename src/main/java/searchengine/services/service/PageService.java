@@ -1,8 +1,7 @@
-package searchengine.services;
+package searchengine.services.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
@@ -27,7 +26,7 @@ public class PageService {
     private final SiteRepository siteRepository;
     private final PageMapper mapper;
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional()
     public String createPage(CreatePageDto dto){
 
         Integer siteId = Integer.valueOf(dto.getSiteId());
@@ -40,7 +39,7 @@ public class PageService {
         return savedPage.getPath();
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional()
     public CreatedPageInfoDto createPage(CreatePageWithMainSiteUrlDto dto){
         String path = dto.getPageUrl();
         checkExistPage(path);

@@ -2,15 +2,17 @@ package searchengine.services.parser;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import searchengine.services.searcher.indexing.PageAnalyzer;
+import searchengine.services.searcher.analyzer.PageAnalyzer;
 import searchengine.services.searcher.entity.HttpResponseEntity;
 
 import java.util.HashMap;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 public class TextToLemmaParserIT {
 
-    private static final String TEST_HTML_TEXT = "";
-    private static final String TEST_CLEAR_TEXT = "Reading is an important part of my life. I love immersing myself into an interesting story for an hour or two. For me a book is not just a source of information, it is a world I can visit.\n" +
+    private static final String TEST_ENGLISH_CLEAR_TEXT = "Reading is an important part of my life. I love immersing myself into an interesting story for an hour or two. For me a book is not just a source of information, it is a world I can visit.\n" +
                                                   "\n" +
                                                   "I read books of different genres, but my favorite books are set in fictional worlds. It might be in the future, another universe or a fantasy world. My favorite book is “Six of Crows” by Leigh Bardugo. To be more precise, it is not one book, but a series of two novels – “Six of Crows” and “Crooked Kingdom”. Anyway, they tell one story split into two big parts, so most readers consider them one novel.\n" +
                                                   "\n" +
@@ -20,21 +22,16 @@ public class TextToLemmaParserIT {
                                                   "\n" +
                                                   "If you like immersing yourself into a fun story with great characters, I would like to recommend you “Six of Crows”. It is one of the best fantasy books I have ever read. I hope you will enjoy it too.";
 
-//    @Test
-//    @DisplayName("Тестирование парсинга страницы в текст")
-//    void parseToTextTest(){
-//        TextToLemmaParser textToLemmaParser = new TextToLemmaParser();
-//        String resultText = textToLemmaParser.clearText(TEST_HTML_TEXT);
-//        System.out.println(resultText);
-//    }
-//
-//
+    private static final String TEST_RUSSIAN_CLEAR_TEXT = "Повторное появление леопарда в Осетии позволяет предположить,\n" +
+                                                          "что леопард постоянно обитает в некоторых районах Северного\n" +
+                                                          "Кавказа.\n";
+
     @Test
-    @DisplayName("Тестирование парсинга очищенного текста в леммы")
+    @DisplayName("Testing the parsing of the purified Russian text")
     void parseToLemmasTest(){
         TextToLemmaParser parser = new TextToLemmaParser();
-        HashMap<String, Integer> parse = parser.parse(TEST_CLEAR_TEXT);
-        System.out.println(parse);
+        HashMap<String, Integer> parse = assertDoesNotThrow(() -> parser.parse(TEST_RUSSIAN_CLEAR_TEXT));
+        assertThat(parse).hasSize(12);
     }
 
     @Test
@@ -46,8 +43,8 @@ public class TextToLemmaParserIT {
             String content = response.getContent();
 
             TextToLemmaParser textToLemmaParser = new TextToLemmaParser();
-            HashMap<String, Integer> result = textToLemmaParser.parse(content);
-            System.out.println(result);
+            HashMap<String, Integer> result = assertDoesNotThrow(() ->textToLemmaParser.parse(content));
+            assertThat(result).hasSize(5715);
         });
     }
 

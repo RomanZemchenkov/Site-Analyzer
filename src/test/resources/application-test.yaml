@@ -15,14 +15,14 @@ spring:
 
 indexing-settings:
   sites:
-    - url: https://sendel.ru
-      name: Sendel.ru
+#    - url: https://sendel.ru
+#      name: Sendel.ru
     - url: https://itdeti.ru
       name: ItDeti.ru
     #    - url: https://www.playback.ru
     #      name: PlayBack.Ru
-    #    - url: https://www.svetlovka.ru
-    #      name: Svetlovka.ru
+#    - url: https://www.svetlovka.ru
+#      name: Svetlovka.ru
     #    - url: https://lenta.ru
     #      name: Lenta.ru
 #    - url: https://sendel.ru/432434234234

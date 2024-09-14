@@ -1,4 +1,4 @@
-package searchengine.services;
+package searchengine.services.service;
 
 
 import org.junit.jupiter.api.DisplayName;
@@ -15,10 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 public class PageServiceTest extends BaseTest {
 
     private final PageService service;
-    private static final String EXIST_SITE_NAME = "Test Site";
     private static final String EXIST_SITE_ID = "1";
     private static final String EXIST_URL = "/test/url";
-    private static final String EXIST_PAGE_PATH = "/path";
 
     @Autowired
     public PageServiceTest(PageService service) {
@@ -26,7 +24,7 @@ public class PageServiceTest extends BaseTest {
     }
 
     @Test
-    @DisplayName("Тест сохранения страницы с id")
+    @DisplayName("Testing the create page with id")
     void pageWithIdSave(){
         CreatePageDto dto = new CreatePageDto(EXIST_SITE_ID, "/path/to", "200", "content");
         String path = assertDoesNotThrow(() -> service.createPage(dto));
@@ -35,7 +33,7 @@ public class PageServiceTest extends BaseTest {
     }
 
     @Test
-    @DisplayName("Тест сохранения старницы с mainUrl")
+    @DisplayName("Testing the create page with url")
     void pageWithMainUrl(){
         CreatePageWithMainSiteUrlDto dto = new CreatePageWithMainSiteUrlDto(EXIST_URL,"Test site" ,"/path/to/path", "200", "content");
         CreatedPageInfoDto infoDto = assertDoesNotThrow(() -> service.createPage(dto));

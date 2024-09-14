@@ -8,9 +8,7 @@ import searchengine.services.event_listeners.publisher.EventPublisher;
 @RequiredArgsConstructor
 public class LemmaCreatorTaskFactory {
 
-    private final EventPublisher publisher;
-
     public LemmaCreatorTask createTask(LemmaCreatorContext context){
-        return new LemmaCreatorTask(context, publisher);
+        return new LemmaCreatorTask(context);
     }
 }

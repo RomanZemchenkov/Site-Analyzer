@@ -1,34 +1,44 @@
 package searchengine.dao.repository.lemma;
 
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import searchengine.dao.model.Lemma;
 
+import java.sql.PreparedStatement;
 import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
 public class CustomLemmaRepositoryImpl implements CustomLemmaRepository{
 
-    private final EntityManager entityManager;
+    private final JdbcTemplate template;
+    private static final String LEMMA_SAVE_SQL = """
+                                                 INSERT INTO lemma(site_id, lemma, frequency) 
+                                                 VALUES (?,?,?);
+                                                 """;
 
     @Override
     public List<Lemma> batchSave(List<Lemma> lemmaList) {
-        int batchSize = 1000;
-        int counter = 0;
+        return save(lemmaList);
+    }
+
+    public List<Lemma> save(List<Lemma> lemmaList){
         for(Lemma lemma : lemmaList){
-            entityManager.persist(lemma);
-            counter++;
-            if(counter == batchSize){
-                entityManager.flush();
-                entityManager.clear();
-                counter = 0;
-            }
+            GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+            template.update((con) -> {
+                PreparedStatement ps = con.prepareStatement(LEMMA_SAVE_SQL, new String[]{"id"});
+                ps.setInt(1,lemma.getSite().getId());
+                ps.setString(2,lemma.getLemma());
+                ps.setInt(3,lemma.getFrequency());
+                return ps;
+            }, keyHolder);
+            Integer key = keyHolder.getKey().intValue();
+            lemma.setId(key);
         }
-        entityManager.flush();
-        entityManager.clear();
-        System.out.println("Сохранение лемм произошло");
         return lemmaList;
     }
+
+
 }

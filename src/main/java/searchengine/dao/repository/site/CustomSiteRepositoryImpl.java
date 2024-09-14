@@ -27,14 +27,13 @@ public class CustomSiteRepositoryImpl implements CustomSiteRepository {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Site> query = cb.createQuery(Site.class);
         Root<Site> root = query.from(Site.class);
-
-//        EntityGraph<?> graph = entityManager.getEntityGraph("Site.withAllPages");
+        query.where(createPredicate(cb,root,names));
 
         TypedQuery<Site> finalQuery = entityManager.createQuery(query);
+//        EntityGraph<?> graph = entityManager.getEntityGraph("Site.withAllPages");
 
 //        finalQuery.setHint("jakarta.persistence.loadgraph",graph);
 
-        query.where(createPredicate(cb,root,names));
 
         return finalQuery.getResultList();
     }

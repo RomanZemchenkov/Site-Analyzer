@@ -1,4 +1,4 @@
-package searchengine.services.searcher.indexing;
+package searchengine.services.searcher.analyzer;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

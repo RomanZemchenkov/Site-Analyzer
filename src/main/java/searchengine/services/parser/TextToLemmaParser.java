@@ -3,7 +3,7 @@ package searchengine.services.parser;
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.english.EnglishLuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
-import searchengine.services.searcher.indexing.PageAnalyzer;
+import org.jsoup.Jsoup;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ public class TextToLemmaParser {
 
 
     public HashMap<String, Integer> parse(String text) {
-        String clearText = clearText(text);
+        String clearText = parseToTextWithoutTeg(text);
         for(String language : LANGUAGES){
             switch (language){
                 case "Russian" -> russianLanguageAnalyzer(clearText);
@@ -30,10 +30,6 @@ public class TextToLemmaParser {
             }
         }
         return words;
-    }
-
-    public String clearText(String text) {
-        return PageAnalyzer.parseToText(text);
     }
 
     private void russianLanguageAnalyzer(String text){
@@ -103,6 +99,10 @@ public class TextToLemmaParser {
                 .replaceAll(regex," ")
                 .trim()
                 .split("\\s+");
+    }
+
+    private String parseToTextWithoutTeg(String htmlText) {
+        return Jsoup.parse(htmlText).text();
     }
 
 

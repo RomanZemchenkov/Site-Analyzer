@@ -1,4 +1,4 @@
-package searchengine.services.searcher.indexing;
+package searchengine.services.searcher.analyzer;
 
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
@@ -13,11 +13,13 @@ import searchengine.services.searcher.entity.NormalResponse;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 
 public class PageAnalyzer {
 
     private final String mainUrl;
+    private static final Pattern INVALID_EXTENSIONS = Pattern.compile("\\.(sql|zip|pdf|jpg|png|jpeg)$", Pattern.CASE_INSENSITIVE);
 
     public PageAnalyzer(String mainUrl) {
         this.mainUrl = mainUrl;
@@ -25,10 +27,6 @@ public class PageAnalyzer {
 
     public HttpResponseEntity searchLink(String url) {
         return createConnect(url);
-    }
-
-    public static String parseToText(String htmlText) {
-        return Jsoup.parse(htmlText).text();
     }
 
     private HttpResponseEntity createConnect(String url) {
@@ -68,9 +66,7 @@ public class PageAnalyzer {
         for (Element el : elements) {
             String page = el.attr("abs:href");
             if (isValidUrl(page)) {
-                if(page.endsWith("/")){
-                    page = page.substring(0, page.length() - 1);
-                }
+                page = page.endsWith("/") ? page.substring(0, page.length() - 1) : page;
                 links.add(page);
             }
         }
@@ -84,10 +80,7 @@ public class PageAnalyzer {
     private boolean isValidUrl(String url) {
         return !url.isEmpty()
                && !url.contains("#")
-               && !url.contains(".sql")
-               && !url.contains(".zip")
-               && !url.contains(".pdf")
-               && !url.contains(".jpg")
+               && !INVALID_EXTENSIONS.matcher(url).find()
                && url.startsWith(mainUrl);
     }
 }

@@ -7,4 +7,5 @@ import java.util.List;
 public interface CustomIndexRepository {
 
     void createBatch(List<Index> indexList);
+
 }

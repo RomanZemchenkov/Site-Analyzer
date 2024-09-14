@@ -35,7 +35,7 @@ public class Lemma implements BaseEntity<Integer>{
     private Site site;
 
     @JsonManagedReference("lemma_index")
-    @OneToMany(mappedBy = "lemma", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "lemma", fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE})
     private List<Index> indexes = new ArrayList<>();
 
     public Lemma(){}
@@ -47,6 +47,14 @@ public class Lemma implements BaseEntity<Integer>{
     }
 
     public Lemma(String lemma, Integer frequency, Site site) {
+        this.lemma = lemma;
+        this.frequency = frequency;
+        this.site = site;
+        site.getLemmas().add(this);
+    }
+
+    public Lemma(Integer id, String lemma, Integer frequency, Site site) {
+        this.id = id;
         this.lemma = lemma;
         this.frequency = frequency;
         this.site = site;
