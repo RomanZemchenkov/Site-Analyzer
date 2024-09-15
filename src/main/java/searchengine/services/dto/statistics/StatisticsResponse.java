@@ -1,9 +1,17 @@
 package searchengine.services.dto.statistics;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.ToString;
 
-@Data
+@Getter
+@ToString
 public class StatisticsResponse {
-    private boolean result;
-    private StatisticsData statistics;
+
+    private final boolean result;
+    private final StatisticsData statistics;
+
+    public StatisticsResponse(boolean result, StatisticsData statistics) {
+        this.result = result;
+        this.statistics = statistics;
+    }
 }

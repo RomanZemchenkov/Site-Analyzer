@@ -9,6 +9,7 @@ import searchengine.dao.model.Site;
 import searchengine.dao.repository.PageRepository;
 import searchengine.dao.repository.site.SiteRepository;
 import searchengine.dao.repository.lemma.LemmaRepository;
+import searchengine.dao.repository.statistic.StatisticRepository;
 import searchengine.services.service.IndexService;
 import searchengine.services.searcher.analyzer.Indexing;
 import searchengine.services.service.LemmaService;
@@ -32,39 +33,31 @@ public class IndexingAndLemmaService {
     private final LemmaService lemmaService;
     private final LemmaRepository lemmaRepository;
     private final IndexService indexService;
+    private final StatisticRepository statisticRepository;
 
 
     public void startIndexingAndCreateLemma() {
         indexingService.startIndexing();
         System.out.println("Индексация и запись окончена");
         List<Site> allSites = getAllSites();
-        List<List<Lemma>> lemmas = lemmasCreate(allSites);
-        /*
-        По какой-то причине, если ставить Propagation.REQUIRES_NEW - не все леммы получают свой id
-        Если же убрать и использовать, получается, обычную реализацию, которая, вроде как, использует существующую транзацию
-        всё будет отлично.
-        ---
-        Отбой. К сожалению, это работало только один день и я не понимаю, с чем это связано :с
-         */
+        List<List<Lemma>> lemmas = lemmaCreate(allSites);
+
         for (List<Lemma> lemmaList : lemmas) {
             lemmaService.createBatch(lemmaList);
         }
-        /*
-        Этот метод специально сделан для того, чтобы дать всем лемма id
-        Очень хотелось бы его убрать, но я не понимаю, что я не так делаю при сохранении.
-         */
-        GlobalVariables.pageAndLemmasWithCount.forEach((Page p, HashMap<Lemma, Integer> map) -> {
+
+
+        GlobalVariables.PAGE_AND_LEMMAS_WITH_COUNT.forEach((Page p, HashMap<Lemma, Integer> map) -> {
             for (Map.Entry<Lemma, Integer> entry : map.entrySet()) {
                 Lemma lemma = entry.getKey();
                 if (lemma.getId() == null) {
+                    lemmaRepository.saveAndFlush(lemma);
                     System.out.println(lemma);
-                    lemmaRepository.save(lemma);
                 }
             }
         });
 
-        indexService.createIndex();
-        GlobalVariables.pageAndLemmasWithCount.clear();
+        indexCreate();
     }
 
 
@@ -75,7 +68,7 @@ public class IndexingAndLemmaService {
 
         LemmaCreatorTask task = taskCreate(site, List.of(savedPage));
         ExecutorService threadPool = Executors.newCachedThreadPool();
-        List<Lemma> results = lemmasCreate(threadPool, task);
+        List<Lemma> results = lemmaCreate(threadPool, task);
 
         threadPool.shutdown();
 
@@ -87,12 +80,11 @@ public class IndexingAndLemmaService {
 
         lemmaService.createBatch(results);
 
-        indexService.createIndex();
-        GlobalVariables.pageAndLemmasWithCount.clear();
-
+        indexCreate();
     }
 
-    private List<List<Lemma>> lemmasCreate(List<Site> allSites) {
+    private List<List<Lemma>> lemmaCreate(List<Site> allSites) {
+        GlobalVariables.LEMMA_CREATING_STARTED = true;
         ExecutorService threadPool = Executors.newCachedThreadPool();
         List<LemmaCreatorTask> taskList = new ArrayList<>();
         for (Site site : allSites) {
@@ -102,7 +94,7 @@ public class IndexingAndLemmaService {
 
         List<List<Lemma>> results = new ArrayList<>();
         for (LemmaCreatorTask task : taskList) {
-            results.add(lemmasCreate(threadPool, task));
+            results.add(lemmaCreate(threadPool, task));
         }
 
         threadPool.shutdown();
@@ -115,7 +107,7 @@ public class IndexingAndLemmaService {
         return results;
     }
 
-    private List<Lemma> lemmasCreate(ExecutorService threadPool, LemmaCreatorTask task) {
+    private List<Lemma> lemmaCreate(ExecutorService threadPool, LemmaCreatorTask task) {
         List<Lemma> lemmaList = new ArrayList<>();
         threadPool.submit(() -> {
             ForkJoinPool forkJoinPool = new ForkJoinPool();
@@ -131,6 +123,17 @@ public class IndexingAndLemmaService {
         LemmaCreatorContext lemmaCreatorContext = new LemmaCreatorContext(site,
                 new ConcurrentLinkedDeque<>(pages), factory, new ConcurrentHashMap<>());
         return factory.createTask(lemmaCreatorContext);
+    }
+
+    private void indexCreate(){
+        GlobalVariables.INDEX_CREATING_STARTED = true;
+        GlobalVariables.LEMMA_CREATING_STARTED = false;
+
+        indexService.createIndex();
+        statisticRepository.writeStatistics();
+        GlobalVariables.INDEX_CREATING_STARTED = false;
+        GlobalVariables.PAGE_AND_LEMMAS_WITH_COUNT.clear();
+        GlobalVariables.COUNT_OF_LEMMAS.set(0);
     }
 
 

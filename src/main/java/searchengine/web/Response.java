@@ -1,4 +1,4 @@
-package searchengine.controllers;
+package searchengine.web;
 
 import lombok.Getter;
 

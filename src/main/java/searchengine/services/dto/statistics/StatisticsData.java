@@ -1,11 +1,16 @@
 package searchengine.services.dto.statistics;
 
-import lombok.Data;
+import lombok.Getter;
 
 import java.util.List;
 
-@Data
+@Getter
 public class StatisticsData {
-    private TotalStatistics total;
-    private List<DetailedStatisticsItem> detailed;
+    private final TotalStatistics total;
+    private final List<DetailedStatisticsItem> detailed;
+
+    public StatisticsData(TotalStatistics total, List<DetailedStatisticsItem> detailed) {
+        this.total = total;
+        this.detailed = detailed;
+    }
 }

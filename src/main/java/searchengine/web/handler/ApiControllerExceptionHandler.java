@@ -1,4 +1,4 @@
-package searchengine.controllers.handler;
+package searchengine.web.handler;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

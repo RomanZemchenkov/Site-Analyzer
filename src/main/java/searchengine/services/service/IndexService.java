@@ -2,7 +2,6 @@ package searchengine.services.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.dao.model.Index;
 import searchengine.dao.model.Lemma;
@@ -24,7 +23,7 @@ public class IndexService {
 
     @Transactional()
     public void createIndex(){
-        ConcurrentHashMap<Page, HashMap<Lemma, Integer>> pageAndLemmasWithCount = GlobalVariables.pageAndLemmasWithCount;
+        ConcurrentHashMap<Page, HashMap<Lemma, Integer>> pageAndLemmasWithCount = GlobalVariables.PAGE_AND_LEMMAS_WITH_COUNT;
         List<Index> indexList = new ArrayList<>();
         pageAndLemmasWithCount.forEach(
                 (Page p, HashMap<Lemma, Integer> map) ->

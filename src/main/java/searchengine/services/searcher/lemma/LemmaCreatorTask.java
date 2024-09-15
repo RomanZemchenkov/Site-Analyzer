@@ -49,7 +49,7 @@ public class LemmaCreatorTask extends RecursiveTask<List<Lemma>> {
         ConcurrentLinkedDeque<Page> leftPages = new ConcurrentLinkedDeque<>();
         ConcurrentLinkedDeque<Page> rightPages = new ConcurrentLinkedDeque<>();
         for (int i = 0; i < pageSize; i++) {
-            if (i <= (pageSize / 2)) {
+            if (i < (pageSize / 2)) {
                 Page x = pages.pollFirst();
                 leftPages.add(x);
             } else {

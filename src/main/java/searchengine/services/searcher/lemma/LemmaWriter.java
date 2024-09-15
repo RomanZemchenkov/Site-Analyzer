@@ -9,6 +9,7 @@ import searchengine.services.GlobalVariables;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 public class LemmaWriter {
@@ -24,12 +25,13 @@ public class LemmaWriter {
         String htmlContent = page.getContent();
         HashMap<String, Integer> mapOfLemmas = parser.parse(htmlContent);
 
-        HashMap<Lemma, Integer> lemmaIntegerHashMap = addLemmas(mapOfLemmas, site);
-        GlobalVariables.pageAndLemmasWithCount.put(page,lemmaIntegerHashMap);
+        HashMap<Lemma, Integer> lemmaAndCountsOfOneSite = addLemmas(mapOfLemmas, site);
+        GlobalVariables.PAGE_AND_LEMMAS_WITH_COUNT.put(page, lemmaAndCountsOfOneSite);
+        GlobalVariables.COUNT_OF_LEMMAS.set(lemmasAndCounts.size());
     }
 
     private HashMap<Lemma, Integer> addLemmas(HashMap<String, Integer> mapOfLemmas, Site site) {
-        HashMap<Lemma,Integer> lemmasAndCount = new HashMap<>();
+        HashMap<Lemma,Integer> lemmasAndCountsOfOneSite = new HashMap<>();
         for (Map.Entry<String, Integer> entry : mapOfLemmas.entrySet()) {
             String lemma = entry.getKey();
             int countOfLemma = entry.getValue();
@@ -43,9 +45,9 @@ public class LemmaWriter {
                 }
             }
             lemmasAndCounts.put(saveLemma, lemmasAndCounts.getOrDefault(saveLemma, 0) + 1);
-            lemmasAndCount.put(saveLemma,countOfLemma);
+            lemmasAndCountsOfOneSite.put(saveLemma,countOfLemma);
         }
-        return lemmasAndCount;
+        return lemmasAndCountsOfOneSite;
     }
 
  //    private HashMap<Lemma, Integer> addLemmas(HashMap<String, Integer> mapOfLemmas, Site site) {

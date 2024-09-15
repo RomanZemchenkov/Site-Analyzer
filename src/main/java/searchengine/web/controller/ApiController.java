@@ -1,4 +1,4 @@
-package searchengine.controllers;
+package searchengine.web.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -7,8 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import searchengine.services.searcher.analyzer.Indexing;
 import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.dto.statistics.StatisticsResponse;
-import searchengine.services.StatisticsService;
 import searchengine.services.IndexingAndLemmaService;
+import searchengine.services.service.StatisticsService;
+import searchengine.web.Response;
 
 import static searchengine.services.GlobalVariables.INDEXING_STARTED;
 
@@ -24,7 +25,7 @@ public class ApiController {
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
-        return ResponseEntity.ok(statisticsService.getStatistics());
+        return ResponseEntity.ok(statisticsService.getTotalStatistic());
     }
 
     @GetMapping("/startIndexing")

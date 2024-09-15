@@ -15,7 +15,7 @@ import java.util.List;
 @Table(name = "site")
 @Getter
 @Setter
-@ToString(exclude = {"pages", "lemmas"})
+@ToString(exclude = {"pages", "lemmas", "statistic"})
 @EqualsAndHashCode(of = {"url", "name"})
 @NamedEntityGraph(
         name = "Site.withAllPages",
@@ -46,6 +46,9 @@ public class Site implements BaseEntity<Integer> {
 
     @Column(name = "name")
     private String name;
+
+    @OneToOne(mappedBy = "site",fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE})
+    private Statistic statistic;
 
     @OneToMany(mappedBy = "site", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Page> pages = new ArrayList<>();

@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface LemmaRepository extends JpaRepository<Lemma, Integer>, CustomLemmaRepository {
 
     List<Lemma> findAllBySiteId(Integer siteId);
+
 }
