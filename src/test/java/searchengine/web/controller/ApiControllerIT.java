@@ -1,9 +1,12 @@
-package searchengine.controller;
+package searchengine.web.controller;
 
 import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +17,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import searchengine.BaseTest;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -165,5 +169,62 @@ public class ApiControllerIT extends BaseTest {
         actions.andExpect(status().isConflict())
                 .andExpect(jsonPath("$.result",Matchers.is("false")))
                 .andExpect(jsonPath("$.message", Matchers.is("Данная страница находится за пределами сайтов, указанных в конфигурационном файле.")));
+    }
+
+    @Test
+    @DisplayName("Testing the successful statistics create")
+    void successfulStatisticsCreate() throws Exception {
+        mock.perform(get("/api/startIndexing"));
+
+        ResultActions actions = mock.perform(get("/api/statistics"));
+
+        actions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.result",Matchers.is(true)))
+                .andExpect(jsonPath("$.statistics",Matchers.notNullValue()))
+                .andExpect(jsonPath("$.statistics.total",Matchers.notNullValue()))
+                .andExpect(jsonPath("$.statistics.total.sites",Matchers.is(1)))
+                .andExpect(jsonPath("$.statistics.total.pages",Matchers.is(25)))
+                .andExpect(jsonPath("$.statistics.total.lemmas",Matchers.is(2732)));
+    }
+
+    @ParameterizedTest
+    @DisplayName("Testing the statistics response while indexing works")
+    @MethodSource("argumentsForStatisticsResponseWhileIndexingWorks")
+    void statisticsResponseWhileIndexingWorks(boolean expectedIndexing, long timeSleep) throws Exception {
+        Thread indexingThread = new Thread(() -> {
+            try {
+                mock.perform(get("/api/startIndexing"));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        Thread statisticsThread = new Thread(() -> {
+            try {
+                ResultActions actions = mock.perform(get("/api/statistics"));
+                actions.andExpect(status().isOk())
+                        .andExpect(jsonPath("$.result",Matchers.is(true)))
+                        .andExpect(jsonPath("$.statistics",Matchers.notNullValue()))
+                        .andExpect(jsonPath("$.statistics.total",Matchers.notNullValue()))
+                        .andExpect(jsonPath("$.statistics.total.indexing",Matchers.is(expectedIndexing)));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        indexingThread.start();
+        Thread.sleep(timeSleep);
+        statisticsThread.start();
+
+        indexingThread.join();
+        statisticsThread.join();
+
+    }
+
+    static Stream<Arguments> argumentsForStatisticsResponseWhileIndexingWorks(){
+        return Stream.of(
+                Arguments.of(true,1000L),
+                Arguments.of(false,3000L)
+        );
     }
 }

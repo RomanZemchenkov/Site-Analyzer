@@ -66,10 +66,10 @@ public class SiteAnalyzerTask extends RecursiveAction {
         return availablePaths;
     }
 
-    private boolean hasAlreadyExistPath(String path){
+    private boolean hasAlreadyExistPath(String path) {
         List<String> usePages = useUrlsSet.stream().toList();
-        for(String usePath : usePages){
-            if(path.equals(usePath)){
+        for (String usePath : usePages) {
+            if (path.equals(usePath)) {
                 return false;
             }
         }

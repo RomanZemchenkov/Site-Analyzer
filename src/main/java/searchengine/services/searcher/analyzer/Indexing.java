@@ -105,7 +105,7 @@ public class Indexing {
         }
         PageAnalyzer analyzer = new PageAnalyzer(pageUrl);
         HttpResponseEntity response = analyzer.searchLink(pageUrl);
-        CreatePageWithMainSiteUrlDto page = new CreatePageWithMainSiteUrlDto(siteUrl,siteName, pageUrl, String.valueOf(response.getStatusCode()), response.getContent());
+        CreatePageWithMainSiteUrlDto page = new CreatePageWithMainSiteUrlDto(siteUrl, siteName, pageUrl, String.valueOf(response.getStatusCode()), response.getContent());
         CreatedPageInfoDto infoDto = pageService.createPage(page);
         infoDto.getSite().setStatus(Status.INDEXED);
         return infoDto;
@@ -118,6 +118,13 @@ public class Indexing {
             forkJoinPool.invoke(task);
         } finally {
             forkJoinPool.shutdown();
+            try {
+                if (!forkJoinPool.awaitTermination(1, TimeUnit.HOURS)) {
+                    forkJoinPool.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                forkJoinPool.shutdownNow();
+            }
             if (!context.isIndexingStopFlag()) {
                 task.updateSiteState(Status.INDEXED.toString());
             }
@@ -125,6 +132,7 @@ public class Indexing {
     }
 
     private void createContext() {
+        System.out.println("Контекст создаётся начало");
         contexts = new ArrayList<>();
 
         for (Map.Entry<String, String> entry : namesAndSites.entrySet()) {
@@ -137,8 +145,9 @@ public class Indexing {
             ParseContext context = new ParseContext(siteId, name, url, factory);
             contexts.add(context);
         }
-    }
+        System.out.println("Контекст создаётся конец");
 
+    }
 
 
 }

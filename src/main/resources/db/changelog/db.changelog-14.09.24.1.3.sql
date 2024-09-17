@@ -3,7 +3,7 @@
 --changeset roman:1
 CREATE TABLE statistic
 (
-    id BIGINT PRIMARY KEY REFERENCES site(id) ON DELETE CASCADE,
+    id BIGINT PRIMARY KEY REFERENCES site(id),
     pages BIGINT,
     lemmas BIGINT
 );

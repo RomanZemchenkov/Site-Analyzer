@@ -74,8 +74,8 @@ public class CustomStatisticRepositoryImpl implements CustomStatisticRepository 
         Statistic statistic;
         if(mayBeStatistic.isPresent()){
             statistic = mayBeStatistic.get();
-            statistic.setCountOfLemmas(countOfPages);
-            statistic.setCountOfPages(countOfLemmas);
+            statistic.setCountOfLemmas(countOfLemmas);
+            statistic.setCountOfPages(countOfPages);
             entityManager.merge(statistic);
         } else {
             statistic = new Statistic(countOfPages,countOfLemmas,site);

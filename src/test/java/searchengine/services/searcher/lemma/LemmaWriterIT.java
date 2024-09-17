@@ -7,7 +7,7 @@ import searchengine.BaseTest;
 import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
-import searchengine.dao.repository.PageRepository;
+import searchengine.dao.repository.page.PageRepository;
 import searchengine.dao.repository.site.SiteRepository;
 import searchengine.services.searcher.analyzer.Indexing;
 

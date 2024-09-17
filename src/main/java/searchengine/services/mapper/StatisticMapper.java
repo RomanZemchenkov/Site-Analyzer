@@ -21,7 +21,13 @@ public interface StatisticMapper {
         String lastError = tuple.get(3, String.class);
         OffsetDateTime statusTime = tuple.get(4, OffsetDateTime.class);
         Long countOfPages = tuple.get(5, Long.class);
+        if(countOfPages == null){
+            countOfPages = 0L;
+        }
         Long countOfLemmas = tuple.get(6, Long.class);
+        if(countOfLemmas == null){
+            countOfLemmas = 0L;
+        }
 
         DetailedStatisticsItem statisticsItem;
         String statusTimeByString = statusTime.format(formatter);

@@ -10,7 +10,7 @@ import searchengine.BaseTest;
 import searchengine.dao.model.*;
 import searchengine.dao.repository.index.IndexRepository;
 import searchengine.dao.repository.lemma.LemmaRepository;
-import searchengine.dao.repository.site.SiteRepository;
+import searchengine.dao.repository.page.PageRepository;
 
 import java.util.ArrayList;
 import java.util.List;

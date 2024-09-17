@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 import searchengine.dao.model.Status;
-import searchengine.dao.repository.PageRepository;
+import searchengine.dao.repository.page.PageRepository;
 import searchengine.dao.repository.site.SiteRepository;
 import searchengine.services.dto.page.CreatePageDto;
 import searchengine.services.dto.page.CreatePageWithMainSiteUrlDto;

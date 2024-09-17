@@ -15,7 +15,7 @@ CREATE TABLE site
 CREATE TABLE page
 (
     id SERIAL PRIMARY KEY,
-    site_id INTEGER REFERENCES site(id) ON DELETE CASCADE NOT NULL,
+    site_id INTEGER REFERENCES site(id),
     path TEXT NOT NULL,
     code INTEGER NOT NULL,
     content TEXT NOT NULL

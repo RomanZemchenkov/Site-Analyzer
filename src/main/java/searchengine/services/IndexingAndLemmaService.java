@@ -6,9 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
-import searchengine.dao.repository.PageRepository;
+import searchengine.dao.repository.page.PageRepository;
 import searchengine.dao.repository.site.SiteRepository;
-import searchengine.dao.repository.lemma.LemmaRepository;
 import searchengine.dao.repository.statistic.StatisticRepository;
 import searchengine.services.service.IndexService;
 import searchengine.services.searcher.analyzer.Indexing;
@@ -31,7 +30,6 @@ public class IndexingAndLemmaService {
     private final PageRepository pageRepository;
     private final LemmaCreatorTaskFactory factory;
     private final LemmaService lemmaService;
-    private final LemmaRepository lemmaRepository;
     private final IndexService indexService;
     private final StatisticRepository statisticRepository;
 
@@ -40,22 +38,36 @@ public class IndexingAndLemmaService {
         indexingService.startIndexing();
         System.out.println("Индексация и запись окончена");
         List<Site> allSites = getAllSites();
-        List<List<Lemma>> lemmas = lemmaCreate(allSites);
+        List<List<Lemma>> lemmas = lemmaListCreate(allSites);
 
+        /*
+        По какой-то причине, если ставить Propagation.REQUIRES_NEW - не все леммы получают свой id
+        Если же убрать и использовать, получается, обычную реализацию, которая, вроде как, использует существующую транзацию
+        всё будет отлично.
+        ---
+        Отбой. К сожалению, это работало только один день и я не понимаю, с чем это связано :с
+         */
         for (List<Lemma> lemmaList : lemmas) {
+            System.out.println("Количество лемм  перед сохранением: " + lemmaList.size());
             lemmaService.createBatch(lemmaList);
         }
+        System.out.println("Леммы созданы и сохранены");
+        /*
+        Этот метод специально сделан для того, чтобы дать всем лемма id
+        Очень хотелось бы его убрать, но я не понимаю, что я не так делаю при сохранении.
+        ---
+        Заменил его на получение уже существующей леммы из базы данные в классе IndexService
+         */
 
-
-        GlobalVariables.PAGE_AND_LEMMAS_WITH_COUNT.forEach((Page p, HashMap<Lemma, Integer> map) -> {
-            for (Map.Entry<Lemma, Integer> entry : map.entrySet()) {
-                Lemma lemma = entry.getKey();
-                if (lemma.getId() == null) {
-                    lemmaRepository.saveAndFlush(lemma);
-                    System.out.println(lemma);
-                }
-            }
-        });
+//        GlobalVariables.PAGE_AND_LEMMAS_WITH_COUNT.forEach((Page p, HashMap<Lemma, Integer> map) -> {
+//            for (Map.Entry<Lemma, Integer> entry : map.entrySet()) {
+//                Lemma lemma = entry.getKey();
+//                if (lemma.getId() == null) {
+//                    lemmaRepository.saveAndFlush(lemma);
+//                    System.out.println(lemma);
+//                }
+//            }
+//        });
 
         indexCreate();
     }
@@ -64,59 +76,66 @@ public class IndexingAndLemmaService {
     public void startIndexingAndCreateLemmaForOnePage(FindPageDto dto) {
         CreatedPageInfoDto infoDto = indexingService.onePageIndexing(dto);
         Site site = infoDto.getSite();
-        Page savedPage = infoDto.getSavedPage();
+        Page page = infoDto.getSavedPage();
 
-        LemmaCreatorTask task = taskCreate(site, List.of(savedPage));
-        ExecutorService threadPool = Executors.newCachedThreadPool();
-        List<Lemma> results = lemmaCreate(threadPool, task);
+        List<Lemma> lemmas = lemmaCreate(site, List.of(page));
 
-        threadPool.shutdown();
-
-        try {
-            threadPool.awaitTermination(100L, TimeUnit.MINUTES);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        lemmaService.createBatch(results);
+        lemmaService.createBatch(lemmas);
 
         indexCreate();
     }
 
-    private List<List<Lemma>> lemmaCreate(List<Site> allSites) {
+    private List<List<Lemma>> lemmaListCreate(List<Site> allSites) {
         GlobalVariables.LEMMA_CREATING_STARTED = true;
-        ExecutorService threadPool = Executors.newCachedThreadPool();
-        List<LemmaCreatorTask> taskList = new ArrayList<>();
+
+
+        List<List<Lemma>> resultsLemmas = new ArrayList<>();
+
         for (Site site : allSites) {
-            LemmaCreatorTask task = taskCreate(site, site.getPages());
-            taskList.add(task);
+            List<Lemma> lemmaList = lemmaCreate(site, site.getPages());
+            resultsLemmas.add(lemmaList);
         }
 
-        List<List<Lemma>> results = new ArrayList<>();
-        for (LemmaCreatorTask task : taskList) {
-            results.add(lemmaCreate(threadPool, task));
+        return resultsLemmas;
+    }
+
+    private List<Lemma> lemmaCreate(Site site, List<Page> pages) {
+        GlobalVariables.LEMMA_CREATING_STARTED = true;
+        ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+        LemmaCreatorTask task = taskCreate(site, pages);
+
+        Future<List<Lemma>> futureResult = futureLemmaCreate(threadPool, task);
+
+        List<Lemma> lemmasList;
+        try {
+            lemmasList = futureResult.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Ошибка при создании лемм", e);
         }
 
         threadPool.shutdown();
 
         try {
-            threadPool.awaitTermination(100L, TimeUnit.MINUTES);
+            if (!threadPool.awaitTermination(100L, TimeUnit.MINUTES)) {
+                System.err.println("Потоки не завершились за отведенное время");
+            }
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Ожидание завершения потоков было прервано", e);
         }
-        return results;
+
+        return lemmasList;
     }
 
-    private List<Lemma> lemmaCreate(ExecutorService threadPool, LemmaCreatorTask task) {
-        List<Lemma> lemmaList = new ArrayList<>();
-        threadPool.submit(() -> {
+    private Future<List<Lemma>> futureLemmaCreate(ExecutorService threadPool, LemmaCreatorTask task) {
+        return threadPool.submit(() -> {
             ForkJoinPool forkJoinPool = new ForkJoinPool();
-            lemmaList.addAll(forkJoinPool.invoke(task));
+            List<Lemma> lemmaList = forkJoinPool.invoke(task);
             System.out.println("Количество лемм для сайта: " + lemmaList.size());
-
             forkJoinPool.shutdown();
+            return lemmaList;
         });
-        return lemmaList;
     }
 
     private LemmaCreatorTask taskCreate(Site site, List<Page> pages) {
@@ -125,13 +144,14 @@ public class IndexingAndLemmaService {
         return factory.createTask(lemmaCreatorContext);
     }
 
-    private void indexCreate(){
+    private void indexCreate() {
         GlobalVariables.INDEX_CREATING_STARTED = true;
         GlobalVariables.LEMMA_CREATING_STARTED = false;
 
         indexService.createIndex();
         statisticRepository.writeStatistics();
         GlobalVariables.INDEX_CREATING_STARTED = false;
+        System.out.println("Очистка информации");
         GlobalVariables.PAGE_AND_LEMMAS_WITH_COUNT.clear();
         GlobalVariables.COUNT_OF_LEMMAS.set(0);
     }

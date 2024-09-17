@@ -31,7 +31,8 @@ public class ApiController {
     @GetMapping("/startIndexing")
     public ResponseEntity<Response> startIndexing(){
         if(!INDEXING_STARTED){
-            indexingAndLemmaService.startIndexingAndCreateLemma();
+
+            time(() -> indexingAndLemmaService.startIndexingAndCreateLemma());
             return new ResponseEntity<>(new Response("true"), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(new Response("false","Индексация уже запущена."),HttpStatus.CONFLICT);
@@ -52,5 +53,12 @@ public class ApiController {
     public ResponseEntity<Response> indexPage(@RequestBody FindPageDto dto){
         indexingAndLemmaService.startIndexingAndCreateLemmaForOnePage(dto);
         return new ResponseEntity<>(new Response("true"),HttpStatus.OK);
+    }
+
+    static void time(Runnable runnable){
+        long start = System.currentTimeMillis();
+        runnable.run();
+        long finish = System.currentTimeMillis();
+        System.out.println("Индексация отработала за: " + (finish - start));
     }
 }

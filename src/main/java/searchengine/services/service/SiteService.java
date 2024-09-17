@@ -24,17 +24,19 @@ public class SiteService {
 
     @Transactional
     public Integer createSite(CreateSiteDto dto){
+        System.out.println("Новый сайт создан или удалён начало");
         String name = dto.getName();
 
         Optional<Site> mayBeSite = repository.findSiteByName(name);
 
-        mayBeSite.ifPresent(repository::delete);
+        mayBeSite.ifPresent(repository::deleteAllInfoBySite);
 
         Site site = mapper.mapToSite(dto);
         site.setStatus(Status.INDEXING);
         site.setStatusTime(OffsetDateTime.now(ZoneId.systemDefault()));
 
         Site savedSite = repository.saveAndFlush(site);
+        System.out.println("Новый сайт создан или удалён конец");
         return savedSite.getId();
     }
 
@@ -48,4 +50,5 @@ public class SiteService {
 
         repository.saveAndFlush(siteBeforeUpdate);
     }
+
 }
