@@ -51,6 +51,7 @@ public class IndexService {
             Index index = new Index(page, lemma, count);
             indexList.add(index);
         }
+        //Реализовать получение всех сущностей без id батчем, чтобы не делать постоянные запросы к бд
         return indexList;
     }
 }

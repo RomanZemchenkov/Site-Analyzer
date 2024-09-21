@@ -3,6 +3,7 @@ package searchengine.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import searchengine.aop.annotation.LuceneInit;
 import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
@@ -33,7 +34,7 @@ public class IndexingAndLemmaService {
     private final IndexService indexService;
     private final StatisticRepository statisticRepository;
 
-
+    @LuceneInit
     public void startIndexingAndCreateLemma() {
         indexingService.startIndexing();
         System.out.println("Индексация и запись окончена");
@@ -73,6 +74,7 @@ public class IndexingAndLemmaService {
     }
 
 
+    @LuceneInit
     public void startIndexingAndCreateLemmaForOnePage(FindPageDto dto) {
         CreatedPageInfoDto infoDto = indexingService.onePageIndexing(dto);
         Site site = infoDto.getSite();

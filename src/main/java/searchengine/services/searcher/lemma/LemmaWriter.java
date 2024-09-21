@@ -9,7 +9,6 @@ import searchengine.services.GlobalVariables;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 public class LemmaWriter {
@@ -23,14 +22,14 @@ public class LemmaWriter {
     public void createLemma(Page page, Site site) {
         TextToLemmaParser parser = new TextToLemmaParser();
         String htmlContent = page.getContent();
-        HashMap<String, Integer> mapOfLemmas = parser.parse(htmlContent);
+        Map<String, Integer> mapOfLemmas = parser.parse(htmlContent);
 
         HashMap<Lemma, Integer> lemmaAndCountsOfOneSite = addLemmas(mapOfLemmas, site);
         GlobalVariables.PAGE_AND_LEMMAS_WITH_COUNT.put(page, lemmaAndCountsOfOneSite);
         GlobalVariables.COUNT_OF_LEMMAS.set(lemmasAndCounts.size());
     }
 
-    private HashMap<Lemma, Integer> addLemmas(HashMap<String, Integer> mapOfLemmas, Site site) {
+    private HashMap<Lemma, Integer> addLemmas(Map<String, Integer> mapOfLemmas, Site site) {
         HashMap<Lemma,Integer> lemmasAndCountsOfOneSite = new HashMap<>();
         for (Map.Entry<String, Integer> entry : mapOfLemmas.entrySet()) {
             String lemma = entry.getKey();

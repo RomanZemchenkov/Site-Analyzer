@@ -6,6 +6,7 @@ import searchengine.services.searcher.analyzer.PageAnalyzer;
 import searchengine.services.searcher.entity.HttpResponseEntity;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -30,7 +31,7 @@ public class TextToLemmaParserIT {
     @DisplayName("Testing the parsing of the purified Russian text")
     void parseToLemmasTest(){
         TextToLemmaParser parser = new TextToLemmaParser();
-        HashMap<String, Integer> parse = assertDoesNotThrow(() -> parser.parse(TEST_RUSSIAN_CLEAR_TEXT));
+        Map<String, Integer> parse = assertDoesNotThrow(() -> parser.parse(TEST_RUSSIAN_CLEAR_TEXT));
         assertThat(parse).hasSize(12);
     }
 
@@ -43,7 +44,7 @@ public class TextToLemmaParserIT {
             String content = response.getContent();
 
             TextToLemmaParser textToLemmaParser = new TextToLemmaParser();
-            HashMap<String, Integer> result = assertDoesNotThrow(() ->textToLemmaParser.parse(content));
+            Map<String, Integer> result = assertDoesNotThrow(() ->textToLemmaParser.parse(content));
             assertThat(result).hasSize(5715);
         });
     }

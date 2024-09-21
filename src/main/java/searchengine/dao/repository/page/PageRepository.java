@@ -2,6 +2,8 @@ package searchengine.dao.repository.page;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import searchengine.dao.model.Index;
+import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 

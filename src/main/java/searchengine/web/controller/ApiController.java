@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import searchengine.services.dto.SearchParametersDto;
 import searchengine.services.searcher.analyzer.Indexing;
 import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.dto.statistics.StatisticsResponse;
 import searchengine.services.IndexingAndLemmaService;
+import searchengine.services.service.SearchService;
 import searchengine.services.service.StatisticsService;
 import searchengine.web.Response;
 
@@ -21,6 +23,7 @@ public class ApiController {
     private final StatisticsService statisticsService;
     private final Indexing indexingService;
     private final IndexingAndLemmaService indexingAndLemmaService;
+    private final SearchService searchService;
 
 
     @GetMapping("/statistics")
@@ -53,6 +56,16 @@ public class ApiController {
     public ResponseEntity<Response> indexPage(@RequestBody FindPageDto dto){
         indexingAndLemmaService.startIndexingAndCreateLemmaForOnePage(dto);
         return new ResponseEntity<>(new Response("true"),HttpStatus.OK);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> search(@RequestParam(name = "query") String query,
+                                    @RequestParam(name = "limit", required = false) String limit,
+                                    @RequestParam(name = "offset", required = false) String offset,
+                                    @RequestParam(name = "url", required = false) String url){
+        SearchParametersDto searchParametersDto = new SearchParametersDto(query, limit, offset, url);
+        searchService.search(searchParametersDto);
+        return null;
     }
 
     static void time(Runnable runnable){

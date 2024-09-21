@@ -12,9 +12,14 @@ import lombok.ToString;
 @Table(name = "index")
 @Getter
 @Setter
-@ToString(exclude = {"page","lemma"})
+@ToString(exclude = {"page", "lemma"})
 @EqualsAndHashCode(of = "id")
-public class Index implements BaseEntity<Integer>{
+@NamedEntityGraph(
+        name = "Index.withLemma",
+        attributeNodes = {@NamedAttributeNode(value = "lemma")}
+)
+
+public class Index implements BaseEntity<Integer> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +37,8 @@ public class Index implements BaseEntity<Integer>{
     @Column(name = "rank")
     private Float rank;
 
-    public Index(){}
+    public Index() {
+    }
 
     public Index(Page page, Lemma lemma, Float rank) {
         this.page = page;
