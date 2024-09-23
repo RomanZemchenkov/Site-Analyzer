@@ -10,7 +10,7 @@ import java.util.*;
 @NoArgsConstructor
 public class SnippetCreatorImpl implements SnippetCreator {
 
-    private Map<String, List<Integer>> lemmaAndPosition = new HashMap<>();
+    private final Map<String, List<Integer>> lemmaAndPosition = new HashMap<>();
     private static final Set<String> RUSSIAN_PARTICLES_NAMES = Set.of("СОЮЗ", "ПРЕДЛ", "МЕЖД");
     private static final String PUNCTUATION_END = "([.!?])";
     private static final String PUNCTUATION_ALL = "([,:;])";
@@ -26,47 +26,46 @@ public class SnippetCreatorImpl implements SnippetCreator {
 
     public String createSnippet(String context) {
         String textWithoutTeg = parseToClearText(context);
-        List<String> clearText = createWordsAndSymbolsFromText(textWithoutTeg);
-        return createSeveralSnippets(clearText);
+        List<String> wordsAndSymbols = createWordsAndSymbolsFromText(textWithoutTeg);
+
+        SnippetBestPosition bestSnippetRange = findBestSnippetRange(wordsAndSymbols.size());
+        String snippetWithTeg = createSnippetWithPTeg(bestSnippetRange, wordsAndSymbols);
+        return createFinalSnippetView(snippetWithTeg);
     }
 
-    private String parseToClearText(String context){
+    private String parseToClearText(String context) {
         return Jsoup.parse(context).text();
-    }
-
-
-    private String createSeveralSnippets(List<String> textByList) {
-        SnippetBestPosition bestPosition = findBestPosition(textByList.size());
-        String snippet = create(bestPosition, textByList);
-        return createFinalSnippetView(snippet);
     }
 
     private String createFinalSnippetView(String snippet) {
         String snippetStart = snippet.substring(0, snippet.length() / 2);
         String snippetEnd = snippet.substring(snippetStart.length());
-        StringBuilder sb = new StringBuilder();
-        if (snippetStart.startsWith("!") || snippetStart.startsWith(".") || snippetStart.startsWith("?")) {
-            String substring = snippetStart.substring(1);
-            sb.append(substring.trim());
-        } else if (snippetStart.startsWith(":") || snippetStart.startsWith(",") || snippetStart.startsWith(";")) {
-            sb.append("...");
-            sb.append(snippetStart.substring(1));
-        } else {
-            sb.append(snippetStart);
-        }
-        if (snippetEnd.endsWith(":") || snippetEnd.endsWith(",") || snippetEnd.endsWith(";")) {
-            sb.append(snippetEnd, 0, snippet.length() - 1);
-            sb.append("...");
-        } else if(Character.isLetter(snippetEnd.charAt(snippetEnd.length() - 1))){
-            sb.append(snippetEnd);
-            sb.append("...");
-        } else {
-            sb.append(snippetEnd);
-        }
-        return sb.toString();
+
+        return isStartFormatSnippetPart(snippetStart) +
+               isEndFormatSnippetPart(snippetEnd);
     }
 
-    private String create(SnippetBestPosition bestPosition, List<String> textByList) {
+    private String isStartFormatSnippetPart(String snippetPart) {
+        String firstChar = Character.toString(snippetPart.charAt(0));
+        if (firstChar.matches(PUNCTUATION_END)) {
+            return snippetPart.substring(1).trim();
+        } else if (firstChar.matches(PUNCTUATION_ALL)) {
+            return new StringBuilder(snippetPart).insert(0, "...").toString();
+        } else {
+            return snippetPart;
+        }
+    }
+
+    private String isEndFormatSnippetPart(String snippetPart) {
+        String lastChar = Character.toString(snippetPart.charAt(snippetPart.length() - 1));
+        if (lastChar.matches(PUNCTUATION_END)) {
+            return snippetPart;
+        } else {
+            return snippetPart + "...";
+        }
+    }
+
+    private String createSnippetWithPTeg(SnippetBestPosition bestPosition, List<String> textByList) {
         int rarestLemma = bestPosition.getBestPositionRarestLemma();
         SnippetBestRange availableSentenceRange = createAvailableSentence(rarestLemma, textByList);
 
@@ -99,7 +98,7 @@ public class SnippetCreatorImpl implements SnippetCreator {
         return positionsForTeg;
     }
 
-    private SnippetBestPosition findBestPosition(int countOfTextElements) {
+    private SnippetBestPosition findBestSnippetRange(int countOfTextElements) {
         String firstAndRarestLemma = searchedLemmas.get(0);
         List<Integer> positionByFirstAndRarestLemma = findPositionBySearchedLemma(firstAndRarestLemma);
 
@@ -120,25 +119,7 @@ public class SnippetCreatorImpl implements SnippetCreator {
         int left = 0;
         for (int right = 0; right < positionByFirstAndRarestLemma.size(); right++) {
             int currentBestRarestPosition = positionByFirstAndRarestLemma.get(right);
-            int rightCursor = positionByFirstAndRarestLemma.get(right);
-
-            while (rightCursor - positionByFirstAndRarestLemma.get(left) > MAX_SNIPPET_WORDS) {
-                left++;
-            }
-
-            List<Integer> tempPositionRange = new ArrayList<>();
-            Integer leftCursor = positionByFirstAndRarestLemma.get(left);
-            if (leftCursor == rightCursor) {
-                leftCursor = Math.max(0, leftCursor - MAX_SNIPPET_WORDS / 2);
-                rightCursor = Math.min(countOfTextElements, rightCursor + MAX_SNIPPET_WORDS / 2);
-            }
-            for (int position : positionForAnotherLemmas) {
-                if (position >= leftCursor && position <= rightCursor) {
-                    tempPositionRange.add(position);
-                } else if (position > rightCursor) {
-                    break;
-                }
-            }
+            List<Integer> tempPositionRange = noNameMethod(positionByFirstAndRarestLemma, left, countOfTextElements, positionForAnotherLemmas, right);
 
             if (theBestPositionRange.size() < tempPositionRange.size()) {
                 theBestPositionRange = new ArrayList<>(tempPositionRange);
@@ -147,6 +128,31 @@ public class SnippetCreatorImpl implements SnippetCreator {
         }
         positionOfLemmasInSuitableRange = positionForAnotherLemmas;
         return new SnippetBestPosition(bestRarestPosition, theBestPositionRange);
+    }
+
+    private List<Integer> noNameMethod(List<Integer> positionByFirstAndRarestLemma, int left,
+                                       int countOfTextElements,
+                                       List<Integer> positionForAnotherLemmas, int right) {
+        int rightCursor = positionByFirstAndRarestLemma.get(right);
+
+        while (rightCursor - positionByFirstAndRarestLemma.get(left) > MAX_SNIPPET_WORDS) {
+            left++;
+        }
+
+        List<Integer> tempPositionRange = new ArrayList<>();
+        Integer leftCursor = positionByFirstAndRarestLemma.get(left);
+        if (leftCursor == rightCursor) {
+            leftCursor = Math.max(0, leftCursor - MAX_SNIPPET_WORDS / 2);
+            rightCursor = Math.min(countOfTextElements, rightCursor + MAX_SNIPPET_WORDS / 2);
+        }
+        for (int position : positionForAnotherLemmas) {
+            if (position >= leftCursor && position <= rightCursor) {
+                tempPositionRange.add(position);
+            } else if (position > rightCursor) {
+                break;
+            }
+        }
+        return tempPositionRange;
     }
 
 
@@ -260,11 +266,10 @@ public class SnippetCreatorImpl implements SnippetCreator {
             }
         }
         if (!sb.isEmpty()) {
-            isWordOrDigit(sb,wordsAndSymbols,prevLetter,prevDigit,position);
+            isWordOrDigit(sb, wordsAndSymbols, prevLetter, prevDigit, position);
         }
         return wordsAndSymbols;
     }
-
 
 
     private int isWordOrDigit(StringBuilder sb, List<String> wordsAndSymbols, boolean prevLetter, boolean prevDigit, int position) {
@@ -291,7 +296,7 @@ public class SnippetCreatorImpl implements SnippetCreator {
                 lemmaAndPosition.put(mayBeWord, listByWord);
             }
             return word;
-        } catch (Throwable throwable){
+        } catch (Throwable throwable) {
             System.out.println(word);
             throw new RuntimeException(throwable);
         }
