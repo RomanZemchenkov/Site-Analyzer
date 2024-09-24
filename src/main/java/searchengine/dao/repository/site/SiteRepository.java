@@ -1,7 +1,9 @@
 package searchengine.dao.repository.site;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.dao.model.Site;
@@ -21,6 +23,7 @@ public interface SiteRepository extends JpaRepository<Site, Integer>, CustomSite
     Optional<Site> findSiteByUrl(String url);
 
     @EntityGraph(type = EntityGraph.EntityGraphType.LOAD, value = "Site.withAllPages")
+    @NotNull
     List<Site> findAll();
 
 }

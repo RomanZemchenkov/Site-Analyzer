@@ -8,15 +8,19 @@ import lombok.ToString;
 @ToString
 public class ShowPageDto {
 
-    private final String pathToPage;
-    private final String pageTitle;
+    private final String uri;
+    private final String title;
     private final String snippet;
     @Setter
     private String relevance;
+    @Setter
+    private String siteName;
+    @Setter
+    private String site;
 
-    public ShowPageDto(String pathToPage, String pageTitle, String snippet) {
-        this.pathToPage = pathToPage;
-        this.pageTitle = pageTitle;
+    public ShowPageDto(String uri, String title, String snippet) {
+        this.uri = uri;
+        this.title = title;
         this.snippet = snippet;
     }
 }

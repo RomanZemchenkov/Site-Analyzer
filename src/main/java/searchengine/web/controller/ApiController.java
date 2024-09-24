@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.services.dto.SearchParametersDto;
+import searchengine.services.dto.page.ShowPageDto;
 import searchengine.services.searcher.analyzer.Indexing;
 import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.dto.statistics.StatisticsResponse;
@@ -12,6 +13,11 @@ import searchengine.services.IndexingAndLemmaService;
 import searchengine.services.service.SearchService;
 import searchengine.services.service.StatisticsService;
 import searchengine.web.Response;
+import searchengine.web.entity.SearchResponse;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static searchengine.services.GlobalVariables.INDEXING_STARTED;
 
@@ -59,13 +65,21 @@ public class ApiController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> search(@RequestParam(name = "query") String query,
-                                    @RequestParam(name = "limit", required = false) String limit,
-                                    @RequestParam(name = "offset", required = false) String offset,
-                                    @RequestParam(name = "url", required = false) String url){
+    public ResponseEntity<SearchResponse> search(@RequestParam(name = "query") String query,
+                                                 @RequestParam(name = "limit", required = false, defaultValue = "20") String limit,
+                                                 @RequestParam(name = "offset", required = false, defaultValue = "0") String offset,
+                                                 @RequestParam(name = "url", required = false) String url){
         SearchParametersDto searchParametersDto = new SearchParametersDto(query, limit, offset, url);
-        searchService.search(searchParametersDto);
-        return null;
+        System.out.println("Поиск запущен");
+        HashMap<Integer,List<ShowPageDto>> searchResult = searchService.search(searchParametersDto);
+        int countOfPages = 0;
+        for(Map.Entry<Integer,List<ShowPageDto>> entry : searchResult.entrySet()){
+            countOfPages += entry.getValue().size();
+        }
+        System.out.println("Поиск закончен");
+        List<ShowPageDto> offsetList = searchResult.getOrDefault(Integer.parseInt(offset),searchResult.get(searchResult.size() - 1));
+        SearchResponse searchResponse = new SearchResponse(true, countOfPages, offsetList);
+        return new ResponseEntity<>(searchResponse,HttpStatus.OK);
     }
 
     static void time(Runnable runnable){

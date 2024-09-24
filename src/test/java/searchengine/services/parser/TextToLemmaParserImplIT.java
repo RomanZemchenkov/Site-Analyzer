@@ -2,16 +2,16 @@ package searchengine.services.parser;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import searchengine.services.searcher.analyzer.PageAnalyzer;
+import searchengine.services.parser.lemma.TextToLemmaParserImpl;
+import searchengine.services.searcher.analyzer.PageAnalyzerImpl;
 import searchengine.services.searcher.entity.HttpResponseEntity;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-public class TextToLemmaParserIT {
+public class TextToLemmaParserImplIT {
 
     private static final String TEST_ENGLISH_CLEAR_TEXT = "Reading is an important part of my life. I love immersing myself into an interesting story for an hour or two. For me a book is not just a source of information, it is a world I can visit.\n" +
                                                   "\n" +
@@ -30,7 +30,7 @@ public class TextToLemmaParserIT {
     @Test
     @DisplayName("Testing the parsing of the purified Russian text")
     void parseToLemmasTest(){
-        TextToLemmaParser parser = new TextToLemmaParser();
+        TextToLemmaParserImpl parser = new TextToLemmaParserImpl();
         Map<String, Integer> parse = assertDoesNotThrow(() -> parser.parse(TEST_RUSSIAN_CLEAR_TEXT));
         assertThat(parse).hasSize(12);
     }
@@ -39,12 +39,12 @@ public class TextToLemmaParserIT {
     @DisplayName("Тестирование полного функционала")
     void fullParseTest(){
         time(() -> {
-            PageAnalyzer pageAnalyzer = new PageAnalyzer("https://ru.wikipedia.org/wiki/Хронология_событий_сентября_—_октября_1993_года_в_Москве");
-            HttpResponseEntity response = pageAnalyzer.searchLink("https://ru.wikipedia.org/wiki/Хронология_событий_сентября_—_октября_1993_года_в_Москве");
+            PageAnalyzerImpl pageAnalyzerImpl = new PageAnalyzerImpl();
+            HttpResponseEntity response = pageAnalyzerImpl.searchLink("https://ru.wikipedia.org/wiki/Хронология_событий_сентября_—_октября_1993_года_в_Москве","https://ru.wikipedia.org/wiki/Хронология_событий_сентября_—_октября_1993_года_в_Москве");
             String content = response.getContent();
 
-            TextToLemmaParser textToLemmaParser = new TextToLemmaParser();
-            Map<String, Integer> result = assertDoesNotThrow(() ->textToLemmaParser.parse(content));
+            TextToLemmaParserImpl textToLemmaParserImpl = new TextToLemmaParserImpl();
+            Map<String, Integer> result = assertDoesNotThrow(() -> textToLemmaParserImpl.parse(content));
             assertThat(result).hasSize(5715);
         });
     }

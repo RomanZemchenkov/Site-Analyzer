@@ -1,13 +1,11 @@
 package searchengine.services.service;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
 import searchengine.services.IndexingAndLemmaService;
 import searchengine.services.dto.statistics.DetailedStatisticsItem;
-import searchengine.services.dto.statistics.DetailedStatisticsItemError;
 import searchengine.services.dto.statistics.StatisticsResponse;
 import searchengine.services.dto.statistics.TotalStatistics;
 

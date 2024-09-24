@@ -14,4 +14,13 @@ public class AnnotationPointcut {
 
     @Pointcut(value = "@args(org.springframework.stereotype.Service)")
     public void isServiceAnnotation(){}
+
+    @Pointcut(value = "@annotation(searchengine.aop.annotation.CheckQuery)")
+    public void isCheckQueryAnnotation(){}
+
+    @Pointcut(value = "@annotation(searchengine.aop.annotation.CheckIndexingWork)")
+    public void isCheckIndexingWorkAnnotation(){}
+
+    @Pointcut(value = "@annotation(searchengine.aop.annotation.CheckSiteExist)")
+    public void isCheckSiteExistAnnotation(){}
 }

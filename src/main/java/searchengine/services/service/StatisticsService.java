@@ -11,6 +11,7 @@ import searchengine.services.dto.statistics.*;
 import searchengine.services.mapper.StatisticMapper;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static searchengine.services.GlobalVariables.*;
@@ -29,7 +30,7 @@ public class StatisticsService {
         List<DetailedStatisticsItem> detailedStatisticsItems = readDetailStatistic();
 
         AtomicBoolean result = new AtomicBoolean(true);
-        detailedStatisticsItems.stream().filter(item -> item instanceof DetailedStatisticsItemError)
+        detailedStatisticsItems.stream().filter(Objects::isNull)
                 .findAny().ifPresent(item -> result.set(false));
 
         StatisticsData statisticsData = new StatisticsData(totalStatistics, detailedStatisticsItems);

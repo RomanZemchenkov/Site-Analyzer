@@ -1,19 +1,18 @@
-package searchengine.services.parser;
+package searchengine.services.parser.lemma;
 
 import org.apache.lucene.morphology.LuceneMorphology;
-import org.apache.lucene.morphology.english.EnglishLuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Jsoup;
+import searchengine.services.parser.LuceneMorphologyGiver;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class TextToLemmaParser {
+public class TextToLemmaParserImpl implements TextToLemmaParser{
 
-    private static final String RUSSIAN_LETTERS = "[^а-я\\s]";
+    private static final String RUSSIAN_LETTERS = "[^а-яёЁ\\s]";
     private static final String ENGLISH_LETTERS = "[^a-z\\s]";
     private static final Set<String> RUSSIAN_PARTICLES_NAMES = Set.of("СОЮЗ", "ПРЕДЛ", "МЕЖД");
     private static final Set<String> ENGLISH_PARTICLES_NAMES = Set.of("NOUN", "PART", "ADJECTIVE");
@@ -28,10 +27,6 @@ public class TextToLemmaParser {
                     Map<String, Integer> russianWordsByLemmas = russianLanguageAnalyzer(clearText);
                     wordsByLemmas.putAll(russianWordsByLemmas);
                 }
-                case "English" -> {
-                    Map<String, Integer> englishWordsByLemmas = englishLanguageAnalyzer(clearText);
-                    wordsByLemmas.putAll(englishWordsByLemmas);
-                }
             }
         }
         return wordsByLemmas;
@@ -43,23 +38,14 @@ public class TextToLemmaParser {
         return createLemmasMap(oneLanguageWords,RUSSIAN_PARTICLES_NAMES,morphology);
     }
 
-    private Map<String,Integer> englishLanguageAnalyzer(String text) {
-        EnglishLuceneMorphology morphology;
-        try {
-            morphology = new EnglishLuceneMorphology();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        String[] oneLanguageWords = parseToOneLanguageWords(text, ENGLISH_LETTERS);
-        return createLemmasMap(oneLanguageWords,ENGLISH_PARTICLES_NAMES,morphology);
-    }
-
     private Map<String,Integer> createLemmasMap(String[] oneLanguageWords, Set<String> particles, LuceneMorphology morphology){
         Map<String,Integer> wordsByLemmas = new HashMap<>();
         for (String word : oneLanguageWords) {
-            String wordByLemma = parseToLemma(word, particles, morphology);
-            if(!wordByLemma.isBlank()){
-                wordsByLemmas.put(wordByLemma,wordsByLemmas.getOrDefault(wordByLemma, 0) + 1);
+            if(!word.isBlank()){
+                String wordByLemma = parseToLemma(word, particles, morphology);
+                if(!wordByLemma.isBlank()){
+                    wordsByLemmas.put(wordByLemma,wordsByLemmas.getOrDefault(wordByLemma, 0) + 1);
+                }
             }
         }
         return wordsByLemmas;

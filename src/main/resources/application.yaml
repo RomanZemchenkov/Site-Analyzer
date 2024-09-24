@@ -2,14 +2,16 @@ indexing-settings:
   sites:
     #    - url: https://sendel.ru
     #      name: Sendel.ru
-#    - url: https://itdeti.ru
-#      name: ItDeti.ru
     - url: https://www.playback.ru
       name: PlayBack.Ru
+#    - url: https://itdeti.ru
+#      name: ItDeti.ru
+#    - url: https://hacker-son.com
+#      name: Hacker-son
 #    - url: https://gkb15.moscow/
 #      name: GBK15
-    #    - url: https://lenta.ru
-    #      name: Lenta.ru
+#            - url: https://lenta.ru
+#              name: Lenta.ru
 #    - url: https://et-cetera.ru
 #      name: Et-cetera
 #    - url: https://shcool11-balakhna.edusite.ru

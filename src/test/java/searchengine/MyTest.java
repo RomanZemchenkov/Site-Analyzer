@@ -18,6 +18,13 @@ public class MyTest {
     private static final int MAX_SNIPPET_WORDS = 30;
 
     @Test
+    void luceneTest() throws IOException {
+        RussianLuceneMorphology morphology = new RussianLuceneMorphology();
+        List<String> normalForms = morphology.getNormalForms("самолёт");
+        System.out.println(normalForms);
+    }
+
+    @Test
     void test() {
         List<String> list1 = new ArrayList<>(List.of("sdf"));
         List<String> list2 = new ArrayList<>(List.of("sdf"));

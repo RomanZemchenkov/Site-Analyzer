@@ -51,8 +51,8 @@ public class SiteAnalyzerTask extends RecursiveAction {
     }
 
     private HttpResponseEntity analyzeUrl(String mainUrl) {
-        PageAnalyzer pageAnalyzer = new PageAnalyzer(mainUrl);
-        return pageAnalyzer.searchLink(url);
+        PageAnalyzerImpl pageAnalyzerImpl = new PageAnalyzerImpl();
+        return pageAnalyzerImpl.searchLink(url, mainUrl);
     }
 
     private Set<String> checkAvailablePath(Set<String> paths) {

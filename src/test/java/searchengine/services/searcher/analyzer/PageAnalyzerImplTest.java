@@ -9,15 +9,15 @@ import searchengine.services.searcher.entity.NormalResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-public class PageAnalyzerTest {
+public class PageAnalyzerImplTest {
 
     private static final String mainUrl = "https://sendel.ru";
 
     @Test
     @DisplayName("Testing that the work searchLink method was successful")
     void successfulSearchLinkTest(){
-        PageAnalyzer pageAnalyzer = new PageAnalyzer(mainUrl);
-        HttpResponseEntity response = assertDoesNotThrow(() -> pageAnalyzer.searchLink(mainUrl));
+        PageAnalyzerImpl pageAnalyzerImpl = new PageAnalyzerImpl();
+        HttpResponseEntity response = assertDoesNotThrow(() -> pageAnalyzerImpl.searchLink(mainUrl, mainUrl));
 
         assertThat(response.getClass()).isEqualTo(NormalResponse.class);
         assertThat(response.getStatusCode()).isEqualTo(200);
@@ -28,8 +28,8 @@ public class PageAnalyzerTest {
     @Test
     @DisplayName("Testing that the work searchLink method was unsuccessful")
     void unsuccessfulSearchLinkTest(){
-        PageAnalyzer pageAnalyzer = new PageAnalyzer(mainUrl);
-        HttpResponseEntity response = assertDoesNotThrow(() -> pageAnalyzer.searchLink(mainUrl + "/123124124"));
+        PageAnalyzerImpl pageAnalyzerImpl = new PageAnalyzerImpl();
+        HttpResponseEntity response = assertDoesNotThrow(() -> pageAnalyzerImpl.searchLink(mainUrl + "/123124124", mainUrl));
 
         assertThat(response.getClass()).isEqualTo(ErrorResponse.class);
         assertThat(response.getStatusCode()).isEqualTo(404);

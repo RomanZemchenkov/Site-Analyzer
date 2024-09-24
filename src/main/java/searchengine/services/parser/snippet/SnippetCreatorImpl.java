@@ -3,7 +3,7 @@ package searchengine.services.parser.snippet;
 import lombok.NoArgsConstructor;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Jsoup;
-import searchengine.services.parser.TextToLemmaParser;
+import searchengine.services.parser.lemma.TextToLemmaParserImpl;
 
 import java.util.*;
 
@@ -77,9 +77,9 @@ public class SnippetCreatorImpl implements SnippetCreator {
         for (int left = leftPosition; left < rightPosition; left++) {
             String wordOrSomethingElse = textByList.get(left);
             if (positionForTeg.contains(left)) {
-                sb.append("<p>");
+                sb.append("<b>");
                 sb.append(wordOrSomethingElse);
-                sb.append("</p>");
+                sb.append("</b>");
             } else {
                 sb.append(wordOrSomethingElse);
             }
@@ -166,10 +166,18 @@ public class SnippetCreatorImpl implements SnippetCreator {
                 punctuationPosition.add(left);
             }
         }
-        if (punctuationPosition.size() <= 1) {
-            return createSnippetBestRangeByOneOrNullPunctuation(rarestPosition, punctuationPosition, leftPosition, rightPosition);
+        SnippetBestRange snippetBestRange;
+        if(punctuationPosition.size() > 1){
+            snippetBestRange = createSnippetBestRange(rarestPosition, punctuationPosition);
+            int bestLeft = snippetBestRange.getLeftPosition();
+            int bestRight = snippetBestRange.getRightPosition();
+            if(bestLeft == 0 && bestRight == 0){
+                snippetBestRange = createSnippetBestRangeByOneOrNullPunctuation(rarestPosition,List.of(),leftPosition,rightPosition);
+            }
+        } else {
+            snippetBestRange = createSnippetBestRangeByOneOrNullPunctuation(rarestPosition, punctuationPosition, leftPosition, rightPosition);
         }
-        return createSnippetBestRange(rarestPosition, punctuationPosition);
+        return snippetBestRange;
     }
 
     private SnippetBestRange createSnippetBestRangeByOneOrNullPunctuation(int bestPosition, List<Integer> punctuationPosition,
@@ -289,7 +297,7 @@ public class SnippetCreatorImpl implements SnippetCreator {
 
     private String addWord(String word, int position) {
         try {
-            String mayBeWord = new TextToLemmaParser().parseToLemma(word, RUSSIAN_PARTICLES_NAMES, russianLuceneMorphology);
+            String mayBeWord = new TextToLemmaParserImpl().parseToLemma(word, RUSSIAN_PARTICLES_NAMES, russianLuceneMorphology);
             if (!mayBeWord.isBlank()) {
                 List<Integer> listByWord = lemmaAndPosition.getOrDefault(mayBeWord, new ArrayList<>());
                 listByWord.add(position);

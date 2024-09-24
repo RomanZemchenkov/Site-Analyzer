@@ -103,7 +103,7 @@ public class Indexing {
         if (siteUrl.isEmpty()) {
             throw new IllegalPageException();
         }
-        PageAnalyzer analyzer = new PageAnalyzer(pageUrl);
+        PageAnalyzerImpl analyzer = new PageAnalyzerImpl();
         HttpResponseEntity response = analyzer.searchLink(pageUrl);
         CreatePageWithMainSiteUrlDto page = new CreatePageWithMainSiteUrlDto(siteUrl, siteName, pageUrl, String.valueOf(response.getStatusCode()), response.getContent());
         CreatedPageInfoDto infoDto = pageService.createPage(page);
