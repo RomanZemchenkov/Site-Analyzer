@@ -13,9 +13,7 @@ import java.util.Set;
 public class TextToLemmaParserImpl implements TextToLemmaParser{
 
     private static final String RUSSIAN_LETTERS = "[^а-яёЁ\\s]";
-    private static final String ENGLISH_LETTERS = "[^a-z\\s]";
     private static final Set<String> RUSSIAN_PARTICLES_NAMES = Set.of("СОЮЗ", "ПРЕДЛ", "МЕЖД");
-    private static final Set<String> ENGLISH_PARTICLES_NAMES = Set.of("NOUN", "PART", "ADJECTIVE");
     private final Set<String> LANGUAGES = Set.of("Russian");
 
     public Map<String, Integer> parse(String text) {

@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.services.dto.SearchParametersDto;
 import searchengine.services.dto.page.ShowPageDto;
-import searchengine.services.exception.IllegalPageException;
 import searchengine.services.searcher.analyzer.Indexing;
 import searchengine.services.dto.statistics.StatisticsResponse;
 import searchengine.services.IndexingAndLemmaService;
@@ -20,7 +19,6 @@ import searchengine.web.entity.SearchResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -89,12 +87,5 @@ public class ApiController {
         List<ShowPageDto> offsetList = searchResult.getOrDefault(Integer.parseInt(offset), searchResult.get(searchResult.size() - 1));
         SearchResponse searchResponse = new SearchResponse(true, countOfPages, offsetList);
         return new ResponseEntity<>(searchResponse, HttpStatus.OK);
-    }
-
-    static void time(Runnable runnable) {
-        long start = System.currentTimeMillis();
-        runnable.run();
-        long finish = System.currentTimeMillis();
-        System.out.println("Индексация отработала за: " + (finish - start));
     }
 }

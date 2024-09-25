@@ -4,9 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.example</groupId>
-    <artifactId>SearchEngine</artifactId>
+    <artifactId>SentenceSearcher</artifactId>
     <version>1.0-SNAPSHOT</version>
-
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,6 +17,8 @@
         <version>3.3.1</version>
     </parent>
 
+
+
     <dependencies>
 <!--        test-->
         <dependency>
@@ -28,11 +29,6 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>testcontainers</artifactId>
         </dependency>
 
 <!--        web-->
@@ -62,11 +58,6 @@
             <artifactId>postgresql</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
-
 <!--        liquibase-->
         <dependency>
             <groupId>org.liquibase</groupId>
@@ -86,9 +77,43 @@
             <version>1.5.5.Final</version>
         </dependency>
 
-<!--        lemmas-->
+<!--        lucene-->
+        <dependency>
+            <groupId>org.apache.lucene.morphology</groupId>
+            <artifactId>morph</artifactId>
+            <version>1.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene.analysis</groupId>
+            <artifactId>morphology</artifactId>
+            <version>1.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.lucene.morphology</groupId>
+            <artifactId>dictionary-reader</artifactId>
+            <version>1.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene.morphology</groupId>
+            <artifactId>english</artifactId>
+            <version>1.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene.morphology</groupId>
+            <artifactId>russian</artifactId>
+            <version>1.5</version>
+        </dependency>
+
 
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>skillbox-gitlab</id>
+            <url>https://gitlab.skillbox.ru/api/v4/projects/263574/packages/maven</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>

@@ -17,6 +17,5 @@ public class CustomPageRepositoryImpl implements CustomPageRepository{
         entityManager.createQuery("DELETE FROM Page p WHERE p.site.id = :siteId")
                 .setParameter("siteId", siteId)
                 .executeUpdate();
-        System.out.println("Страницы удалены");
     }
 }

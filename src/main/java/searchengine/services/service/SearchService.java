@@ -24,7 +24,6 @@ import searchengine.services.parser.snippet.SnippetCreatorImpl;
 import searchengine.services.searcher.analyzer.PageAnalyzerImpl;
 
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,22 +46,20 @@ public class SearchService {
         String mayBeUrl = searchedTextAndParameters.getUrl();
         String limit = searchedTextAndParameters.getLimit();
 
-        Set<String> lemmas = timeForLemmaCreate(() -> parseToLemmas(searchedQuery));
+        Set<String> lemmas = parseToLemmas(searchedQuery);
 
-        List<Site> usesUrls = timeForSiteFind(() -> findUsesUrls(mayBeUrl));
+        List<Site> usesUrls = findUsesUrls(mayBeUrl);
 
         List<ShowPageDto> showPagesList = new ArrayList<>();
-        timeForShowPageCreate(() -> {
-            for (Site oneSite : usesUrls) {
-                List<Lemma> existLemmasForOneSite = findExistLemmas(oneSite, lemmas);
-                List<String> suitableLemmas = new ArrayList<>();
-                Map<Page, List<Index>> suitablePagesForOneSite = findSuitablePages(existLemmasForOneSite, suitableLemmas);
-                if (!suitablePagesForOneSite.isEmpty()) {
-                    List<ShowPageDto> showPagesBySite = checkRelevance(suitablePagesForOneSite, suitableLemmas);
-                    showPagesList.addAll(showPagesBySite);
-                }
+        for (Site oneSite : usesUrls) {
+            List<Lemma> existLemmasForOneSite = findExistLemmas(oneSite, lemmas);
+            List<String> suitableLemmas = new ArrayList<>();
+            Map<Page, List<Index>> suitablePagesForOneSite = findSuitablePages(existLemmasForOneSite, suitableLemmas);
+            if (!suitablePagesForOneSite.isEmpty()) {
+                List<ShowPageDto> showPagesBySite = checkRelevance(suitablePagesForOneSite, suitableLemmas);
+                showPagesList.addAll(showPagesBySite);
             }
-        });
+        }
         showPagesList.sort((o1, o2) -> o2.getRelevance().compareTo(o1.getRelevance()));
         return getByLimitAndOffset(showPagesList, limit);
     }
@@ -201,28 +198,5 @@ public class SearchService {
         String snippet = snippetCreatorTask.createSnippet(content);
         String pageTitle = new PageAnalyzerImpl().searchPageTitle(content);
         return new ShowPageDto(pathToPage, pageTitle, snippet);
-    }
-
-    static <T> T timeForLemmaCreate(Supplier<T> runnable) {
-        long start = System.currentTimeMillis();
-        T t = runnable.get();
-        long finish = System.currentTimeMillis();
-        System.out.println("Леммы созданы за: " + (finish - start));
-        return t;
-    }
-
-    static <T> T timeForSiteFind(Supplier<T> runnable) {
-        long start = System.currentTimeMillis();
-        T t = runnable.get();
-        long finish = System.currentTimeMillis();
-        System.out.println("Сайты найдены за: " + (finish - start));
-        return t;
-    }
-
-    static void timeForShowPageCreate(Runnable runnable) {
-        long start = System.currentTimeMillis();
-        runnable.run();
-        long finish = System.currentTimeMillis();
-        System.out.println("Страницы созданы за: " + (finish - start));
     }
 }

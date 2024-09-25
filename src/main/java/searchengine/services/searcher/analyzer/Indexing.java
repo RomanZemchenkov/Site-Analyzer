@@ -73,7 +73,6 @@ public class Indexing {
     }
 
     public void stopIndexing() {
-        System.out.println("Остановка задачи");
         for (ParseContext context : contexts) {
             context.setIndexingStopFlag(true);
         }
@@ -129,9 +128,7 @@ public class Indexing {
     }
 
     private void createContext() {
-        System.out.println("Контекст создаётся начало");
         contexts = new ArrayList<>();
-
         for (Map.Entry<String, String> entry : namesAndSites.entrySet()) {
             String name = entry.getKey();
             String url = entry.getValue();
@@ -142,8 +139,6 @@ public class Indexing {
             ParseContext context = new ParseContext(siteId, name, url, factory);
             contexts.add(context);
         }
-        System.out.println("Контекст создаётся конец");
-
     }
 
 

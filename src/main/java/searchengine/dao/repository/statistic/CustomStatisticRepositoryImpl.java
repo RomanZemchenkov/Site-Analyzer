@@ -64,7 +64,6 @@ public class CustomStatisticRepositoryImpl implements CustomStatisticRepository 
         entityManager.createQuery("DELETE FROM Statistic st WHERE st.site.id = :siteId")
                 .setParameter("siteId", siteId)
                 .executeUpdate();
-        System.out.println("Статистика удалена");
     }
 
     private Statistic mergeOrPersistStatistic(Site site){

@@ -9,7 +9,6 @@ import searchengine.services.GlobalVariables;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 @Getter
 public class LemmaWriter {

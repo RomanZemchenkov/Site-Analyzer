@@ -39,7 +39,6 @@ public class CustomSiteRepositoryImpl implements CustomSiteRepository {
         entityManager.createQuery("DELETE FROM Site s WHERE s.id = :siteId")
                 .setParameter("siteId", siteId)
                 .executeUpdate();
-        System.out.println("Сайт удален");
     }
 
 

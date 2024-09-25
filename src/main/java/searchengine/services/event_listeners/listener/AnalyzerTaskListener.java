@@ -7,7 +7,6 @@ import searchengine.services.service.PageService;
 import searchengine.services.service.SiteService;
 import searchengine.services.dto.page.CreatePageDto;
 import searchengine.services.dto.site.UpdateSiteDto;
-import searchengine.services.event_listeners.event.IndexCreateEvent;
 import searchengine.services.event_listeners.event.CreatePageEvent;
 import searchengine.services.event_listeners.event.UpdateSiteEvent;
 
@@ -28,10 +27,5 @@ public class AnalyzerTaskListener {
     public void updateSiteEventHandler(UpdateSiteEvent event){
         UpdateSiteDto dto = event.getDto();
         siteService.updateSite(dto);
-    }
-
-    @EventListener
-    public void indexCreateEventHandler(IndexCreateEvent event){
-
     }
 }
