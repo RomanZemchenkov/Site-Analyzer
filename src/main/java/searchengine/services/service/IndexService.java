@@ -37,7 +37,7 @@ public class IndexService {
         );
 
         System.out.println("Начало сохранения индексов");
-        indexRepository.createBatch(indexList);
+        indexRepository.batchSave(indexList);
     }
 
     private List<Index> parseToIndex(Page page, HashMap<Lemma, Integer> countOfLemmas){

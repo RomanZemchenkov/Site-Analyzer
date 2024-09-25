@@ -9,7 +9,6 @@ import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.jdbc.Sql;
 import searchengine.BaseTest;
 import searchengine.dao.model.Site;
-import searchengine.services.dto.page.FindPageDto;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,8 +59,7 @@ public class IndexingAndLemmaCreatorIT extends BaseTest{
     @Test
     @DisplayName("Testing the indexing, lemma creating and index creating for one page")
     void startIndexingAndCreateLemmaForOnePage(){
-        FindPageDto findPageDto = new FindPageDto(RANDOM_PAGE);
-        Assertions.assertDoesNotThrow(() -> service.startIndexingAndCreateLemmaForOnePage(findPageDto));
+        Assertions.assertDoesNotThrow(() -> service.startIndexingAndCreateLemmaForOnePage(RANDOM_PAGE));
 
         Long countOfLemmas = entityManager.createQuery("SELECT count(l) FROM Lemma l WHERE l.site.name = :name", Long.class)
                 .setParameter("name", SITE_NAME)

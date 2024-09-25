@@ -9,14 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 import searchengine.dao.model.Site;
 import searchengine.dao.model.Statistic;
 import searchengine.dao.model.Status;
-import searchengine.services.dto.statistics.DetailedStatisticsItem;
 
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static searchengine.services.GlobalVariables.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -59,6 +57,16 @@ public class CustomStatisticRepositoryImpl implements CustomStatisticRepository 
 
         return entityManager.createQuery(query).getSingleResult();
     }
+
+    @Override
+    public void deleteAllBySite(Site site) {
+        Integer siteId = site.getId();
+        entityManager.createQuery("DELETE FROM Statistic st WHERE st.site.id = :siteId")
+                .setParameter("siteId", siteId)
+                .executeUpdate();
+        System.out.println("Статистика удалена");
+    }
+
     private Statistic mergeOrPersistStatistic(Site site){
         Integer siteId = site.getId();
         Optional<Statistic> mayBeStatistic = Optional.ofNullable(entityManager.find(Statistic.class, siteId));

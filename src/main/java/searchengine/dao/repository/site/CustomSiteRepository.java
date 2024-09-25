@@ -13,5 +13,5 @@ public interface CustomSiteRepository{
 
     @Modifying
     @Transactional
-    void deleteAllInfoBySite(Site site);
+    void deleteSite(Site site);
 }

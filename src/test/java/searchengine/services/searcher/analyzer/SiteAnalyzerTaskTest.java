@@ -2,7 +2,6 @@ package searchengine.services.searcher.analyzer;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,7 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import searchengine.BaseTest;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Status;
-import searchengine.dao.repository.RedisRepository;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;

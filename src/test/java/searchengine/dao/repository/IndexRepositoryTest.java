@@ -44,7 +44,7 @@ public class IndexRepositoryTest extends BaseTest {
             Index index = new Index(page, lemma, (float) i + 1);
             indexList.add(index);
         }
-        assertDoesNotThrow(() -> repository.createBatch(indexList));
+        assertDoesNotThrow(() -> repository.batchSave(indexList));
 
 
         List<Index> selectIFromIndexI = entityManager.createQuery("SELECT i FROM Index i", Index.class).getResultList();

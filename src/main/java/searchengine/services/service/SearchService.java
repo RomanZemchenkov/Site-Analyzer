@@ -1,6 +1,7 @@
 package searchengine.services.service;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.aop.annotation.CheckQuery;
@@ -194,7 +195,9 @@ public class SearchService {
     private ShowPageDto createShowPageDto(Page page, List<String> suitableLemmas) {
         String pathToPage = page.getPath();
         String content = page.getContent();
-        SnippetCreator snippetCreatorTask = new SnippetCreatorImpl(suitableLemmas, LuceneMorphologyGiver.getRussian());
+        RussianLuceneMorphology russianLuceneMorphology = LuceneMorphologyGiver.get();
+        SnippetCreator snippetCreatorTask = new SnippetCreatorImpl(suitableLemmas, russianLuceneMorphology);
+        LuceneMorphologyGiver.returnLucene(russianLuceneMorphology);
         String snippet = snippetCreatorTask.createSnippet(content);
         String pageTitle = new PageAnalyzerImpl().searchPageTitle(content);
         return new ShowPageDto(pathToPage, pageTitle, snippet);

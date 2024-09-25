@@ -14,7 +14,6 @@ import searchengine.services.service.IndexService;
 import searchengine.services.searcher.analyzer.Indexing;
 import searchengine.services.service.LemmaService;
 import searchengine.services.dto.page.CreatedPageInfoDto;
-import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.searcher.lemma.LemmaCreatorContext;
 import searchengine.services.searcher.lemma.LemmaCreatorTask;
 import searchengine.services.searcher.lemma.LemmaCreatorTaskFactory;
@@ -75,14 +74,14 @@ public class IndexingAndLemmaService {
 
 
     @LuceneInit
-    public void startIndexingAndCreateLemmaForOnePage(FindPageDto dto) {
-        CreatedPageInfoDto infoDto = indexingService.onePageIndexing(dto);
+    public void startIndexingAndCreateLemmaForOnePage(String searchedUrl) {
+        CreatedPageInfoDto infoDto = indexingService.onePageIndexing(searchedUrl);
         Site site = infoDto.getSite();
         Page page = infoDto.getSavedPage();
 
         List<Lemma> lemmas = lemmaCreate(site, List.of(page));
 
-        lemmaService.createBatch(lemmas);
+        lemmaService.checkExistAndSaveOrUpdate(lemmas, site);
 
         indexCreate();
     }

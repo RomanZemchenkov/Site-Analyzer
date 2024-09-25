@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.dao.model.Lemma;
+import searchengine.dao.model.Site;
 import searchengine.dao.repository.lemma.LemmaRepository;
 
 import java.util.List;
@@ -17,6 +18,10 @@ public class LemmaService {
 
     public List<Lemma> createBatch(List<Lemma> lemmaList){
         return lemmaRepository.batchSave(lemmaList);
+    }
+
+    public void checkExistAndSaveOrUpdate(List<Lemma> lemmaList, Site site){
+        lemmaRepository.checkExistAndSaveOrUpdate(lemmaList,site);
     }
 
 }

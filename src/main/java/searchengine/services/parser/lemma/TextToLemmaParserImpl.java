@@ -33,9 +33,11 @@ public class TextToLemmaParserImpl implements TextToLemmaParser{
     }
 
     private Map<String,Integer> russianLanguageAnalyzer(String text) {
-        RussianLuceneMorphology morphology = LuceneMorphologyGiver.getRussian();
+        RussianLuceneMorphology morphology = LuceneMorphologyGiver.get();
         String[] oneLanguageWords = parseToOneLanguageWords(text, RUSSIAN_LETTERS);
-        return createLemmasMap(oneLanguageWords,RUSSIAN_PARTICLES_NAMES,morphology);
+        Map<String, Integer> lemmasMap = createLemmasMap(oneLanguageWords, RUSSIAN_PARTICLES_NAMES, morphology);
+        LuceneMorphologyGiver.returnLucene(morphology);
+        return lemmasMap;
     }
 
     private Map<String,Integer> createLemmasMap(String[] oneLanguageWords, Set<String> particles, LuceneMorphology morphology){

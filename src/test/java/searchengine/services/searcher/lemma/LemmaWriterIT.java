@@ -40,18 +40,11 @@ public class LemmaWriterIT extends BaseTest {
         Site site = siteRepository.findSiteByName(SITE_NAME).get();
         Page page = pageRepository.findById(10).get();
 
-        time(() -> assertDoesNotThrow(() -> lemmaWriter.createLemma(page, site)));
+        assertDoesNotThrow(() -> lemmaWriter.createLemma(page, site));
 
         ConcurrentHashMap<Lemma, Integer> allLemmasOnSite = lemmaWriter.getLemmasAndCounts();
 
         assertThat(allLemmasOnSite).isNotEmpty();
 
-    }
-
-    static void time(Runnable runnable){
-        long start = System.currentTimeMillis();
-        runnable.run();
-        long finish = System.currentTimeMillis();
-        System.out.println("Метод отработал за: " + (finish - start));
     }
 }

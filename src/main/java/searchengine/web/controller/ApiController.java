@@ -6,8 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.services.dto.SearchParametersDto;
 import searchengine.services.dto.page.ShowPageDto;
+import searchengine.services.exception.IllegalPageException;
 import searchengine.services.searcher.analyzer.Indexing;
-import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.dto.statistics.StatisticsResponse;
 import searchengine.services.IndexingAndLemmaService;
 import searchengine.services.service.SearchService;
@@ -42,18 +42,18 @@ public class ApiController {
     }
 
     @GetMapping("/startIndexing")
-    public ResponseEntity<Response> startIndexing(){
-        if(!INDEXING_STARTED){
+    public ResponseEntity<Response> startIndexing() {
+        if (!INDEXING_STARTED) {
             time(() -> indexingAndLemmaService.startIndexingAndCreateLemma());
             return new ResponseEntity<>(new NormalResponse("true"), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(new ErrorResponse("false",INDEXING_ALREADY_START),HttpStatus.CONFLICT);
+            return new ResponseEntity<>(new ErrorResponse("false", INDEXING_ALREADY_START), HttpStatus.CONFLICT);
         }
     }
 
     @GetMapping("/stopIndexing")
-    public ResponseEntity<Response> stopIndexing(){
-        if(INDEXING_STARTED){
+    public ResponseEntity<Response> stopIndexing() {
+        if (INDEXING_STARTED) {
             indexingService.stopIndexing();
             return new ResponseEntity<>(new NormalResponse("true"), HttpStatus.OK);
         } else {
@@ -62,30 +62,30 @@ public class ApiController {
     }
 
     @PostMapping("/indexPage")
-    public ResponseEntity<Response> indexPage(@RequestBody FindPageDto dto){
-        indexingAndLemmaService.startIndexingAndCreateLemmaForOnePage(dto);
-        return new ResponseEntity<>(new NormalResponse("true"),HttpStatus.OK);
+    public ResponseEntity<Response> indexPage(@RequestParam String url) {
+        indexingAndLemmaService.startIndexingAndCreateLemmaForOnePage(url);
+        return new ResponseEntity<>(new NormalResponse("true"), HttpStatus.OK);
     }
 
     @GetMapping("/search")
     public ResponseEntity<SearchResponse> search(@RequestParam(name = "query") String query,
                                                  @RequestParam(name = "limit", required = false, defaultValue = "20") String limit,
                                                  @RequestParam(name = "offset", required = false, defaultValue = "0") String offset,
-                                                 @RequestParam(name = "url", required = false) String url){
+                                                 @RequestParam(name = "url", required = false) String url) {
         SearchParametersDto searchParametersDto = new SearchParametersDto(query, limit, offset, url);
         System.out.println("Поиск запущен");
-        HashMap<Integer,List<ShowPageDto>> searchResult = searchService.search(searchParametersDto);
+        HashMap<Integer, List<ShowPageDto>> searchResult = searchService.search(searchParametersDto);
         int countOfPages = 0;
-        for(Map.Entry<Integer,List<ShowPageDto>> entry : searchResult.entrySet()){
+        for (Map.Entry<Integer, List<ShowPageDto>> entry : searchResult.entrySet()) {
             countOfPages += entry.getValue().size();
         }
         System.out.println("Поиск закончен");
-        List<ShowPageDto> offsetList = searchResult.getOrDefault(Integer.parseInt(offset),searchResult.get(searchResult.size() - 1));
+        List<ShowPageDto> offsetList = searchResult.getOrDefault(Integer.parseInt(offset), searchResult.get(searchResult.size() - 1));
         SearchResponse searchResponse = new SearchResponse(true, countOfPages, offsetList);
-        return new ResponseEntity<>(searchResponse,HttpStatus.OK);
+        return new ResponseEntity<>(searchResponse, HttpStatus.OK);
     }
 
-    static void time(Runnable runnable){
+    static void time(Runnable runnable) {
         long start = System.currentTimeMillis();
         runnable.run();
         long finish = System.currentTimeMillis();

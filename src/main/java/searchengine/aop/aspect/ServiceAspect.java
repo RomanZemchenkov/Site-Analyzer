@@ -2,6 +2,8 @@ package searchengine.aop.aspect;
 
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.stereotype.Component;
@@ -25,11 +27,13 @@ public class ServiceAspect {
 
     private final SiteRepository siteRepository;
 
-    @Before(value = "searchengine.aop.pointcut.AnnotationPointcut.isLuceneInitAnnotation() " +
-                    " && searchengine.aop.pointcut.ClassPointcut.isService() ",
-            argNames = "joinPoint")
-    public void beforeLemmasCreateMethod(JoinPoint joinPoint){
-        LuceneMorphologyGiver.init();
+    @Around(value = "searchengine.aop.pointcut.AnnotationPointcut.isLuceneInitAnnotation() " +
+            " && searchengine.aop.pointcut.ClassPointcut.isService() ", argNames = "joinPoint")
+    public Object aroundMethodWhereLemmasCreate(ProceedingJoinPoint joinPoint) throws Throwable {
+        LuceneMorphologyGiver.initPool();
+        Object proceed = joinPoint.proceed();
+        LuceneMorphologyGiver.closePool();
+        return proceed;
     }
 
     @Before(value = "searchengine.aop.pointcut.ClassPointcut.isService() " +

@@ -1,5 +1,7 @@
 package searchengine.dao.repository.lemma;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
 import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Site;
 
@@ -11,4 +13,10 @@ public interface CustomLemmaRepository {
     List<Lemma> batchSave(List<Lemma> lemmaList);
 
     List<Lemma> findAllBySiteIdAndLemmas(Site site, Set<String> lemmas);
+
+    void checkExistAndSaveOrUpdate(List<Lemma> lemmaList, Site site);
+
+    @Modifying
+    @Transactional
+    void deleteAllBySite(Site site);
 }

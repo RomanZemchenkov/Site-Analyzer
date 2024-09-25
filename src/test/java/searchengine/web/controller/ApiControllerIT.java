@@ -144,12 +144,7 @@ public class ApiControllerIT extends BaseTest {
     @DisplayName("Удачное тестирование индексации одной страницы")
     void successfulOnePageIndexingTest() throws Exception {
         ResultActions actions = mock.perform(post("/api/indexPage")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                           "url" : "https://sendel.ru/posts/java-with-vscode/"
-                        }
-                        """));
+                        .param("url","https://itdeti.ru/robotrack"));
 
         actions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.result",Matchers.is("true")));
@@ -159,14 +154,9 @@ public class ApiControllerIT extends BaseTest {
     @DisplayName("Недачное тестирование индексации одной страницы")
     void unsuccessfulOnePageIndexingTest() throws Exception {
         ResultActions actions = mock.perform(post("/api/indexPage")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                           "url" : "https://ru.wikipedia.org/wiki/Заглавная_страница"
-                        }
-                        """));
+                .param("url","https://ru.wikipedia.org/wiki/Заглавная_страница"));
 
-        actions.andExpect(status().isConflict())
+        actions.andExpect(status().isMethodNotAllowed())
                 .andExpect(jsonPath("$.result",Matchers.is("false")))
                 .andExpect(jsonPath("$.message", Matchers.is(ILLEGAL_PAGE_EXCEPTION)));
     }

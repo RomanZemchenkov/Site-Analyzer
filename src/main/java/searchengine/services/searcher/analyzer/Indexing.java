@@ -5,12 +5,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.dao.model.Status;
+import searchengine.services.GlobalVariables;
 import searchengine.services.service.PageService;
 import searchengine.services.service.SiteService;
 import searchengine.services.dto.SiteProperties;
 import searchengine.services.dto.page.CreatePageWithMainSiteUrlDto;
 import searchengine.services.dto.page.CreatedPageInfoDto;
-import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.dto.site.CreateSiteDto;
 import searchengine.services.exception.IllegalPageException;
 import searchengine.services.searcher.entity.HttpResponseEntity;
@@ -52,13 +52,11 @@ public class Indexing {
             firstTasksList.add(factory.createTask(startUrl, context, new ConcurrentSkipListSet<>()));
         }
 
-        int availableProcessors = Runtime.getRuntime().availableProcessors();
-
         ExecutorService threadPool = Executors.newCachedThreadPool();
         for (int i = 0; i < firstTasksList.size(); i++) {
             SiteAnalyzerTask task = firstTasksList.get(i);
             ParseContext context = contexts.get(i);
-            int countOfParallel = Math.max(1, availableProcessors / firstTasksList.size());
+            int countOfParallel = Math.max(1, COUNT_OF_PROCESSORS / firstTasksList.size());
             threadPool.submit(() -> executeTask(task, context, countOfParallel));
         }
         threadPool.shutdown();
@@ -87,14 +85,13 @@ public class Indexing {
         }
     }
 
-    public CreatedPageInfoDto onePageIndexing(FindPageDto dto) {
-        String pageUrl = dto.getUrl();
+    public CreatedPageInfoDto onePageIndexing(String searchedUrl) {
         String siteUrl = "";
         String siteName = "";
         for (Map.Entry<String, String> entry : namesAndSites.entrySet()) {
             String url = entry.getValue();
             String name = entry.getKey();
-            if (pageUrl.startsWith(url)) {
+            if (searchedUrl.startsWith(url)) {
                 siteUrl = url;
                 siteName = name;
                 break;
@@ -104,8 +101,8 @@ public class Indexing {
             throw new IllegalPageException();
         }
         PageAnalyzerImpl analyzer = new PageAnalyzerImpl();
-        HttpResponseEntity response = analyzer.searchLink(pageUrl);
-        CreatePageWithMainSiteUrlDto page = new CreatePageWithMainSiteUrlDto(siteUrl, siteName, pageUrl, String.valueOf(response.getStatusCode()), response.getContent());
+        HttpResponseEntity response = analyzer.searchLink(searchedUrl);
+        CreatePageWithMainSiteUrlDto page = new CreatePageWithMainSiteUrlDto(siteUrl, siteName, searchedUrl, String.valueOf(response.getStatusCode()), response.getContent());
         CreatedPageInfoDto infoDto = pageService.createPage(page);
         infoDto.getSite().setStatus(Status.INDEXED);
         return infoDto;

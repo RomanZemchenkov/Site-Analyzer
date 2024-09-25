@@ -9,7 +9,6 @@ import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 import searchengine.dao.model.Status;
 import searchengine.services.dto.page.CreatedPageInfoDto;
-import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.exception.IllegalPageException;
 
 import java.util.List;
@@ -118,8 +117,8 @@ public class IndexingTest extends BaseTest {
     @Test
     @DisplayName("Successful testing the one page indexing")
     void successfulIndexingOnePageTest(){
-        FindPageDto findPageDto = new FindPageDto("https://sendel.ru/posts/java-with-vscode/");
-        CreatedPageInfoDto infoDto = service.onePageIndexing(findPageDto);
+        String searchedUrl = "https://sendel.ru/posts/java-with-vscode/";
+        CreatedPageInfoDto infoDto = service.onePageIndexing(searchedUrl);
         Page savedPage = infoDto.getSavedPage();
         Site site = infoDto.getSite();
 
@@ -132,8 +131,8 @@ public class IndexingTest extends BaseTest {
     @Test
     @DisplayName("Unsuccessful testing the one page indexing")
     void unsuccessfulIndexingOnePageTest(){
-        FindPageDto findPageDto = new FindPageDto("https://ru.wikipedia.org/wiki/Заглавная_страница");
-        Assertions.assertThrows(IllegalPageException.class, () -> service.onePageIndexing(findPageDto));
+        String searchedUrl = "https://ru.wikipedia.org/wiki/Заглавная_страница";
+        Assertions.assertThrows(IllegalPageException.class, () -> service.onePageIndexing(searchedUrl));
     }
 
 
