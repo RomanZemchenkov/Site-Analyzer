@@ -25,7 +25,6 @@ public class IndexService {
 
     @Transactional()
     public void createIndex(){
-        System.out.println("Начало создания индексов");
         ConcurrentHashMap<Page, HashMap<Lemma, Integer>> pageAndLemmasWithCount = GlobalVariables.PAGE_AND_LEMMAS_WITH_COUNT;
         List<Index> indexList = new ArrayList<>();
         pageAndLemmasWithCount.forEach(
@@ -35,8 +34,6 @@ public class IndexService {
                     indexList.addAll(indexList1);
                 }
         );
-
-        System.out.println("Начало сохранения индексов");
         indexRepository.batchSave(indexList);
     }
 

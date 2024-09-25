@@ -36,7 +36,6 @@ public class IndexingAndLemmaService {
     @LuceneInit
     public void startIndexingAndCreateLemma() {
         indexingService.startIndexing();
-        System.out.println("Индексация и запись окончена");
         List<Site> allSites = getAllSites();
         List<List<Lemma>> lemmas = lemmaListCreate(allSites);
 
@@ -48,10 +47,8 @@ public class IndexingAndLemmaService {
         Отбой. К сожалению, это работало только один день и я не понимаю, с чем это связано :с
          */
         for (List<Lemma> lemmaList : lemmas) {
-            System.out.println("Количество лемм  перед сохранением: " + lemmaList.size());
             lemmaService.createBatch(lemmaList);
         }
-        System.out.println("Леммы созданы и сохранены");
         /*
         Этот метод специально сделан для того, чтобы дать всем леммам id
         Очень хотелось бы его убрать, но я не понимаю, что я не так делаю при сохранении.
@@ -132,7 +129,6 @@ public class IndexingAndLemmaService {
         return threadPool.submit(() -> {
             ForkJoinPool forkJoinPool = new ForkJoinPool();
             List<Lemma> lemmaList = forkJoinPool.invoke(task);
-            System.out.println("Количество лемм для сайта: " + lemmaList.size());
             forkJoinPool.shutdown();
             return lemmaList;
         });
@@ -151,7 +147,6 @@ public class IndexingAndLemmaService {
         indexService.createIndex();
         statisticRepository.writeStatistics();
         GlobalVariables.INDEX_CREATING_STARTED = false;
-        System.out.println("Очистка информации");
         GlobalVariables.PAGE_AND_LEMMAS_WITH_COUNT.clear();
         GlobalVariables.COUNT_OF_LEMMAS.set(0);
     }
