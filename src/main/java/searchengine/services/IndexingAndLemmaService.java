@@ -72,7 +72,6 @@ public class IndexingAndLemmaService {
         indexCreate();
     }
 
-
     @LuceneInit
     public void startIndexingAndCreateLemmaForOnePage(String searchedUrl) {
         CreatedPageInfoDto infoDto = indexingService.onePageIndexing(searchedUrl);

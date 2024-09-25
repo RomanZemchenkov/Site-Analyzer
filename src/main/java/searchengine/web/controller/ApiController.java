@@ -20,6 +20,9 @@ import searchengine.web.entity.SearchResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static searchengine.services.GlobalVariables.INDEXING_STARTED;
 import static searchengine.services.exception.ExceptionMessage.INDEXING_ALREADY_START;
@@ -44,7 +47,10 @@ public class ApiController {
     @GetMapping("/startIndexing")
     public ResponseEntity<Response> startIndexing() {
         if (!INDEXING_STARTED) {
-            time(() -> indexingAndLemmaService.startIndexingAndCreateLemma());
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
+            executorService.submit(indexingAndLemmaService::startIndexingAndCreateLemma);
+            executorService.shutdown();
+
             return new ResponseEntity<>(new NormalResponse("true"), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(new ErrorResponse("false", INDEXING_ALREADY_START), HttpStatus.CONFLICT);
