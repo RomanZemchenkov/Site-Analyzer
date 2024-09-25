@@ -12,6 +12,7 @@ import searchengine.services.searcher.entity.NormalResponse;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -19,6 +20,13 @@ import java.util.regex.Pattern;
 public class PageAnalyzerImpl implements PageAnalyzer{
 
     private static final Pattern INVALID_EXTENSIONS = Pattern.compile("\\.(sql|zip|pdf|jpg|png|jpeg)$", Pattern.CASE_INSENSITIVE);
+    private static final List<String> AGENTS = List.of(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
+            "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:90.0) Gecko/20100101 Firefox/90.0",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 11.2; rv:88.0) Gecko/20100101 Firefox/88.0"
+    );
 
     public PageAnalyzerImpl(){}
 
@@ -44,9 +52,9 @@ public class PageAnalyzerImpl implements PageAnalyzer{
 
     private HttpResponse createConnect(String url) throws HttpStatusException {
         try {
+            String userAgent = AGENTS.get((int) (Math.random() * AGENTS.size()));
             Connection.Response response = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                               "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 YaBrowser/24.4.0.0 Safari/537.36")
+                    .userAgent(userAgent)
                     .execute();
 
             int statusCode = response.statusCode();
@@ -85,7 +93,20 @@ public class PageAnalyzerImpl implements PageAnalyzer{
     }
 
     private HttpResponseEntity statusAnalyzed(int statusCode, String message, String url) {
-        return new ErrorResponse(statusCode, url, message);
+        String userFriendlyMessage = generateUserFriendlyMessage(statusCode, message, url);
+        return new ErrorResponse(statusCode, url, userFriendlyMessage);
+    }
+
+    private String generateUserFriendlyMessage(int statusCode, String message, String url) {
+        return switch (statusCode) {
+            case 404 ->
+                    "Страница " + url + " не найдена (Ошибка 404). Возможно, она была удалена или вы ввели неправильный адрес.";
+            case 500 -> "На сервере произошла ошибка (Ошибка 500). Пожалуйста, попробуйте позже.";
+            case 403 -> "Доступ к странице " + url + " запрещен (Ошибка 403).";
+            case 400 -> "Некорректный запрос (Ошибка 400). Проверьте корректность введённого URL:" + url;
+            default ->
+                    "Произошла ошибка при попытке доступа к " + url + ". Код ошибки: " + statusCode + ". Описание: " + message;
+        };
     }
 
     private boolean isValidUrl(String url, String mainUrl) {

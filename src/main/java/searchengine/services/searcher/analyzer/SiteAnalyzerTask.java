@@ -26,6 +26,7 @@ public class SiteAnalyzerTask extends RecursiveAction {
     private final EventPublisher publisher;
     private final ConcurrentSkipListSet<String> useUrlsSet;
 
+
     public SiteAnalyzerTask(String url, ParseContext context, EventPublisher publisher, ConcurrentSkipListSet<String> useUrlsSet) {
         this.url = url;
         this.context = context;
@@ -52,6 +53,7 @@ public class SiteAnalyzerTask extends RecursiveAction {
 
     private HttpResponseEntity analyzeUrl(String mainUrl) {
         PageAnalyzerImpl pageAnalyzerImpl = new PageAnalyzerImpl();
+
         return pageAnalyzerImpl.searchLink(url, mainUrl);
     }
 

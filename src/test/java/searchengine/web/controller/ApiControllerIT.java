@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static searchengine.services.exception.ExceptionMessage.*;
 
 
 @AutoConfigureMockMvc
@@ -45,8 +46,6 @@ public class ApiControllerIT extends BaseTest {
 
         actions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.result", Matchers.is("true")));
-
-        System.out.println("  ");
 
     }
 
@@ -77,7 +76,7 @@ public class ApiControllerIT extends BaseTest {
                 ResultActions tryAction = mock.perform(get("/api/startIndexing"));
                 tryAction.andExpect(status().isConflict())
                         .andExpect(jsonPath("$.result", Matchers.is("false")))
-                        .andExpect(jsonPath("$.message", Matchers.is("Индексация уже запущена.")));
+                        .andExpect(jsonPath("$.message", Matchers.is(INDEXING_ALREADY_START)));
                 checkTryAction.set(true);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -137,7 +136,7 @@ public class ApiControllerIT extends BaseTest {
         ResultActions tryAction = mock.perform(get("/api/stopIndexing"));
         tryAction.andExpect(status().isConflict())
                 .andExpect(jsonPath("$.result", Matchers.is("false")))
-                .andExpect(jsonPath("$.message", Matchers.is("Индексация не запущена.")));
+                .andExpect(jsonPath("$.message", Matchers.is(INDEXING_DOESNT_START)));
 
     }
 
@@ -169,7 +168,7 @@ public class ApiControllerIT extends BaseTest {
 
         actions.andExpect(status().isConflict())
                 .andExpect(jsonPath("$.result",Matchers.is("false")))
-                .andExpect(jsonPath("$.message", Matchers.is("Данная страница находится за пределами сайтов, указанных в конфигурационном файле.")));
+                .andExpect(jsonPath("$.message", Matchers.is(ILLEGAL_PAGE_EXCEPTION)));
     }
 
     @Test

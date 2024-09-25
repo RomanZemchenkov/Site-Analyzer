@@ -12,7 +12,9 @@ import searchengine.services.dto.statistics.StatisticsResponse;
 import searchengine.services.IndexingAndLemmaService;
 import searchengine.services.service.SearchService;
 import searchengine.services.service.StatisticsService;
-import searchengine.web.Response;
+import searchengine.web.handler.ErrorResponse;
+import searchengine.web.handler.NormalResponse;
+import searchengine.web.handler.Response;
 import searchengine.web.entity.SearchResponse;
 
 import java.util.HashMap;
@@ -20,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import static searchengine.services.GlobalVariables.INDEXING_STARTED;
+import static searchengine.services.exception.ExceptionMessage.INDEXING_ALREADY_START;
+import static searchengine.services.exception.ExceptionMessage.INDEXING_DOESNT_START;
 
 @RestController
 @RequestMapping("/api")
@@ -40,11 +44,10 @@ public class ApiController {
     @GetMapping("/startIndexing")
     public ResponseEntity<Response> startIndexing(){
         if(!INDEXING_STARTED){
-
             time(() -> indexingAndLemmaService.startIndexingAndCreateLemma());
-            return new ResponseEntity<>(new Response("true"), HttpStatus.OK);
+            return new ResponseEntity<>(new NormalResponse("true"), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(new Response("false","Индексация уже запущена."),HttpStatus.CONFLICT);
+            return new ResponseEntity<>(new ErrorResponse("false",INDEXING_ALREADY_START),HttpStatus.CONFLICT);
         }
     }
 
@@ -52,16 +55,16 @@ public class ApiController {
     public ResponseEntity<Response> stopIndexing(){
         if(INDEXING_STARTED){
             indexingService.stopIndexing();
-            return new ResponseEntity<>(new Response("true"), HttpStatus.OK);
+            return new ResponseEntity<>(new NormalResponse("true"), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(new Response("false", "Индексация не запущена."), HttpStatus.CONFLICT);
+            return new ResponseEntity<>(new ErrorResponse("false", INDEXING_DOESNT_START), HttpStatus.CONFLICT);
         }
     }
 
     @PostMapping("/indexPage")
     public ResponseEntity<Response> indexPage(@RequestBody FindPageDto dto){
         indexingAndLemmaService.startIndexingAndCreateLemmaForOnePage(dto);
-        return new ResponseEntity<>(new Response("true"),HttpStatus.OK);
+        return new ResponseEntity<>(new NormalResponse("true"),HttpStatus.OK);
     }
 
     @GetMapping("/search")

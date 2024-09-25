@@ -3,13 +3,12 @@ package searchengine.web.handler;
 import lombok.Getter;
 
 @Getter
-public class ErrorResponse {
+public class ErrorResponse extends Response{
 
-    private final String result;
     private final String message;
 
     public ErrorResponse(String result, String message) {
-        this.result = result;
+        super(result);
         this.message = message;
     }
 }

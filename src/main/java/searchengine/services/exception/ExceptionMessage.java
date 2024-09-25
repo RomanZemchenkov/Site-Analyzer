@@ -6,4 +6,6 @@ public class ExceptionMessage {
     public static final String INDEXING_STARTING_EXCEPTION = "Индексация не окончена. Пожалуйста, подождите.";
     public static final String EMPTY_QUERY_EXCEPTION = "Задан пустой поисковый запрос.";
     public static final String SITE_DOESNT_EXIST_EXCEPTION = "Данный сайт не проиндексирован, либо отсутствует в списке индексируемых сайтов.";
+    public static final String INDEXING_ALREADY_START = "Индексация уже запущена.";
+    public static final String INDEXING_DOESNT_START = "Индексация не запущена.";
 }
