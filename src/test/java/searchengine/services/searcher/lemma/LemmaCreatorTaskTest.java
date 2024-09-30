@@ -1,6 +1,5 @@
 package searchengine.services.searcher.lemma;
 
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,7 +8,7 @@ import searchengine.BaseTest;
 import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Site;
 import searchengine.dao.repository.site.SiteRepository;
-import searchengine.services.searcher.analyzer.Indexing;
+import searchengine.services.searcher.analyzer.IndexingImpl;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -22,11 +21,11 @@ public class LemmaCreatorTaskTest extends BaseTest {
 
     private final LemmaCreatorTaskFactory factory;
     private final SiteRepository siteRepository;
-    private final Indexing service;
+    private final IndexingImpl service;
     private static final String[] SITES_NAME = {"Sendel.ru","ItDeti.ru"};
 
     @Autowired
-    public LemmaCreatorTaskTest(LemmaCreatorTaskFactory factory, SiteRepository siteRepository, Indexing service) {
+    public LemmaCreatorTaskTest(LemmaCreatorTaskFactory factory, SiteRepository siteRepository, IndexingImpl service) {
         this.factory = factory;
         this.siteRepository = siteRepository;
         this.service = service;
@@ -35,7 +34,7 @@ public class LemmaCreatorTaskTest extends BaseTest {
     @Test
     @DisplayName("Testing the creating lemma for one site")
     void lemmaCreatorTaskForOneSiteTest() {
-        service.startIndexing();
+        service.startSitesIndexing();
         Optional<Site> siteByName = siteRepository.findSiteByName(SITES_NAME[0]);
         Assertions.assertTrue(siteByName.isPresent());
 
@@ -56,7 +55,7 @@ public class LemmaCreatorTaskTest extends BaseTest {
     @Test
     @DisplayName("Create lemma for several sites by multi thread test")
     void lemmaCreatorTaskForSeveralSites() {
-        service.startIndexing();
+        service.startSitesIndexing();
         System.out.println("Индексация и запись окончена");
         List<Site> all = siteRepository.findAll();
 

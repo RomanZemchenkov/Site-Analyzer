@@ -10,10 +10,10 @@ import searchengine.dao.model.Site;
 import searchengine.dao.repository.page.PageRepository;
 import searchengine.dao.repository.site.SiteRepository;
 import searchengine.dao.repository.statistic.StatisticRepository;
+import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.service.IndexService;
-import searchengine.services.searcher.analyzer.Indexing;
+import searchengine.services.searcher.analyzer.IndexingImpl;
 import searchengine.services.service.LemmaService;
-import searchengine.services.dto.page.CreatedPageInfoDto;
 import searchengine.services.searcher.lemma.LemmaCreatorContext;
 import searchengine.services.searcher.lemma.LemmaCreatorTask;
 import searchengine.services.searcher.lemma.LemmaCreatorTaskFactory;
@@ -25,7 +25,7 @@ import java.util.concurrent.*;
 @RequiredArgsConstructor
 public class IndexingAndLemmaService {
 
-    private final Indexing indexingService;
+    private final IndexingImpl indexingService;
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
     private final LemmaCreatorTaskFactory factory;
@@ -35,7 +35,7 @@ public class IndexingAndLemmaService {
 
     @LuceneInit
     public void startIndexingAndCreateLemma() {
-        indexingService.startIndexing();
+        indexingService.startSitesIndexing();
         System.out.println("Индексация и запись окончена");
         List<Site> allSites = getAllSites();
         List<List<Lemma>> lemmas = lemmaListCreate(allSites);
@@ -74,7 +74,7 @@ public class IndexingAndLemmaService {
 
     @LuceneInit
     public void startIndexingAndCreateLemmaForOnePage(String searchedUrl) {
-        CreatedPageInfoDto infoDto = indexingService.onePageIndexing(searchedUrl);
+        FindPageDto infoDto = indexingService.startPageIndexing(searchedUrl);
         Site site = infoDto.getSite();
         Page page = infoDto.getSavedPage();
 

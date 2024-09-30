@@ -1,4 +1,4 @@
-package searchengine.services.searcher.analyzer;
+package searchengine.services.searcher.analyzer.page_analyzer;
 
 import searchengine.services.searcher.entity.HttpResponseEntity;
 

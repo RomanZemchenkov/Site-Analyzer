@@ -12,6 +12,7 @@ import searchengine.dao.repository.page.PageRepository;
 import searchengine.dao.repository.site.SiteRepository;
 import searchengine.dao.repository.statistic.StatisticRepository;
 import searchengine.services.dto.site.CreateSiteDto;
+import searchengine.services.dto.site.ShowSiteDto;
 import searchengine.services.dto.site.UpdateSiteDto;
 import searchengine.services.mapper.SiteMapper;
 
@@ -34,25 +35,18 @@ public class SiteService {
     private final SiteRepository siteRepository;
 
     @Transactional
-    public Integer createSite(CreateSiteDto dto){
+    public ShowSiteDto createSite(CreateSiteDto dto) {
         System.out.println("Новый сайт создан или удалён начало");
         String name = dto.getName();
 
         Optional<Site> mayBeSite = repository.findSiteByName(name);
 
-        time( () -> mayBeSite.ifPresent(this::deleteAll));
-
-        Site site = mapper.mapToSite(dto);
-        site.setStatus(Status.INDEXING);
-        site.setStatusTime(OffsetDateTime.now(ZoneId.systemDefault()));
-
-        Site savedSite = repository.saveAndFlush(site);
-        System.out.println("Новый сайт создан или удалён конец");
-        return savedSite.getId();
+        time(() -> mayBeSite.ifPresent(this::deleteAll));
+        return siteSave(dto);
     }
 
     @Transactional
-    public void updateSite(UpdateSiteDto dto){
+    public void updateSite(UpdateSiteDto dto) {
         Integer id = Integer.valueOf(dto.getId());
         Optional<Site> mayBeSite = repository.findById(id);
         Site existSite = mayBeSite.get();
@@ -62,7 +56,29 @@ public class SiteService {
         repository.saveAndFlush(siteBeforeUpdate);
     }
 
-    private void deleteAll(Site site){
+    @Transactional
+    public ShowSiteDto findSiteByUrl(String url, String siteName) {
+        Optional<Site> mayBeSite = siteRepository.findSiteByUrl(url);
+        ShowSiteDto showSite;
+        if (mayBeSite.isEmpty()) {
+            showSite = siteSave(new CreateSiteDto(url, siteName));
+        } else {
+            showSite = mapper.mapToShow(mayBeSite.get());
+        }
+        return showSite;
+    }
+
+    private ShowSiteDto siteSave(CreateSiteDto dto) {
+        Site site = mapper.mapToSite(dto);
+        site.setStatus(Status.INDEXING);
+        site.setStatusTime(OffsetDateTime.now(ZoneId.systemDefault()));
+
+        Site savedSite = repository.saveAndFlush(site);
+        System.out.println("Новый сайт создан или удалён конец");
+        return mapper.mapToShow(savedSite);
+    }
+
+    private void deleteAll(Site site) {
         List<Page> pagesBySite = pageRepository.findAllBySite(site);
         timeForIndex(() -> pagesBySite.forEach(indexRepository::deleteAllByPage));
         timeForLemma(() -> lemmaRepository.deleteAllBySite(site));
@@ -71,21 +87,21 @@ public class SiteService {
         siteRepository.deleteSite(site);
     }
 
-    static void timeForLemma(Runnable runnable){
+    static void timeForLemma(Runnable runnable) {
         long start = System.currentTimeMillis();
         runnable.run();
         long finish = System.currentTimeMillis();
         System.out.println("Леммы удалены за: " + (finish - start));
     }
 
-    static void timeForIndex(Runnable runnable){
+    static void timeForIndex(Runnable runnable) {
         long start = System.currentTimeMillis();
         runnable.run();
         long finish = System.currentTimeMillis();
         System.out.println("Индексы удалены за: " + (finish - start));
     }
 
-    static void time(Runnable runnable){
+    static void time(Runnable runnable) {
         long start = System.currentTimeMillis();
         runnable.run();
         long finish = System.currentTimeMillis();

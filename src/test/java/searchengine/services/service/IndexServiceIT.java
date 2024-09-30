@@ -9,7 +9,7 @@ import searchengine.BaseTest;
 import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Site;
 import searchengine.dao.repository.site.SiteRepository;
-import searchengine.services.searcher.analyzer.Indexing;
+import searchengine.services.searcher.analyzer.IndexingImpl;
 import searchengine.services.searcher.lemma.LemmaCreatorContext;
 import searchengine.services.searcher.lemma.LemmaCreatorTask;
 import searchengine.services.searcher.lemma.LemmaCreatorTaskFactory;
@@ -23,13 +23,13 @@ public class IndexServiceIT extends BaseTest {
 
     private final LemmaService lemmaService;
     private final SiteRepository siteRepository;
-    private final Indexing indexing;
+    private final IndexingImpl indexing;
     private final IndexService indexService;
     private final EntityManager entityManager;
     private static final String EXIST_SITE_NAME = "Sendel.ru";
 
     @Autowired
-    public IndexServiceIT(LemmaService lemmaService, SiteRepository siteRepository, Indexing indexing, IndexService indexService, EntityManager entityManager) {
+    public IndexServiceIT(LemmaService lemmaService, SiteRepository siteRepository, IndexingImpl indexing, IndexService indexService, EntityManager entityManager) {
         this.lemmaService = lemmaService;
         this.siteRepository = siteRepository;
         this.indexing = indexing;
@@ -40,7 +40,7 @@ public class IndexServiceIT extends BaseTest {
     @Test
     @DisplayName("Testing the create index method")
     void createIndex(){
-        indexing.startIndexing();
+        indexing.startSitesIndexing();
         Optional<Site> mayBeSite = siteRepository.findSiteByName(EXIST_SITE_NAME);
         Assertions.assertTrue(mayBeSite.isPresent());
 

@@ -9,6 +9,7 @@ import java.time.OffsetDateTime;
 
 @Mapper(componentModel = "spring")
 public interface StatisticMapper {
+
     default DetailedStatisticsItem mapToStatisticItem(Tuple tuple) {
         String url = tuple.get(0, String.class);
         String name = tuple.get(1, String.class);
@@ -24,9 +25,9 @@ public interface StatisticMapper {
             countOfLemmas = 0L;
         }
 
-        DetailedStatisticsItem statisticsItem;
+        lastError = lastError == null ? "" : lastError;
+
         long statusTimeInstant = statusTime.toInstant().toEpochMilli();
-        statisticsItem = new DetailedStatisticsItem(url, name, statusByString, statusTimeInstant,lastError, countOfPages, countOfLemmas);
-        return statisticsItem;
+        return new DetailedStatisticsItem(url, name, statusByString, statusTimeInstant,lastError, countOfPages, countOfLemmas);
     }
 }

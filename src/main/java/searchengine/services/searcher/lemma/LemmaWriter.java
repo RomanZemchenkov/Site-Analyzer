@@ -7,9 +7,9 @@ import searchengine.dao.model.Site;
 import searchengine.services.parser.lemma.TextToLemmaParserImpl;
 import searchengine.services.GlobalVariables;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 @Getter
 public class LemmaWriter {

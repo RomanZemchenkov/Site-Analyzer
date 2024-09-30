@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @Sql(value = "classpath:sql/init.sql")
-public class IndexingAndLemmaCreatorIT extends BaseTest{
+public class IndexingImplAndLemmaCreatorIT extends BaseTest{
 
     private final IndexingAndLemmaService service;
     private final EntityManager entityManager;
@@ -24,7 +24,7 @@ public class IndexingAndLemmaCreatorIT extends BaseTest{
     private static final String RANDOM_PAGE = "https://itdeti.ru/robotrack";
 
     @Autowired
-    public IndexingAndLemmaCreatorIT(IndexingAndLemmaService service, EntityManager entityManager) {
+    public IndexingImplAndLemmaCreatorIT(IndexingAndLemmaService service, EntityManager entityManager) {
         this.service = service;
         this.entityManager = entityManager;
     }
@@ -33,7 +33,7 @@ public class IndexingAndLemmaCreatorIT extends BaseTest{
     @Test
     @DisplayName("Testing the indexing and create lemma")
     @Commit
-    void startIndexingAndCreateLemma(){
+    void startSitesIndexingAndCreateLemma(){
         Assertions.assertDoesNotThrow(service::startIndexingAndCreateLemma);
 
         Site savedSite = entityManager.createQuery("SELECT s FROM Site s WHERE s.name = :name", Site.class)
@@ -51,14 +51,14 @@ public class IndexingAndLemmaCreatorIT extends BaseTest{
                 .getSingleResult();
 
         assertThat(savedSite.getUrl()).isEqualTo(MAIN_SITE_URL);
-        assertThat(countOfPages).isEqualTo(25);
+        assertThat(countOfPages).isEqualTo(24);
         assertThat(countOfLemmas).isNotNull();
         assertThat(countOfIndexes).isNotNull();
     }
 
     @Test
     @DisplayName("Testing the indexing, lemma creating and index creating for one page")
-    void startIndexingAndCreateLemmaForOnePage(){
+    void startSitesIndexingAndCreateLemmaForOnePage(){
         Assertions.assertDoesNotThrow(() -> service.startIndexingAndCreateLemmaForOnePage(RANDOM_PAGE));
 
         Long countOfLemmas = entityManager.createQuery("SELECT count(l) FROM Lemma l WHERE l.site.name = :name", Long.class)
@@ -68,7 +68,7 @@ public class IndexingAndLemmaCreatorIT extends BaseTest{
                 .setParameter("name", SITE_NAME)
                 .getSingleResult();
 
-        assertThat(countOfLemmas).isEqualTo(427);
-        assertThat(countOfIndexes).isEqualTo(427);
+        assertThat(countOfLemmas).isEqualTo(422);
+        assertThat(countOfIndexes).isEqualTo(422);
     }
 }

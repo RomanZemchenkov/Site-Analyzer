@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
 import searchengine.services.dto.site.CreateSiteDto;
+import searchengine.services.dto.site.ShowSiteDto;
 import searchengine.services.dto.site.UpdateSiteDto;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,9 +26,9 @@ public class SiteServiceTest extends BaseTest {
     @Test
     @DisplayName("Testing the create site")
     void createSite(){
-        Integer siteId = assertDoesNotThrow(() -> service.createSite(new CreateSiteDto("/url/test", "Site name")));
+        ShowSiteDto site = assertDoesNotThrow(() -> service.createSite(new CreateSiteDto("/url/test", "Site name")));
 
-        assertThat(siteId).isEqualTo(4);
+        assertThat(site.getId()).isEqualTo("4");
     }
 
     @Test

@@ -2,7 +2,6 @@ package searchengine.services.searcher.lemma;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import searchengine.services.event_listeners.publisher.EventPublisher;
 
 @Component
 @RequiredArgsConstructor

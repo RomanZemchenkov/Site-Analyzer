@@ -21,7 +21,7 @@ import searchengine.services.parser.LuceneMorphologyGiver;
 import searchengine.services.parser.lemma.TextToLemmaParserImpl;
 import searchengine.services.parser.snippet.SnippetCreator;
 import searchengine.services.parser.snippet.SnippetCreatorImpl;
-import searchengine.services.searcher.analyzer.PageAnalyzerImpl;
+import searchengine.services.searcher.analyzer.page_analyzer.PageAnalyzerImpl;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -179,7 +179,7 @@ public class SearchService {
             Float currentRelevance = entry.getKey();
             Float relativeRelevance = currentRelevance / maxRelevance;
             ShowPageDto currentPage = entry.getValue();
-            currentPage.setRelevance(String.valueOf(relativeRelevance));
+            currentPage.setRelevance(String.format("%.4f",relativeRelevance));
             showPageByRelevance.put(relativeRelevance, currentPage);
         }
 

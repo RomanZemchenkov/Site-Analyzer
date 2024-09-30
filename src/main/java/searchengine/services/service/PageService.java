@@ -5,16 +5,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
-import searchengine.dao.model.Status;
 import searchengine.dao.repository.page.PageRepository;
 import searchengine.dao.repository.site.SiteRepository;
 import searchengine.services.dto.page.CreatePageDto;
-import searchengine.services.dto.page.CreatePageWithMainSiteUrlDto;
-import searchengine.services.dto.page.CreatedPageInfoDto;
+import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.mapper.PageMapper;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.Optional;
 
 @Service
@@ -28,7 +24,7 @@ public class PageService {
 
     @Transactional()
     public String createPage(CreatePageDto dto){
-
+        deletePageIfExist(dto.getPath());
         Integer siteId = Integer.valueOf(dto.getSiteId());
 
         Site site = siteRepository.findById(siteId).get();
@@ -39,32 +35,15 @@ public class PageService {
         return savedPage.getPath();
     }
 
-    @Transactional()
-    public CreatedPageInfoDto createPage(CreatePageWithMainSiteUrlDto dto){
-        String path = dto.getPageUrl();
-        checkExistPage(path);
-
-        String siteUrl = dto.getSiteUrl();
-        String siteName = dto.getSiteName();
-
-        Optional<Site> mayBeExistSite = siteRepository.findSiteByUrl(siteUrl);
-        Site site;
-        if (mayBeExistSite.isEmpty()){
-            site = siteRepository.save(new Site(Status.INDEXING, OffsetDateTime.now(ZoneId.systemDefault()),"",siteUrl,siteName));
-        } else {
-            site = mayBeExistSite.get();
-            site.setStatus(Status.INDEXING);
-        }
-
-        Page page = mapper.mapToPage(dto, site);
-
-        Page savedPage = pageRepository.save(page);
-        return new CreatedPageInfoDto(savedPage,site);
+    public FindPageDto findPageWithSite(String pageUrl){
+        Page page = pageRepository.findByPath(pageUrl).get();
+        return new FindPageDto(page,page.getSite());
     }
 
-    private void checkExistPage(String pageUrl){
-        Optional<Page> mayBePage = pageRepository.findByPath(pageUrl);
+    private void deletePageIfExist(String pageUri){
+        Optional<Page> mayBePage = pageRepository.findByPath(pageUri);
         mayBePage.ifPresent(pageRepository::delete);
+
     }
 
 }

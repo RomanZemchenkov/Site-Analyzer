@@ -1,4 +1,4 @@
-package searchengine.services.searcher.analyzer;
+package searchengine.services.searcher.analyzer.page_analyzer;
 
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
@@ -6,6 +6,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import searchengine.services.searcher.analyzer.HttpResponse;
 import searchengine.services.searcher.entity.ErrorResponse;
 import searchengine.services.searcher.entity.HttpResponseEntity;
 import searchengine.services.searcher.entity.NormalResponse;
