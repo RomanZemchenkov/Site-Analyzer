@@ -85,7 +85,8 @@ public class IndexingImpl implements Indexing{
             context.setIfErrorResponse(true);
         }
 
-        for (Map.Entry<SiteAnalyzerTask, ForkJoinPool> entry : pools.entrySet()) {
+        Map<SiteAnalyzerTask, ForkJoinPool> localPools = new HashMap<>(pools);
+        for (Map.Entry<SiteAnalyzerTask, ForkJoinPool> entry : localPools.entrySet()) {
             SiteAnalyzerTask task = entry.getKey();
             ForkJoinPool pool = entry.getValue();
             task.stopIndexing(pool);
