@@ -7,7 +7,10 @@ import searchengine.dao.model.Site;
 import searchengine.dao.model.Statistic;
 import searchengine.dao.repository.site.SiteRepository;
 import searchengine.dao.repository.statistic.StatisticRepository;
-import searchengine.services.dto.statistics.*;
+import searchengine.services.dto.statistics.DetailedStatisticsItem;
+import searchengine.services.dto.statistics.StatisticsData;
+import searchengine.services.dto.statistics.StatisticsResponse;
+import searchengine.services.dto.statistics.TotalStatistics;
 import searchengine.services.mapper.StatisticMapper;
 
 import java.util.List;

@@ -55,7 +55,7 @@ public class SiteService {
         repository.saveAndFlush(siteBeforeUpdate);
     }
 
-    @Transactionalgit 
+    @Transactional
     public ShowSiteDto findSiteByUrl(String url, String siteName) {
         Optional<Site> mayBeSite = siteRepository.findSiteByUrl(url);
         ShowSiteDto showSite;

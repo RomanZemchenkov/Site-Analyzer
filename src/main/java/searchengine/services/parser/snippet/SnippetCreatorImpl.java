@@ -5,7 +5,13 @@ import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Jsoup;
 import searchengine.services.parser.lemma.TextToLemmaParserImpl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 
 @NoArgsConstructor
 public class SnippetCreatorImpl implements SnippetCreator {

@@ -50,22 +50,4 @@ public class LemmaWriter {
         return lemmasAndCountsOfOneSite;
     }
 
- //    private HashMap<Lemma, Integer> addLemmas(HashMap<String, Integer> mapOfLemmas, Site site) {
-//        HashMap<Lemma,Integer> lemmasAndCount = new HashMap<>();
-//        for (Map.Entry<String, Integer> entry : mapOfLemmas.entrySet()) {
-//            String lemma = entry.getKey();
-//            int countOfLemma = entry.getValue();
-//            Lemma saveLemma = new Lemma(lemma, site);
-//
-//            Lemma existingLemma = lemmasAndCounts.keySet().stream()
-//                    .filter(lem -> lem.getLemma().equals(lemma))
-//                    .findFirst()
-//                    .orElseGet(() -> new Lemma(lemma,site));
-//
-//            lemmasAndCounts.merge(existingLemma, 1 , Integer::sum);
-//            lemmasAndCount.put(saveLemma,countOfLemma);
-//        }
-//        return lemmasAndCount;
-//    }
-
 }

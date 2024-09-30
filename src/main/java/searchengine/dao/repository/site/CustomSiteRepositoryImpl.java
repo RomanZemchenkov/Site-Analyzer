@@ -25,10 +25,6 @@ public class CustomSiteRepositoryImpl implements CustomSiteRepository {
         query.where(createPredicate(cb, root, names));
 
         TypedQuery<Site> finalQuery = entityManager.createQuery(query);
-//        EntityGraph<?> graph = entityManager.getEntityGraph("Site.withAllPages");
-
-//        finalQuery.setHint("jakarta.persistence.loadgraph",graph);
-
 
         return finalQuery.getResultList();
     }

@@ -23,7 +23,12 @@ import searchengine.services.parser.snippet.SnippetCreator;
 import searchengine.services.parser.snippet.SnippetCreatorImpl;
 import searchengine.services.searcher.analyzer.page_analyzer.PageAnalyzerImpl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @Service

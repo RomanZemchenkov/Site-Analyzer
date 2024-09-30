@@ -9,8 +9,19 @@ import searchengine.services.searcher.entity.ErrorResponse;
 import searchengine.services.searcher.entity.HttpResponseEntity;
 import searchengine.services.searcher.entity.NormalResponse;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.Future;
+import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.TimeUnit;
+
 
 @ToString
 public class SiteAnalyzerTask extends RecursiveAction {
@@ -71,7 +82,7 @@ public class SiteAnalyzerTask extends RecursiveAction {
         singleThread.shutdown();
 
         try {
-            singleThread.awaitTermination(60L,TimeUnit.SECONDS);
+            singleThread.awaitTermination(60L, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
