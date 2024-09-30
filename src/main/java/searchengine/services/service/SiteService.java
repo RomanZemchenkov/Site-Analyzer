@@ -36,7 +36,6 @@ public class SiteService {
 
     @Transactional
     public ShowSiteDto createSite(CreateSiteDto dto) {
-        System.out.println("Новый сайт создан или удалён начало");
         String name = dto.getName();
 
         Optional<Site> mayBeSite = repository.findSiteByName(name);
@@ -73,7 +72,6 @@ public class SiteService {
         site.setStatusTime(OffsetDateTime.now(ZoneId.systemDefault()));
 
         Site savedSite = repository.saveAndFlush(site);
-        System.out.println("Новый сайт создан или удалён конец");
         return mapper.mapToShow(savedSite);
     }
 

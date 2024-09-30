@@ -76,7 +76,6 @@ public class IndexingImpl implements Indexing{
 
         try {
             threadPool.awaitTermination(100L, TimeUnit.MINUTES);
-            System.out.println("Внутри индексатора");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -87,7 +86,6 @@ public class IndexingImpl implements Indexing{
     }
 
     public void stopIndexing() {
-        System.out.println("Остановка задачи");
         for (ParseContext context : contexts) {
             context.setIfErrorResponse(true);
         }
@@ -122,7 +120,6 @@ public class IndexingImpl implements Indexing{
     }
 
     private void createContext() {
-        System.out.println("Контекст создаётся начало");
         contexts = new ArrayList<>();
 
         for (Map.Entry<String, String> entry : namesAndSites.entrySet()) {
@@ -135,19 +132,16 @@ public class IndexingImpl implements Indexing{
             ParseContext context = new ParseContext(site, factory);
             contexts.add(context);
         }
-        System.out.println("Контекст создаётся конец");
 
     }
 
     public FindPageDto startPageIndexing(String searchedUrl) {
-        System.out.println("Выполнение задачи");
         ShowSiteDto showSite = checkSiteExist(searchedUrl);
         PageParseContext pageContext = new PageParseContext(showSite);
         PageAnalyzerTask task = pageFactory.createTask(searchedUrl, pageContext);
         task.analyze();
 
         String pageUri = searchedUrl.substring(showSite.getUrl().length());
-        System.out.println("сохранена " + pageUri);
         task.updateSiteState(Status.INDEXED.toString());
         return pageService.findPageWithSite(pageUri);
     }
