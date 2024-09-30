@@ -2,6 +2,7 @@ package searchengine.services.searcher.analyzer;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import searchengine.services.searcher.analyzer.page_analyzer.PageAnalyzerImpl;
 import searchengine.services.searcher.entity.ErrorResponse;
 import searchengine.services.searcher.entity.HttpResponseEntity;
 import searchengine.services.searcher.entity.NormalResponse;

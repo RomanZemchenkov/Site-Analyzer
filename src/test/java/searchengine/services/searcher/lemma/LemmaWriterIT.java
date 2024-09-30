@@ -9,7 +9,7 @@ import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 import searchengine.dao.repository.page.PageRepository;
 import searchengine.dao.repository.site.SiteRepository;
-import searchengine.services.searcher.analyzer.Indexing;
+import searchengine.services.searcher.analyzer.IndexingImpl;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,13 +19,13 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 public class LemmaWriterIT extends BaseTest {
 
-    private final Indexing indexingService;
+    private final IndexingImpl indexingService;
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
     private static final String SITE_NAME = "Sendel.ru";
 
     @Autowired
-    public LemmaWriterIT(Indexing indexingService, SiteRepository siteRepository, PageRepository pageRepository) {
+    public LemmaWriterIT(IndexingImpl indexingService, SiteRepository siteRepository, PageRepository pageRepository) {
         this.indexingService = indexingService;
         this.siteRepository = siteRepository;
         this.pageRepository = pageRepository;
@@ -35,7 +35,7 @@ public class LemmaWriterIT extends BaseTest {
     @DisplayName("Testing the lemma creating for one page")
     void createLemmaFromOnePageTest(){
         LemmaWriter lemmaWriter = new LemmaWriter(new ConcurrentHashMap<>());
-        indexingService.startIndexing();
+        indexingService.startSitesIndexing();
 
         Site site = siteRepository.findSiteByName(SITE_NAME).get();
         Page page = pageRepository.findById(10).get();

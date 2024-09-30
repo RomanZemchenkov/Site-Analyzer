@@ -8,7 +8,7 @@ import searchengine.BaseTest;
 import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Site;
 import searchengine.dao.repository.site.SiteRepository;
-import searchengine.services.searcher.analyzer.Indexing;
+import searchengine.services.searcher.analyzer.IndexingImpl;
 import searchengine.services.searcher.lemma.LemmaCreatorContext;
 import searchengine.services.searcher.lemma.LemmaCreatorTask;
 import searchengine.services.searcher.lemma.LemmaCreatorTaskFactory;
@@ -24,11 +24,11 @@ public class LemmaServiceIT extends BaseTest {
 
     private final LemmaService lemmaService;
     private final SiteRepository siteRepository;
-    private final Indexing indexing;
+    private final IndexingImpl indexing;
     private static final String EXIST_SITE_NAME = "Sendel.ru";
 
     @Autowired
-    public LemmaServiceIT(LemmaService lemmaService, SiteRepository siteRepository, Indexing indexing) {
+    public LemmaServiceIT(LemmaService lemmaService, SiteRepository siteRepository, IndexingImpl indexing) {
         this.lemmaService = lemmaService;
         this.siteRepository = siteRepository;
         this.indexing = indexing;
@@ -37,7 +37,7 @@ public class LemmaServiceIT extends BaseTest {
     @Test
     @DisplayName("Testing the create batch lemma method")
     void createBatch(){
-        indexing.startIndexing();
+        indexing.startSitesIndexing();
         Optional<Site> mayBeSite = siteRepository.findSiteByName(EXIST_SITE_NAME);
         Assertions.assertTrue(mayBeSite.isPresent());
 

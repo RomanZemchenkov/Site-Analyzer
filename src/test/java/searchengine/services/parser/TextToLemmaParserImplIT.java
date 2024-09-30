@@ -3,7 +3,7 @@ package searchengine.services.parser;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import searchengine.services.parser.lemma.TextToLemmaParserImpl;
-import searchengine.services.searcher.analyzer.PageAnalyzerImpl;
+import searchengine.services.searcher.analyzer.page_analyzer.PageAnalyzerImpl;
 import searchengine.services.searcher.entity.HttpResponseEntity;
 
 import java.util.Map;

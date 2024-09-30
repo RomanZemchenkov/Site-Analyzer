@@ -8,7 +8,7 @@ import searchengine.BaseTest;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 import searchengine.dao.model.Status;
-import searchengine.services.dto.page.CreatedPageInfoDto;
+import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.exception.IllegalPageException;
 
 import java.util.List;
@@ -17,23 +17,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static searchengine.services.GlobalVariables.STOP_INDEXING_TEXT;
 
 
-public class IndexingTest extends BaseTest {
+public class IndexingImplTest extends BaseTest {
 
-    private final Indexing service;
+    private final IndexingImpl service;
     private final EntityManager manager;
-    private static final String ALWAYS_GOOD_SITE = "Sendel.ru";
-    private static final String EXCEPTION_SITE = "SendelWithException.ru";
+    private static final String ALWAYS_GOOD_SITE = "ItDeti.ru";
+    private static final String EXCEPTION_SITE = "ItDetiWithException.ru";
 
     @Autowired
-    public IndexingTest(Indexing service, EntityManager manager) {
+    public IndexingImplTest(IndexingImpl service, EntityManager manager) {
         this.service = service;
         this.manager = manager;
     }
 
     @Test
     @DisplayName("Testing the indexing one site without problems")
-    void startIndexingWithoutProblemTest() {
-        Assertions.assertDoesNotThrow(service::startIndexing);
+    void startSitesIndexingWithoutProblemTest() {
+        Assertions.assertDoesNotThrow(service::startSitesIndexing);
 
         List<Site> sites = manager.createQuery("SELECT s FROM Site AS s WHERE s.id >= 4", Site.class)
                 .getResultList();
@@ -47,29 +47,28 @@ public class IndexingTest extends BaseTest {
 
     @Test
     @DisplayName("Testing the indexing site with problem")
-    void startIndexingWithProblemTest() {
-        Assertions.assertDoesNotThrow(service::startIndexing);
+    void startSitesIndexingWithProblemTest() {
+        Assertions.assertDoesNotThrow(service::startSitesIndexing);
 
-        List<Site> sites = manager.createQuery("SELECT s FROM Site AS s WHERE s.id >= 4", Site.class)
-                .getResultList();
+        Site site = manager.createQuery("SELECT s FROM Site AS s WHERE s.id = 4", Site.class)
+                .getSingleResult();
 
-        sites.forEach(er -> {
-            assertThat(er.getLastError()).isNotBlank();
-            assertThat(er.getPages()).isNotNull();
-            assertThat(er.getStatus()).isEqualTo(Status.FAILED);
-        });
+
+        assertThat(site.getPages()).isNotNull();
+        assertThat(site.getLastError()).isNotBlank();
+        assertThat(site.getStatus()).isEqualTo(Status.FAILED);
     }
 
     @Test
     @DisplayName("Testing the indexing sites where one site with problem")
-    void startIndexingNormalAndProblemSitesTest() {
-        Assertions.assertDoesNotThrow(service::startIndexing);
+    void startSitesIndexingNormalAndProblemSitesTest() {
+        Assertions.assertDoesNotThrow(service::startSitesIndexing);
 
 
         Tuple tupleWithException = manager.createQuery("SELECT s.status AS status, s.lastError AS error ,count(p.path) AS page_count FROM Site AS s " +
-                                                     "LEFT JOIN Page AS p ON p.site.id = s.id " +
-                                                     "WHERE s.name = :name " +
-                                                     "GROUP BY s.status, s.lastError", Tuple.class)
+                                                       "LEFT JOIN Page AS p ON p.site.id = s.id " +
+                                                       "WHERE s.name = :name " +
+                                                       "GROUP BY s.status, s.lastError", Tuple.class)
                 .setParameter("name", EXCEPTION_SITE).getSingleResult();
         Status status = tupleWithException.get(0, Status.class);
         String error = tupleWithException.get(1, String.class);
@@ -89,9 +88,9 @@ public class IndexingTest extends BaseTest {
 
     @Test
     @DisplayName("Testing the indexing with stop method use")
-    void startIndexingWithStopIndexingTest() {
+    void startIndexingWithStopSiteIndexingTest() {
         Assertions.assertDoesNotThrow(() -> {
-            Thread threadStart = new Thread(service::startIndexing);
+            Thread threadStart = new Thread(service::startSitesIndexing);
             Thread threadStop = new Thread(service::stopIndexing);
 
             threadStart.start();
@@ -107,32 +106,49 @@ public class IndexingTest extends BaseTest {
                 .getResultList();
 
         sites.forEach(er -> {
+            assertThat(er.getStatus()).isEqualTo(Status.FAILED);
             assertThat(er.getLastError()).isEqualTo(STOP_INDEXING_TEXT);
             assertThat(er.getPages()).isNotNull();
-            assertThat(er.getStatus()).isEqualTo(Status.FAILED);
         });
 
     }
 
     @Test
     @DisplayName("Successful testing the one page indexing")
-    void successfulIndexingOnePageTest(){
-        String searchedUrl = "https://sendel.ru/posts/java-with-vscode/";
-        CreatedPageInfoDto infoDto = service.onePageIndexing(searchedUrl);
+    void successfulIndexingOnePageTest() {
+        String searchedUrl = "https://itdeti.ru/robotrack";
+        FindPageDto infoDto = service.startPageIndexing(searchedUrl);
         Page savedPage = infoDto.getSavedPage();
         Site site = infoDto.getSite();
 
         assertThat(savedPage.getCode()).isEqualTo(200);
-        assertThat(savedPage.getSite().getUrl()).isEqualTo("https://sendel.ru");
+        assertThat(savedPage.getSite().getUrl()).isEqualTo("https://itdeti.ru");
         assertThat(savedPage.getPath()).isNotBlank();
         assertThat(site.getStatus()).isEqualTo(Status.INDEXED);
     }
 
     @Test
+    @DisplayName("Successful testing the one page indexing for several pages")
+    void successfulIndexingSeveralPage() {
+        String searchedUrl1 = "https://itdeti.ru/robotrack";
+        String searchedUrl2 = "https://itdeti.ru/minecraft";
+        String searchedUrl3 = "https://itdeti.ru/systems-admin";
+        service.startPageIndexing(searchedUrl1);
+        service.startPageIndexing(searchedUrl2);
+        service.startPageIndexing(searchedUrl3);
+
+        Long countOfPages = manager.createQuery("SELECT count(*) FROM Page p WHERE p.site.id = :siteId", Long.class)
+                .setParameter("siteId", "4")
+                .getSingleResult();
+
+        assertThat(countOfPages).isEqualTo(3L);
+    }
+
+    @Test
     @DisplayName("Unsuccessful testing the one page indexing")
-    void unsuccessfulIndexingOnePageTest(){
+    void unsuccessfulIndexingOnePageTest() {
         String searchedUrl = "https://ru.wikipedia.org/wiki/Заглавная_страница";
-        Assertions.assertThrows(IllegalPageException.class, () -> service.onePageIndexing(searchedUrl));
+        Assertions.assertThrows(IllegalPageException.class, () -> service.startPageIndexing(searchedUrl));
     }
 
 
