@@ -53,16 +53,14 @@ public class SearchService {
         String mayBeUrl = searchedTextAndParameters.getUrl();
         String limit = searchedTextAndParameters.getLimit();
 
-        Set<String> lemmas = timeForLemmaCreate(() -> parseToLemmas(searchedQuery));
+        Set<String> lemmas = parseToLemmas(searchedQuery);
 
-        List<Site> usesUrls = timeForSiteFind(() -> findUsesUrls(mayBeUrl));
+        List<Site> usesUrls = findUsesUrls(mayBeUrl);
 
         List<ShowPageDto> showPagesList = new ArrayList<>();
-        timeForShowPageCreate(() -> {
-            for (Site oneSite : usesUrls) {
-                showPagesList.addAll(findSitesPages(oneSite, lemmas));
-            }
-        });
+        for (Site oneSite : usesUrls) {
+            showPagesList.addAll(findSitesPages(oneSite, lemmas));
+        }
         showPagesList.sort((o1, o2) -> o2.getRelevance().compareTo(o1.getRelevance()));
         return getByLimitAndOffset(showPagesList, limit);
     }
@@ -199,15 +197,15 @@ public class SearchService {
 
         threadPool.shutdown();
 
-        try{
-            threadPool.awaitTermination(120L,TimeUnit.SECONDS);
+        try {
+            threadPool.awaitTermination(120L, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
         return preparedShowPageDto;
     }
 
-    private List<ShowPageDto> createPreparedShowPageDtoFromFuture(List<Future<ShowPageDto>> futuresShowPagesDto){
+    private List<ShowPageDto> createPreparedShowPageDtoFromFuture(List<Future<ShowPageDto>> futuresShowPagesDto) {
         return futuresShowPagesDto.stream()
                 .map(fut -> {
                     try {
@@ -218,7 +216,6 @@ public class SearchService {
                 })
                 .toList();
     }
-
 
 
     private ShowPageDto createShowPageDto(Page page, List<String> suitableLemmas, float maxRelevanceByPage, float maxRelevanceBySite) {
@@ -236,28 +233,5 @@ public class SearchService {
         Float relativeRelevance = maxRelevanceByPage / maxRelevanceBySite;
         String relativeRelevanceByString = String.format("%.4f", relativeRelevance);
         return new ShowPageDto(pathToPage, pageTitle, snippet, relativeRelevanceByString, siteName, siteUrl);
-    }
-
-    static <T> T timeForLemmaCreate(Supplier<T> runnable) {
-        long start = System.currentTimeMillis();
-        T t = runnable.get();
-        long finish = System.currentTimeMillis();
-        System.out.println("Леммы созданы за: " + (finish - start));
-        return t;
-    }
-
-    static <T> T timeForSiteFind(Supplier<T> runnable) {
-        long start = System.currentTimeMillis();
-        T t = runnable.get();
-        long finish = System.currentTimeMillis();
-        System.out.println("Сайты найдены за: " + (finish - start));
-        return t;
-    }
-
-    static void timeForShowPageCreate(Runnable runnable) {
-        long start = System.currentTimeMillis();
-        runnable.run();
-        long finish = System.currentTimeMillis();
-        System.out.println("Страницы созданы за: " + (finish - start));
     }
 }
