@@ -18,13 +18,3 @@ services:
       - "POSTGRES_DB=search_engine"
     networks:
       - "app-tier"
-
-  redis:
-    image: "redis:7.4.0"
-    container_name: "database_in_ram"
-    ports:
-      - "6379:6379"
-    networks:
-      - "app-tier"
-    depends_on:
-      - "postgres"
