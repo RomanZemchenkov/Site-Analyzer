@@ -29,4 +29,3 @@ spring:
         show_sql: false
 server:
   port: 8080
--+`
