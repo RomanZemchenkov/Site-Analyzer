@@ -13,9 +13,7 @@ import searchengine.dao.model.Site;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static searchengine.dao.repository.index.IndexSql.SAVE_INDEX_SQL;
 

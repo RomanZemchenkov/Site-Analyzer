@@ -21,9 +21,7 @@ import searchengine.web.handler.Response;
 import searchengine.web.entity.SearchResponse;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -84,7 +82,6 @@ public class ApiController {
                                                  @RequestParam(name = "offset", required = false, defaultValue = "0") String offset,
                                                  @RequestParam(name = "site", required = false) String siteUrl) {
         SearchParametersDto searchParametersDto = new SearchParametersDto(query, limit, offset, siteUrl);
-        System.out.println("Поиск запущен");
         List<ShowPageDto> searchResult = searchService.search(searchParametersDto);
         List<ShowPageDto> offsetList = new ArrayList<>();
         int limitByInt = Integer.parseInt(limit);
@@ -93,7 +90,6 @@ public class ApiController {
         for(int i = offsetByInt; i < lastPageIndex; i++){
             offsetList.add(searchResult.get(i));
         }
-        System.out.println("Поиск закончен");
         SearchResponse searchResponse = new SearchResponse(true, searchResult.size(), offsetList);
         return new ResponseEntity<>(searchResponse, HttpStatus.OK);
     }
