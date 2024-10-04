@@ -9,4 +9,6 @@ public interface CustomPageRepository{
     @Modifying
     @Transactional
     void deleteAllBySite(Site site);
+
+    long findCountOfPagesBySite(Site site);
 }

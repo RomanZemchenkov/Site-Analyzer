@@ -19,4 +19,11 @@ public class CustomPageRepositoryImpl implements CustomPageRepository{
                 .executeUpdate();
         System.out.println("Страницы удалены");
     }
+
+    @Override
+    public long findCountOfPagesBySite(Site site) {
+        return entityManager.createQuery("SELECT COUNT(p) FROM Page p WHERE p.site.id = :siteId",Long.class)
+                .setParameter("siteId",site.getId())
+                .getSingleResult();
+    }
 }

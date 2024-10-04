@@ -12,6 +12,8 @@ import searchengine.services.searcher.analyzer.page_analyzer.PageParseContext;
 import searchengine.services.searcher.analyzer.site_analyzer.ParseContext;
 import searchengine.services.searcher.analyzer.site_analyzer.SiteAnalyzerTask;
 import searchengine.services.searcher.analyzer.site_analyzer.SiteAnalyzerTaskFactory;
+import searchengine.services.searcher.entity.ErrorResponse;
+import searchengine.services.searcher.entity.HttpResponseEntity;
 import searchengine.services.service.PageService;
 import searchengine.services.service.SiteService;
 import searchengine.services.dto.SiteProperties;
@@ -90,7 +92,6 @@ public class IndexingImpl implements Indexing{
             SiteAnalyzerTask task = entry.getKey();
             ForkJoinPool pool = entry.getValue();
             task.stopIndexing(pool);
-            task.updateSiteState(Status.FAILED.toString(),STOP_INDEXING_TEXT);
         }
     }
 
@@ -109,7 +110,11 @@ public class IndexingImpl implements Indexing{
                 forkJoinPool.shutdownNow();
             }
             if (!context.isIfErrorResponse()) {
+                System.out.println("Устанавливаем окончание работы таски без ошибок");
                 task.updateSiteState(Status.INDEXED.toString());
+            } else {
+                System.out.println("Устанавливаем окончание работы таски с ошибкой");
+                task.updateSiteState(Status.FAILED.toString(),context.getErrorContent());
             }
         }
     }
@@ -137,11 +142,15 @@ public class IndexingImpl implements Indexing{
         ShowSiteDto showSite = checkSiteExist(searchedUrl);
         PageParseContext pageContext = new PageParseContext(showSite);
         PageAnalyzerTask task = pageFactory.createTask(searchedUrl, pageContext);
-        task.analyze();
+        HttpResponseEntity analyzeResult = task.analyze();
 
         String pageUri = searchedUrl.substring(showSite.getUrl().length());
         System.out.println("сохранена " + pageUri);
-        task.updateSiteState(Status.INDEXED.toString());
+        if(analyzeResult instanceof ErrorResponse){
+            task.updateSiteState(Status.FAILED.toString(),analyzeResult.getContent());
+        } else {
+            task.updateSiteState(Status.INDEXED.toString());
+        }
         return pageService.findPageWithSite(pageUri);
     }
 

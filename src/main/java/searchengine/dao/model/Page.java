@@ -46,4 +46,12 @@ public class Page implements BaseEntity<Integer>{
         this.site = site;
         site.getPages().add(this);
     }
+
+    public Page(Integer id, String path, Integer code, String content, Site site) {
+        this.id = id;
+        this.path = path;
+        this.code = code;
+        this.content = content;
+        this.site = site;
+    }
 }

@@ -2,8 +2,8 @@ indexing-settings:
   sites:
     #    - url: https://sendel.ru
     #      name: Sendel.ru
-    - url: https://www.playback.ru
-      name: PlayBack.Ru
+#    - url: https://www.playback.ru
+#      name: PlayBack.Ru
     - url: https://itdeti.ru
       name: ItDeti.ru
     - url: https://hacker-son.com
@@ -14,6 +14,8 @@ indexing-settings:
 #              name: Lenta.ru
     - url: https://et-cetera.ru
       name: Et-cetera
+    - url: https://skillbox.ru/
+      name: Skillbox
     - url: https://shcool11-balakhna.edusite.ru
       name: BalakhnaSchool11
 spring:
@@ -26,9 +28,9 @@ spring:
       hibernate:
         jdbc:
           batch_size: 50
-          show_sql: true
-          format_sql: true
-        order_updates: true
+          order_updates: true
+        format_sql: false
+        show_sql: false
 
 
   data:

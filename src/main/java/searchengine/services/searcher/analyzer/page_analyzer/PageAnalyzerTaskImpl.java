@@ -11,6 +11,7 @@ import searchengine.services.event_listeners.publisher.EventPublisher;
 import searchengine.services.searcher.entity.HttpResponseEntity;
 
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 public class PageAnalyzerTaskImpl implements PageAnalyzerTask {
 
@@ -38,6 +39,14 @@ public class PageAnalyzerTaskImpl implements PageAnalyzerTask {
 
     public void stopAnalyze(ForkJoinPool usePool) {
         usePool.shutdownNow();
+        try {
+            if (!usePool.awaitTermination(60, TimeUnit.SECONDS)) {
+                usePool.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            usePool.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override
@@ -57,6 +66,7 @@ public class PageAnalyzerTaskImpl implements PageAnalyzerTask {
     }
 
     private void ifErrorResponse(String errorMessage) {
+        System.out.println("Ошибка");
         updateSiteState(Status.FAILED.toString(), errorMessage);
     }
 

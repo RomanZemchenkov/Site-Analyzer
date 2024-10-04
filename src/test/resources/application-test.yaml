@@ -31,5 +31,7 @@ indexing-settings:
     #      name: Svetlovka.ru
     #    - url: https://lenta.ru
     #      name: Lenta.ru
+#    - url: https://et-cetera.ru
+#      name: Et-cetera
 #    - url: https://sendel.ru/432434234234
 #      name: SendelWithException.ru

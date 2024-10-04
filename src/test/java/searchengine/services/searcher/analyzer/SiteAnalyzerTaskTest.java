@@ -31,6 +31,7 @@ public class SiteAnalyzerTaskTest extends BaseTest {
     private final EntityManager entityManager;
     private final SiteService siteService;
     private static final String TEST_MAIN_URL = "https://itdeti.ru";
+    private static final String TEST_MAIN_URL_WITH_EXCEPTION = "https://et-cetera.ru";
 
     @Autowired
     public SiteAnalyzerTaskTest(SiteAnalyzerTaskFactory factory, EntityManager entityManager, SiteService siteService) {
@@ -66,10 +67,9 @@ public class SiteAnalyzerTaskTest extends BaseTest {
     @Test
     @DisplayName("Testing the task for one site with exception")
     void taskWithException() throws InterruptedException {
-        ShowSiteDto site = siteService.createSite(new CreateSiteDto(TEST_MAIN_URL, "ItDeti"));
+        ShowSiteDto site = siteService.createSite(new CreateSiteDto(TEST_MAIN_URL_WITH_EXCEPTION, "Et-cetera"));
         ParseContext context = new ParseContext(site, factory);
-        String badUrl = "https://itdeti.ru/112412421412";
-        SiteAnalyzerTask task = factory.createTask(badUrl, context, new ConcurrentSkipListSet<>());
+        SiteAnalyzerTask task = factory.createTask(TEST_MAIN_URL_WITH_EXCEPTION, context, new ConcurrentSkipListSet<>());
 
         ForkJoinPool pool = new ForkJoinPool(12);
 

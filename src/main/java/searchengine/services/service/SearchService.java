@@ -14,6 +14,7 @@ import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 import searchengine.dao.repository.index.IndexRepository;
 import searchengine.dao.repository.lemma.LemmaRepository;
+import searchengine.dao.repository.page.PageRepository;
 import searchengine.dao.repository.site.SiteRepository;
 import searchengine.services.dto.SearchParametersDto;
 import searchengine.services.dto.page.ShowPageDto;
@@ -41,6 +42,9 @@ public class SearchService {
     private final SiteRepository siteRepository;
     private final LemmaRepository lemmaRepository;
     private final IndexRepository indexRepository;
+    private final PageRepository pageRepository;
+    private static SearchParametersDto prevQueryParameters;
+    private static List<ShowPageDto> prevSearchResult;
     private static final float PERCENT_OF_TOTAL_COUNT = 0.95f;
 
 
@@ -48,14 +52,17 @@ public class SearchService {
     @CheckQuery
     @CheckIndexingWork
     @CheckSiteExist
-    public HashMap<Integer, List<ShowPageDto>> search(SearchParametersDto searchedTextAndParameters) {
+    public List<ShowPageDto> search(SearchParametersDto searchedTextAndParameters) {
+        if(checkQueriesMatch(searchedTextAndParameters)){
+            return prevSearchResult;
+        }
+        prevQueryParameters = searchedTextAndParameters;
         String searchedQuery = searchedTextAndParameters.getQuery();
         String mayBeUrl = searchedTextAndParameters.getUrl();
-        String limit = searchedTextAndParameters.getLimit();
 
         Set<String> lemmas = timeForLemmaCreate(() -> parseToLemmas(searchedQuery));
 
-        List<Site> usesUrls = timeForSiteFind(() -> findUsesUrls(mayBeUrl));
+        List<Site> usesUrls = timeForSiteFind(() -> findUsesSites(mayBeUrl));
 
         List<ShowPageDto> showPagesList = new ArrayList<>();
         timeForShowPageCreate(() -> {
@@ -64,13 +71,27 @@ public class SearchService {
             }
         });
         showPagesList.sort((o1, o2) -> o2.getRelevance().compareTo(o1.getRelevance()));
-        return getByLimitAndOffset(showPagesList, limit);
+        prevSearchResult = showPagesList;
+        return showPagesList;
+    }
+
+    public void clearPrevInformation(){
+        prevQueryParameters = null;
+        prevSearchResult = null;
+    }
+
+    private boolean checkQueriesMatch(SearchParametersDto currentQueryParameters){
+        if(prevQueryParameters != null){
+            return prevQueryParameters.equals(currentQueryParameters);
+        }
+        return false;
     }
 
     private List<ShowPageDto> findSitesPages(Site site, Set<String> lemmas) {
-        List<Lemma> existLemmasForOneSite = findExistLemmas(site, lemmas);
+        System.out.println("Сейчас ищем для сайта: " + site.getName());
+        List<Lemma> existLemmasForOneSite = timeForFindExistLemma(() -> findExistLemmas(site, lemmas));
         List<String> suitableLemmas = new ArrayList<>();
-        Map<Page, List<Index>> suitablePagesForOneSite = findSuitablePages(existLemmasForOneSite, suitableLemmas);
+        Map<Page, List<Index>> suitablePagesForOneSite = timeForFindSuitablePages(() -> findSuitablePages(existLemmasForOneSite, suitableLemmas));
         List<ShowPageDto> suitablePagesList = new ArrayList<>();
         if (!suitablePagesForOneSite.isEmpty()) {
             Map<Float, Page> pageAndMaxRelevance = new HashMap<>();
@@ -80,6 +101,7 @@ public class SearchService {
         return suitablePagesList;
     }
 
+    @Deprecated
     private HashMap<Integer, List<ShowPageDto>> getByLimitAndOffset(List<ShowPageDto> showPages, String limit) {
         int maxOfOnePage = Integer.parseInt(limit);
         HashMap<Integer, List<ShowPageDto>> pageable = new HashMap<>();
@@ -103,7 +125,7 @@ public class SearchService {
         return new TextToLemmaParserImpl().parse(searchedQuery).keySet();
     }
 
-    private List<Site> findUsesUrls(String mayBeUrl) {
+    private List<Site> findUsesSites(String mayBeUrl) {
         if (mayBeUrl == null || mayBeUrl.isBlank()) {
             return siteRepository.findAll();
         } else {
@@ -112,7 +134,8 @@ public class SearchService {
     }
 
     private List<Lemma> findExistLemmas(Site useSite, Set<String> lemmas) {
-        int maxLemmaFrequency = (int) (useSite.getPages().size() * PERCENT_OF_TOTAL_COUNT);
+        long countOfPagesBySite = pageRepository.findCountOfPagesBySite(useSite);
+        int maxLemmaFrequency = (int) (countOfPagesBySite * PERCENT_OF_TOTAL_COUNT);
         return lemmaRepository.findAllBySiteIdAndLemmas(useSite, lemmas)
                 .stream()
                 .filter(lemma -> lemma.getFrequency() <= maxLemmaFrequency)
@@ -130,13 +153,13 @@ public class SearchService {
             }
             suitableLemmas.add(targetLemma.getLemma());
             if (suitablePages.isEmpty()) {
-                suitablePages = indexRepository.findAllByLemma(targetLemma)
+                suitablePages = indexRepository.findAllIndexesWithPageByLemmas(targetLemma)
                         .stream()
                         .collect(Collectors.toMap(Index::getPage, List::of));
                 continue;
             }
 
-            Map<Page, Index> currentPages = indexRepository.findAllByLemma(targetLemma)
+            Map<Page, Index> currentPages = indexRepository.findAllIndexesWithPageByLemmas(targetLemma)
                     .stream()
                     .collect(Collectors.toMap(Index::getPage, index -> index));
 
@@ -230,7 +253,7 @@ public class SearchService {
         RussianLuceneMorphology russianLuceneMorphology = LuceneMorphologyGiver.get();
         SnippetCreator snippetCreatorTask = new SnippetCreatorImpl(suitableLemmas, russianLuceneMorphology);
         LuceneMorphologyGiver.returnLucene(russianLuceneMorphology);
-        String snippet = snippetCreatorTask.createSnippet(content);
+        String snippet = timeForSnippedCreated(() -> snippetCreatorTask.createSnippet(content));
         String pageTitle = new PageAnalyzerImpl().searchPageTitle(content);
 
         Float relativeRelevance = maxRelevanceByPage / maxRelevanceBySite;
@@ -251,6 +274,30 @@ public class SearchService {
         T t = runnable.get();
         long finish = System.currentTimeMillis();
         System.out.println("Сайты найдены за: " + (finish - start));
+        return t;
+    }
+
+    static <T> T timeForFindExistLemma(Supplier<T> runnable) {
+        long start = System.currentTimeMillis();
+        T t = runnable.get();
+        long finish = System.currentTimeMillis();
+        System.out.println("Леммы найдены за: " + (finish - start));
+        return t;
+    }
+
+    static <T> T timeForFindSuitablePages(Supplier<T> runnable) {
+        long start = System.currentTimeMillis();
+        T t = runnable.get();
+        long finish = System.currentTimeMillis();
+        System.out.println("Подходящие страницы найдены за: " + (finish - start));
+        return t;
+    }
+
+    static <T> T timeForSnippedCreated(Supplier<T> runnable) {
+        long start = System.currentTimeMillis();
+        T t = runnable.get();
+        long finish = System.currentTimeMillis();
+        System.out.println("Сниппеты созданы за: " + (finish - start));
         return t;
     }
 

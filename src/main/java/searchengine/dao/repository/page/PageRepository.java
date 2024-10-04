@@ -16,4 +16,5 @@ public interface PageRepository extends JpaRepository<Page, Integer>, CustomPage
     Optional<Page> findByPath(String path);
 
     List<Page> findAllBySite(Site site);
+
 }

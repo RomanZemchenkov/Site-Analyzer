@@ -12,6 +12,8 @@ public class ParseContext {
     private final SiteAnalyzerTaskFactory factory;
     @Setter
     private volatile boolean ifErrorResponse = false;
+    @Setter
+    private String errorContent;
 
     public ParseContext(ShowSiteDto siteDto, SiteAnalyzerTaskFactory factory) {
         this.siteDto = siteDto;
