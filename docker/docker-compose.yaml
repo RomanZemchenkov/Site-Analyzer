@@ -28,6 +28,6 @@ services:
       - "SPRING_DATASOURCE_USERNAME=roman"
       - "SPRING_DATASOURCE_PASSWORD=1234"
     networks:
-      - app-tier
+      - "app-tier"
     depends_on:
-      - postgres
+      - "postgres"
