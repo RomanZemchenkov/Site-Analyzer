@@ -1,11 +1,13 @@
 package searchengine.services.dto;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
 
 @Getter
 @ToString
+@EqualsAndHashCode(of = {"query","url"})
 public class SearchParametersDto {
 
     private final String query;

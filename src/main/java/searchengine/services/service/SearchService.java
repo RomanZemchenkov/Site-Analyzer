@@ -14,6 +14,7 @@ import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 import searchengine.dao.repository.index.IndexRepository;
 import searchengine.dao.repository.lemma.LemmaRepository;
+import searchengine.dao.repository.page.PageRepository;
 import searchengine.dao.repository.site.SiteRepository;
 import searchengine.services.dto.SearchParametersDto;
 import searchengine.services.dto.page.ShowPageDto;
@@ -30,7 +31,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +41,9 @@ public class SearchService {
     private final SiteRepository siteRepository;
     private final LemmaRepository lemmaRepository;
     private final IndexRepository indexRepository;
+    private final PageRepository pageRepository;
+    private static SearchParametersDto prevQueryParameters;
+    private static List<ShowPageDto> prevSearchResult;
     private static final float PERCENT_OF_TOTAL_COUNT = 0.95f;
 
 
@@ -48,21 +51,38 @@ public class SearchService {
     @CheckQuery
     @CheckIndexingWork
     @CheckSiteExist
-    public HashMap<Integer, List<ShowPageDto>> search(SearchParametersDto searchedTextAndParameters) {
+    public List<ShowPageDto> search(SearchParametersDto searchedTextAndParameters) {
+        if(checkQueriesMatch(searchedTextAndParameters)){
+            return prevSearchResult;
+        }
+        prevQueryParameters = searchedTextAndParameters;
         String searchedQuery = searchedTextAndParameters.getQuery();
         String mayBeUrl = searchedTextAndParameters.getUrl();
-        String limit = searchedTextAndParameters.getLimit();
 
         Set<String> lemmas = parseToLemmas(searchedQuery);
 
-        List<Site> usesUrls = findUsesUrls(mayBeUrl);
+        List<Site> usesSites = findUsesSites(mayBeUrl);
 
         List<ShowPageDto> showPagesList = new ArrayList<>();
-        for (Site oneSite : usesUrls) {
+        for (Site oneSite : usesSites) {
             showPagesList.addAll(findSitesPages(oneSite, lemmas));
         }
         showPagesList.sort((o1, o2) -> o2.getRelevance().compareTo(o1.getRelevance()));
-        return getByLimitAndOffset(showPagesList, limit);
+        prevSearchResult = showPagesList;
+        return showPagesList;
+    }
+
+
+    public void clearPrevInformation(){
+        prevQueryParameters = null;
+        prevSearchResult = null;
+    }
+
+    private boolean checkQueriesMatch(SearchParametersDto currentQueryParameters){
+        if(prevQueryParameters != null){
+            return prevQueryParameters.equals(currentQueryParameters);
+        }
+        return false;
     }
 
     private List<ShowPageDto> findSitesPages(Site site, Set<String> lemmas) {
@@ -78,6 +98,7 @@ public class SearchService {
         return suitablePagesList;
     }
 
+    @Deprecated
     private HashMap<Integer, List<ShowPageDto>> getByLimitAndOffset(List<ShowPageDto> showPages, String limit) {
         int maxOfOnePage = Integer.parseInt(limit);
         HashMap<Integer, List<ShowPageDto>> pageable = new HashMap<>();
@@ -101,7 +122,7 @@ public class SearchService {
         return new TextToLemmaParserImpl().parse(searchedQuery).keySet();
     }
 
-    private List<Site> findUsesUrls(String mayBeUrl) {
+    private List<Site> findUsesSites(String mayBeUrl) {
         if (mayBeUrl == null || mayBeUrl.isBlank()) {
             return siteRepository.findAll();
         } else {
@@ -110,7 +131,8 @@ public class SearchService {
     }
 
     private List<Lemma> findExistLemmas(Site useSite, Set<String> lemmas) {
-        int maxLemmaFrequency = (int) (useSite.getPages().size() * PERCENT_OF_TOTAL_COUNT);
+        long countOfPagesBySite = pageRepository.findCountOfPagesBySite(useSite);
+        int maxLemmaFrequency = (int) (countOfPagesBySite * PERCENT_OF_TOTAL_COUNT);
         return lemmaRepository.findAllBySiteIdAndLemmas(useSite, lemmas)
                 .stream()
                 .filter(lemma -> lemma.getFrequency() <= maxLemmaFrequency)
@@ -128,13 +150,13 @@ public class SearchService {
             }
             suitableLemmas.add(targetLemma.getLemma());
             if (suitablePages.isEmpty()) {
-                suitablePages = indexRepository.findAllByLemma(targetLemma)
+                suitablePages = indexRepository.findAllIndexesWithPageByLemmas(targetLemma)
                         .stream()
                         .collect(Collectors.toMap(Index::getPage, List::of));
                 continue;
             }
 
-            Map<Page, Index> currentPages = indexRepository.findAllByLemma(targetLemma)
+            Map<Page, Index> currentPages = indexRepository.findAllIndexesWithPageByLemmas(targetLemma)
                     .stream()
                     .collect(Collectors.toMap(Index::getPage, index -> index));
 
@@ -205,7 +227,8 @@ public class SearchService {
         return preparedShowPageDto;
     }
 
-    private List<ShowPageDto> createPreparedShowPageDtoFromFuture(List<Future<ShowPageDto>> futuresShowPagesDto) {
+
+    private List<ShowPageDto> createPreparedShowPageDtoFromFuture(List<Future<ShowPageDto>> futuresShowPagesDto){
         return futuresShowPagesDto.stream()
                 .map(fut -> {
                     try {
@@ -224,14 +247,17 @@ public class SearchService {
         Site site = page.getSite();
         String siteName = site.getName();
         String siteUrl = site.getUrl();
+
         RussianLuceneMorphology russianLuceneMorphology = LuceneMorphologyGiver.get();
         SnippetCreator snippetCreatorTask = new SnippetCreatorImpl(suitableLemmas, russianLuceneMorphology);
         LuceneMorphologyGiver.returnLucene(russianLuceneMorphology);
-        String snippet = snippetCreatorTask.createSnippet(content);
-        String pageTitle = new PageAnalyzerImpl().searchPageTitle(content);
 
+        String snippet = snippetCreatorTask.createSnippet(content);
+
+        String pageTitle = new PageAnalyzerImpl().searchPageTitle(content);
         Float relativeRelevance = maxRelevanceByPage / maxRelevanceBySite;
         String relativeRelevanceByString = String.format("%.4f", relativeRelevance);
+
         return new ShowPageDto(pathToPage, pageTitle, snippet, relativeRelevanceByString, siteName, siteUrl);
     }
 }

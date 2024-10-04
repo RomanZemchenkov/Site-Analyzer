@@ -38,10 +38,9 @@ public class  SearchServiceIT extends BaseTest {
         SearchParametersDto searchParametersDto = new SearchParametersDto(TEST_TEXT, BASE_LIMIT, BASE_OFFSET, SITE_URL);
 
 
-        HashMap<Integer, List<ShowPageDto>> pages = assertDoesNotThrow(() -> searchService.search(searchParametersDto));
+        List<ShowPageDto> pages = assertDoesNotThrow(() -> searchService.search(searchParametersDto));
 
-        assertThat(pages).hasSize(1);
-        assertThat(pages.get(0)).hasSize(3);
+        assertThat(pages).hasSize(3);
     }
 
     @Test
@@ -51,7 +50,7 @@ public class  SearchServiceIT extends BaseTest {
 
         SearchParametersDto searchParametersDto = new SearchParametersDto("Эти слова не будут найдены", BASE_LIMIT, BASE_OFFSET, SITE_URL);
 
-        HashMap<Integer, List<ShowPageDto>> showPageDtos = assertDoesNotThrow(() -> searchService.search(searchParametersDto));
+        List<ShowPageDto> showPageDtos = assertDoesNotThrow(() -> searchService.search(searchParametersDto));
 
         assertThat(showPageDtos).hasSize(0);
     }
@@ -63,11 +62,10 @@ public class  SearchServiceIT extends BaseTest {
 
         SearchParametersDto searchParametersDto = new SearchParametersDto(TEST_TEXT, BASE_LIMIT, BASE_OFFSET, "");
 
-        HashMap<Integer, List<ShowPageDto>> showPageDtos = assertDoesNotThrow(() -> searchService.search(searchParametersDto));
+        List<ShowPageDto> showPageDtos = assertDoesNotThrow(() -> searchService.search(searchParametersDto));
 
 
-        assertThat(showPageDtos).hasSize(1);
-        assertThat(showPageDtos.get(0)).hasSize(4);
+        assertThat(showPageDtos).hasSize(4);
 
     }
 

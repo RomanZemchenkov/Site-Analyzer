@@ -6,14 +6,16 @@ indexing-settings:
       name: ItDeti.ru
     - url: https://hacker-son.com
       name: Hacker-son
-#    - url: https://gkb15.moscow/
-#      name: GBK15
-#    - url: https://lenta.ru
-#      name: Lenta.ru
-#    - url: https://et-cetera.ru
-#      name: Et-cetera
-#    - url: https://shcool11-balakhna.edusite.ru
-#      name: BalakhnaSchool11
+    - url: https://gkb15.moscow/
+      name: GBK15
+#            - url: https://lenta.ru
+#              name: Lenta.ru
+    - url: https://et-cetera.ru
+      name: Et-cetera
+    - url: https://skillbox.ru/
+      name: Skillbox
+    - url: https://shcool11-balakhna.edusite.ru
+      name: BalakhnaSchool11
 spring:
   datasource:
     url: jdbc:postgresql://${DATABASE_NAME}:5432/search_engine
@@ -22,8 +24,8 @@ spring:
       hibernate:
         jdbc:
           batch_size: 50
-          show_sql: true
-          format_sql: true
-        order_updates: true
+          order_updates: true
+        format_sql: false
+        show_sql: false
 server:
   port: 8080

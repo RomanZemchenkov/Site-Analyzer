@@ -6,12 +6,17 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import searchengine.dao.model.Index;
+import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Page;
+import searchengine.dao.model.Site;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static searchengine.dao.repository.index.IndexSql.ALL_PAGES_ID_SELECT_SQL;
 import static searchengine.dao.repository.index.IndexSql.SAVE_INDEX_SQL;
 
 @RequiredArgsConstructor
@@ -20,6 +25,33 @@ public class CustomIndexRepositoryImpl implements CustomIndexRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final EntityManager entityManager;
     private static final int BATCH_SIZE = 1000;
+
+    private static final String SELECT_INDEX_WITH_PAGE_BY_LEMMA = """
+            SELECT i.id, i.rank, p.id, p.path, p.code, p.content
+            FROM index AS i
+            JOIN page AS p ON i.page_id = p.id
+            WHERE i.lemma_id = :lemmaId
+            """;
+
+    @Override
+    public List<Index> findAllIndexesWithPageByLemmas(Lemma lemma) {
+        MapSqlParameterSource source = new MapSqlParameterSource();
+        source.addValue("lemmaId", lemma.getId());
+        Site site = lemma.getSite();
+        return jdbcTemplate.query(SELECT_INDEX_WITH_PAGE_BY_LEMMA, source, (rs, rowNum) -> {
+            Page page = createPageFactory(rs, site);
+
+            Index index = new Index();
+            index.setId(rs.getInt(1));
+            index.setPage(page);
+            index.setRank(rs.getFloat(2));
+            index.setLemma(lemma);
+
+            page.getIndexes().add(index);
+            lemma.getIndexes().add(index);
+            return index;
+        });
+    }
 
     @Override
     public void batchSave(List<Index> indexList) {
@@ -35,15 +67,6 @@ public class CustomIndexRepositoryImpl implements CustomIndexRepository {
         if (!tempList.isEmpty()) {
             save(tempList);
         }
-    }
-
-    @Override
-    public List<Integer> getAllPagesId(List<Index> indexList) {
-        List<Integer> ids = indexList.stream().map(Index::getId).toList();
-
-        MapSqlParameterSource source = new MapSqlParameterSource("ids", ids);
-
-        return jdbcTemplate.query(ALL_PAGES_ID_SELECT_SQL,source,(rs, row) -> rs.getInt("page_id"));
     }
 
     @Override
@@ -65,6 +88,20 @@ public class CustomIndexRepositoryImpl implements CustomIndexRepository {
         }
         entityManager.flush();
         entityManager.clear();
+    }
+
+    private Page createPageFactory(ResultSet rs, Site site) {
+        Page page = new Page();
+        try {
+            page.setId(rs.getInt(3));
+            page.setPath(rs.getString(4));
+            page.setCode(rs.getInt(5));
+            page.setContent(rs.getString(6));
+            page.setSite(site);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return page;
     }
 
     private void save(List<Index> indexList) {

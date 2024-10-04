@@ -14,14 +14,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
-import java.util.concurrent.Future;
 import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.TimeUnit;
 
+
+import static searchengine.services.GlobalVariables.STOP_INDEXING_TEXT;
 
 @ToString
 public class SiteAnalyzerTask extends RecursiveAction {
@@ -43,8 +41,14 @@ public class SiteAnalyzerTask extends RecursiveAction {
 
     @Override
     protected void compute() {
-        HttpResponseEntity response = createPageAnalyzerTask();
-        if(!context.isIfErrorResponse()){
+        HttpResponseEntity response;
+        try {
+            response = createPageAnalyzerTask();
+        } catch (ExecutionException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+        }
+        if (!context.isIfErrorResponse()) {
             Set<String> availablePath = checkAvailablePath(((NormalResponse) response).getUrls());
             createTask(availablePath);
         }
@@ -53,47 +57,31 @@ public class SiteAnalyzerTask extends RecursiveAction {
     public void stopIndexing(ForkJoinPool usePool) {
         pageAnalyzerTaskImpl.stopAnalyze(usePool);
         pageAnalyzerTaskImpl.changeIfStopFlag(true);
+        context.setErrorContent(STOP_INDEXING_TEXT);
     }
 
-    public void updateSiteState(String status){
+    public void updateSiteState(String status) {
         pageAnalyzerTaskImpl.updateSiteState(status);
     }
 
-    public void updateSiteState(String status, String content){
-        pageAnalyzerTaskImpl.updateSiteState(status,content);
+    public void updateSiteState(String status, String content) {
+        pageAnalyzerTaskImpl.updateSiteState(status, content);
     }
 
-    private HttpResponseEntity createPageAnalyzerTask(){
+    private HttpResponseEntity createPageAnalyzerTask() throws ExecutionException, InterruptedException {
         PageParseContext pageParseContext = new PageParseContext(context.getSiteDto());
         pageAnalyzerTaskImpl = pageAnalyzerTaskFactory.createTask(pageUrl, pageParseContext);
 
-        ExecutorService singleThread = Executors.newSingleThreadExecutor();
-        Future<HttpResponseEntity> futureResponse = singleThread.submit(pageAnalyzerTaskImpl::analyze);
-
-        HttpResponseEntity response;
-
-        try {
-            response = futureResponse.get();
-            checkResponse(response);
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
-
-        singleThread.shutdown();
-
-        try {
-            singleThread.awaitTermination(60L, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        return response;
+        HttpResponseEntity analyze = pageAnalyzerTaskImpl.analyze();
+        checkResponse(analyze);
+        return analyze;
     }
 
-    private void checkResponse(HttpResponseEntity httpResponseEntity){
-        if(httpResponseEntity instanceof ErrorResponse){
+    private void checkResponse(HttpResponseEntity httpResponseEntity) {
+        if (httpResponseEntity instanceof ErrorResponse) {
             ForkJoinPool currentPool = ForkJoinTask.getPool();
             pageAnalyzerTaskImpl.stopAnalyze(currentPool);
+            context.setErrorContent(httpResponseEntity.getContent());
             context.setIfErrorResponse(true);
         }
     }
@@ -132,10 +120,11 @@ public class SiteAnalyzerTask extends RecursiveAction {
         }
 
         for (SiteAnalyzerTask task : futureTaskSet) {
-            task.join();
+            if(!task.isCancelled()){
+                task.join();
+            }
         }
     }
-
 
 
 }
