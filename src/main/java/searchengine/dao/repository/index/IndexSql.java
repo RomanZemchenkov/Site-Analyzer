@@ -6,9 +6,10 @@ class IndexSql {
             VALUES (:id,:lemma,:rank);
             """;
 
-    static final  String ALL_PAGES_ID_SELECT_SQL = """
-            SELECT i.page_id
+    static final String SELECT_INDEX_WITH_PAGE_BY_LEMMA = """
+            SELECT i.id, i.rank, p.id, p.path, p.code, p.content
             FROM index AS i
-            WHERE i.id IN(:ids)
+            JOIN page AS p ON i.page_id = p.id
+            WHERE i.lemma_id = :lemmaId
             """;
 }

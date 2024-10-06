@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static searchengine.dao.repository.index.IndexSql.SAVE_INDEX_SQL;
+import static searchengine.dao.repository.index.IndexSql.SELECT_INDEX_WITH_PAGE_BY_LEMMA;
 
 @RequiredArgsConstructor
 public class CustomIndexRepositoryImpl implements CustomIndexRepository {
@@ -23,13 +24,6 @@ public class CustomIndexRepositoryImpl implements CustomIndexRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final EntityManager entityManager;
     private static final int BATCH_SIZE = 1000;
-
-    private static final String SELECT_INDEX_WITH_PAGE_BY_LEMMA = """
-            SELECT i.id, i.rank, p.id, p.path, p.code, p.content
-            FROM index AS i
-            JOIN page AS p ON i.page_id = p.id
-            WHERE i.lemma_id = :lemmaId
-            """;
 
     @Override
     public List<Index> findAllIndexesWithPageByLemmas(Lemma lemma) {
