@@ -9,21 +9,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import searchengine.services.dto.SearchParametersDto;
-import searchengine.services.dto.page.ShowPageDto;
 import searchengine.services.searcher.analyzer.IndexingImpl;
 import searchengine.services.dto.statistics.StatisticsResponse;
 import searchengine.services.IndexingAndLemmaService;
 import searchengine.services.service.SearchService;
 import searchengine.services.service.StatisticsService;
-import searchengine.web.handler.ErrorResponse;
-import searchengine.web.handler.NormalResponse;
-import searchengine.web.handler.Response;
+import searchengine.web.entity.ErrorResponse;
+import searchengine.web.entity.NormalResponse;
+import searchengine.web.entity.Response;
 import searchengine.web.entity.SearchResponse;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -79,22 +73,13 @@ public class ApiController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<SearchResponse> search(@RequestParam(name = "query") String query,
-                                                 @RequestParam(name = "limit", required = false, defaultValue = "10") String limit,
-                                                 @RequestParam(name = "offset", required = false, defaultValue = "0") String offset,
-                                                 @RequestParam(name = "site", required = false) String siteUrl) {
+    public ResponseEntity<Response> search(@RequestParam(name = "query") String query,
+                                           @RequestParam(name = "limit", required = false, defaultValue = "10") String limit,
+                                           @RequestParam(name = "offset", required = false, defaultValue = "0") String offset,
+                                           @RequestParam(name = "site", required = false) String siteUrl) {
+
         SearchParametersDto searchParametersDto = new SearchParametersDto(query, limit, offset, siteUrl);
-        System.out.println("Поиск запущен");
-        List<ShowPageDto> searchResult = searchService.search(searchParametersDto);
-        List<ShowPageDto> offsetList = new ArrayList<>();
-        int limitByInt = Integer.parseInt(limit);
-        int offsetByInt = Integer.parseInt(offset);
-        int lastPageIndex = Math.min(limitByInt + offsetByInt,searchResult.size());
-        for(int i = offsetByInt; i < lastPageIndex; i++){
-            offsetList.add(searchResult.get(i));
-        }
-        System.out.println("Поиск закончен");
-        SearchResponse searchResponse = new SearchResponse(true, searchResult.size(), offsetList);
+        SearchResponse searchResponse = searchService.search(searchParametersDto);
         return new ResponseEntity<>(searchResponse, HttpStatus.OK);
     }
 

@@ -299,7 +299,7 @@ public class ApiControllerIT extends BaseTest {
 
         ResultActions actions = mock.perform(get("/api/search")
                 .param("query", "Написание скриптов")
-                .param("url", "https://itdeti.ru")
+                .param("site", "https://itdeti.ru")
                 .param("limit", "2")
                 .param("offset", "2"));
 
@@ -317,7 +317,7 @@ public class ApiControllerIT extends BaseTest {
 
         ResultActions actions = mock.perform(get("/api/search")
                 .param("query", "")
-                .param("url", "https://itdeti.ru")
+                .param("site", "https://itdeti.ru")
                 .param("limit", "2")
                 .param("offset", "2"));
 
@@ -328,12 +328,9 @@ public class ApiControllerIT extends BaseTest {
     @Test
     @DisplayName("Testing the search with site doesn`t exist")
     void searchWithSiteDoesntExist() throws Exception {
-        mock.perform(get("/api/startIndexing"));
-
-
         ResultActions actions = mock.perform(get("/api/search")
                 .param("query", "Написание скриптов")
-                .param("url", "https://randomSite.tut")
+                .param("site", "https://randomSite.tut")
                 .param("limit", "2")
                 .param("offset", "2"));
 
