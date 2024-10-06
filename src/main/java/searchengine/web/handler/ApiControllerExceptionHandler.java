@@ -8,6 +8,7 @@ import searchengine.services.exception.EmptyQueryException;
 import searchengine.services.exception.IllegalPageException;
 import searchengine.services.exception.IndexingStartingException;
 import searchengine.services.exception.SiteDoesntExistException;
+import searchengine.web.entity.ErrorResponse;
 
 @RestControllerAdvice(basePackages = "searchengine.web.controller")
 public class ApiControllerExceptionHandler {

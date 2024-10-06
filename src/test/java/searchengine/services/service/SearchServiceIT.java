@@ -8,6 +8,7 @@ import searchengine.BaseTest;
 import searchengine.services.IndexingAndLemmaService;
 import searchengine.services.dto.SearchParametersDto;
 import searchengine.services.dto.page.ShowPageDto;
+import searchengine.web.entity.SearchResponse;
 
 import java.util.*;
 
@@ -38,9 +39,9 @@ public class  SearchServiceIT extends BaseTest {
         SearchParametersDto searchParametersDto = new SearchParametersDto(TEST_TEXT, BASE_LIMIT, BASE_OFFSET, SITE_URL);
 
 
-        List<ShowPageDto> pages = assertDoesNotThrow(() -> searchService.search(searchParametersDto));
+        SearchResponse pages = assertDoesNotThrow(() -> searchService.search(searchParametersDto));
 
-        assertThat(pages).hasSize(3);
+        assertThat(pages.getData()).hasSize(3);
     }
 
     @Test
@@ -50,9 +51,9 @@ public class  SearchServiceIT extends BaseTest {
 
         SearchParametersDto searchParametersDto = new SearchParametersDto("Эти слова не будут найдены", BASE_LIMIT, BASE_OFFSET, SITE_URL);
 
-        List<ShowPageDto> showPageDtos = assertDoesNotThrow(() -> searchService.search(searchParametersDto));
+        SearchResponse showPageDtos = assertDoesNotThrow(() -> searchService.search(searchParametersDto));
 
-        assertThat(showPageDtos).hasSize(0);
+        assertThat(showPageDtos.getData()).hasSize(0);
     }
 
     @Test
@@ -62,10 +63,10 @@ public class  SearchServiceIT extends BaseTest {
 
         SearchParametersDto searchParametersDto = new SearchParametersDto(TEST_TEXT, BASE_LIMIT, BASE_OFFSET, "");
 
-        List<ShowPageDto> showPageDtos = assertDoesNotThrow(() -> searchService.search(searchParametersDto));
+        SearchResponse showPageDtos = assertDoesNotThrow(() -> searchService.search(searchParametersDto));
 
 
-        assertThat(showPageDtos).hasSize(4);
+        assertThat(showPageDtos.getData()).hasSize(4);
 
     }
 

@@ -8,14 +8,13 @@ import java.util.List;
 
 @Getter
 @ToString
-public class SearchResponse {
+public class SearchResponse extends Response{
 
-    private final boolean result;
     private final long count;
     private final List<ShowPageDto> data;
 
-    public SearchResponse(boolean result, long count, List<ShowPageDto> data) {
-        this.result = result;
+    public SearchResponse(String result,long count, List<ShowPageDto> data) {
+        super(result);
         this.count = count;
         this.data = data;
     }

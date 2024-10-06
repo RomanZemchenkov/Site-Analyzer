@@ -23,6 +23,7 @@ import searchengine.services.parser.lemma.TextToLemmaParserImpl;
 import searchengine.services.parser.snippet.SnippetCreator;
 import searchengine.services.parser.snippet.SnippetCreatorImpl;
 import searchengine.services.searcher.analyzer.page_analyzer.PageAnalyzerImpl;
+import searchengine.web.entity.SearchResponse;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -51,9 +52,9 @@ public class SearchService {
     @CheckQuery
     @CheckIndexingWork
     @CheckSiteExist
-    public List<ShowPageDto> search(SearchParametersDto searchedTextAndParameters) {
+    public SearchResponse search(SearchParametersDto searchedTextAndParameters) {
         if(checkQueriesMatch(searchedTextAndParameters)){
-            return prevSearchResult;
+            return createResponse(searchedTextAndParameters,prevSearchResult);
         }
         prevQueryParameters = searchedTextAndParameters;
         String searchedQuery = searchedTextAndParameters.getQuery();
@@ -69,13 +70,26 @@ public class SearchService {
         }
         showPagesList.sort((o1, o2) -> o2.getRelevance().compareTo(o1.getRelevance()));
         prevSearchResult = showPagesList;
-        return showPagesList;
+        return createResponse(searchedTextAndParameters,showPagesList);
     }
 
 
     public void clearPrevInformation(){
         prevQueryParameters = null;
         prevSearchResult = null;
+    }
+
+    private SearchResponse createResponse(SearchParametersDto dto, List<ShowPageDto> searchResult){
+        String limit = dto.getLimit();
+        String offset = dto.getOffset();
+        List<ShowPageDto> offsetList = new ArrayList<>();
+        int limitByInt = Integer.parseInt(limit);
+        int offsetByInt = Integer.parseInt(offset);
+        int lastPageIndex = Math.min(limitByInt + offsetByInt,searchResult.size());
+        for(int i = offsetByInt; i < lastPageIndex; i++){
+            offsetList.add(searchResult.get(i));
+        }
+        return new SearchResponse("true", searchResult.size(), offsetList);
     }
 
     private boolean checkQueriesMatch(SearchParametersDto currentQueryParameters){

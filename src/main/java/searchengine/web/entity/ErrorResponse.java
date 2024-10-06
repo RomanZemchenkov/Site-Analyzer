@@ -1,4 +1,4 @@
-package searchengine.web.handler;
+package searchengine.web.entity;
 
 import lombok.Getter;
 

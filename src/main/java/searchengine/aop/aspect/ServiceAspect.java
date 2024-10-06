@@ -59,6 +59,7 @@ public class ServiceAspect {
                     "&& args(dto)", argNames = "joinPoint,dto")
     public void siteExistChecking(JoinPoint joinPoint, SearchParametersDto dto){
         String url = dto.getUrl();
+        System.out.println("Я захожу в аспект");
         if(url != null && !url.isBlank()){
             Optional<Site> mayBeSite = siteRepository.findSiteByUrl(url);
             if(mayBeSite.isEmpty()){
