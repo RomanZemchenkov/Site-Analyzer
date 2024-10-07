@@ -3,6 +3,7 @@ package searchengine.services.parser.snippet;
 import lombok.NoArgsConstructor;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Jsoup;
+import searchengine.aop.annotation.CheckTimeWorking;
 import searchengine.services.parser.lemma.TextToLemmaParserImpl;
 
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ public class SnippetCreatorImpl implements SnippetCreator {
         this.russianLuceneMorphology = russianLuceneMorphology;
     }
 
+    @CheckTimeWorking
     public String createSnippet(String context) {
         String textWithoutTeg = parseToClearText(context);
         List<String> wordsAndSymbols = createWordsAndSymbolsFromText(textWithoutTeg);

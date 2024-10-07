@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import searchengine.aop.annotation.CheckTimeWorking;
 import searchengine.dao.model.Status;
 import searchengine.services.dto.site.ShowSiteDto;
 import searchengine.services.searcher.analyzer.page_analyzer.PageAnalyzerTask;
@@ -56,6 +57,7 @@ public class IndexingImpl implements Indexing{
                 .collect(Collectors.toMap(SiteProperties.Site::getName, SiteProperties.Site::getUrl));
     }
 
+    @CheckTimeWorking
     public void startSitesIndexing() {
         INDEXING_STARTED = true;
         createContext();

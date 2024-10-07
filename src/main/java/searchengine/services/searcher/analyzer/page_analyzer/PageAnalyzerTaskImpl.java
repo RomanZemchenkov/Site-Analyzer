@@ -37,18 +37,6 @@ public class PageAnalyzerTaskImpl implements PageAnalyzerTask {
         return response;
     }
 
-    public void stopAnalyze(ForkJoinPool usePool) {
-        usePool.shutdownNow();
-        try {
-            if (!usePool.awaitTermination(60, TimeUnit.SECONDS)) {
-                usePool.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            usePool.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
-    }
-
     @Override
     public void changeIfStopFlag(boolean flag) {
         PageParseContext.setIfStop(flag);

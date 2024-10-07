@@ -10,13 +10,15 @@ indexing-settings:
       name: GBK15
 #            - url: https://lenta.ru
 #              name: Lenta.ru
-    - url: https://et-cetera.ru
-      name: Et-cetera
-    - url: https://skillbox.ru/
-      name: Skillbox
-    - url: https://shcool11-balakhna.edusite.ru
-      name: BalakhnaSchool11
+#    - url: https://et-cetera.ru
+#      name: Et-cetera
+#    - url: https://skillbox.ru/
+#      name: Skillbox
+#    - url: https://shcool11-balakhna.edusite.ru
+#      name: BalakhnaSchool11
 spring:
+  profiles:
+    active: git a
   datasource:
     url: jdbc:postgresql://${DATABASE_NAME}:5432/search_engine
   jpa:

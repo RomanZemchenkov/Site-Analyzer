@@ -166,6 +166,8 @@ public class ApiControllerIT extends BaseTest {
     void successfulStatisticsCreate() throws Exception {
         mock.perform(get("/api/startIndexing"));
 
+        Thread.sleep(5000L);
+
         ResultActions actions = mock.perform(get("/api/statistics"));
 
         actions.andExpect(status().isOk())

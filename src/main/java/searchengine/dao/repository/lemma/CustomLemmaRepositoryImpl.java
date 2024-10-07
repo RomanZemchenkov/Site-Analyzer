@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import searchengine.aop.annotation.CheckTimeWorking;
 import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Site;
 
@@ -62,6 +63,7 @@ public class CustomLemmaRepositoryImpl implements CustomLemmaRepository {
     }
 
     @Override
+    @CheckTimeWorking
     public void deleteAllBySite(Site site) {
         Integer siteId = site.getId();
         entityManager.createNativeQuery("ALTER TABLE lemma DISABLE TRIGGER ALL").executeUpdate();
@@ -84,6 +86,7 @@ public class CustomLemmaRepositoryImpl implements CustomLemmaRepository {
     }
 
     @Override
+    @CheckTimeWorking
     public List<Lemma> findAllBySiteIdAndLemmas(Site site, Set<String> lemmas) {
         MapSqlParameterSource source = new MapSqlParameterSource();
         source.addValue("id", site.getId());

@@ -12,7 +12,5 @@ public interface PageAnalyzerTask {
 
     void updateSiteState(String status, String content);
 
-    void stopAnalyze(ForkJoinPool forkJoinPool);
-
     void changeIfStopFlag(boolean flag);
 }

@@ -53,8 +53,8 @@ public class SearchService {
     @CheckIndexingWork
     @CheckSiteExist
     public SearchResponse search(SearchParametersDto searchedTextAndParameters) {
-        if(checkQueriesMatch(searchedTextAndParameters)){
-            return createResponse(searchedTextAndParameters,prevSearchResult);
+        if (checkQueriesMatch(searchedTextAndParameters)) {
+            return createResponse(searchedTextAndParameters, prevSearchResult);
         }
         prevQueryParameters = searchedTextAndParameters;
         String searchedQuery = searchedTextAndParameters.getQuery();
@@ -70,30 +70,30 @@ public class SearchService {
         }
         showPagesList.sort((o1, o2) -> o2.getRelevance().compareTo(o1.getRelevance()));
         prevSearchResult = showPagesList;
-        return createResponse(searchedTextAndParameters,showPagesList);
+        return createResponse(searchedTextAndParameters, showPagesList);
     }
 
-
-    public void clearPrevInformation(){
+    public void clearPrevInformation() {
         prevQueryParameters = null;
         prevSearchResult = null;
     }
 
-    private SearchResponse createResponse(SearchParametersDto dto, List<ShowPageDto> searchResult){
+
+    private SearchResponse createResponse(SearchParametersDto dto, List<ShowPageDto> searchResult) {
         String limit = dto.getLimit();
         String offset = dto.getOffset();
         List<ShowPageDto> offsetList = new ArrayList<>();
         int limitByInt = Integer.parseInt(limit);
         int offsetByInt = Integer.parseInt(offset);
-        int lastPageIndex = Math.min(limitByInt + offsetByInt,searchResult.size());
-        for(int i = offsetByInt; i < lastPageIndex; i++){
+        int lastPageIndex = Math.min(limitByInt + offsetByInt, searchResult.size());
+        for (int i = offsetByInt; i < lastPageIndex; i++) {
             offsetList.add(searchResult.get(i));
         }
         return new SearchResponse("true", searchResult.size(), offsetList);
     }
 
-    private boolean checkQueriesMatch(SearchParametersDto currentQueryParameters){
-        if(prevQueryParameters != null){
+    private boolean checkQueriesMatch(SearchParametersDto currentQueryParameters) {
+        if (prevQueryParameters != null) {
             return prevQueryParameters.equals(currentQueryParameters);
         }
         return false;
@@ -241,8 +241,7 @@ public class SearchService {
         return preparedShowPageDto;
     }
 
-
-    private List<ShowPageDto> createPreparedShowPageDtoFromFuture(List<Future<ShowPageDto>> futuresShowPagesDto){
+    private List<ShowPageDto> createPreparedShowPageDtoFromFuture(List<Future<ShowPageDto>> futuresShowPagesDto) {
         return futuresShowPagesDto.stream()
                 .map(fut -> {
                     try {

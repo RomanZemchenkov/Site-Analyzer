@@ -1,0 +1,15 @@
+<configuration>
+    <Appender name = "TIME_CONSOLE_LOGGER" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%thread] %msg%n</pattern>
+        </encoder>
+    </Appender>
+
+    <Appender name = "ASYNC_LOGGER" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="TIME_CONSOLE_LOGGER"/>
+    </Appender>
+
+    <Logger name = "TIME_LOGGER" LEVEL="INFO" additivity="false">
+        <appender-ref ref="ASYNC_LOGGER"/>
+    </Logger>
+</configuration>
