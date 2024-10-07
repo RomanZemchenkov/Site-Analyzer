@@ -3,6 +3,7 @@ package searchengine.services.parser.lemma;
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Jsoup;
+import searchengine.aop.annotation.CheckTimeWorking;
 import searchengine.services.parser.LuceneMorphologyGiver;
 
 import java.util.HashMap;
@@ -18,6 +19,7 @@ public class TextToLemmaParserImpl implements TextToLemmaParser{
     private static final Set<String> ENGLISH_PARTICLES_NAMES = Set.of("NOUN", "PART", "ADJECTIVE");
     private final Set<String> LANGUAGES = Set.of("Russian");
 
+    @CheckTimeWorking
     public Map<String, Integer> parse(String text) {
         String clearText = parseToTextWithoutTeg(text);
         Map<String,Integer> wordsByLemmas = new HashMap<>();

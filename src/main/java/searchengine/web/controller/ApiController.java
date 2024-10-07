@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import searchengine.aop.annotation.CheckTimeWorking;
 import searchengine.services.dto.SearchParametersDto;
 import searchengine.services.searcher.analyzer.IndexingImpl;
 import searchengine.services.dto.statistics.StatisticsResponse;
@@ -37,11 +38,13 @@ public class ApiController {
 
 
     @GetMapping("/statistics")
+    @CheckTimeWorking
     public ResponseEntity<StatisticsResponse> statistics() {
         return ResponseEntity.ok(statisticsService.getTotalStatistic());
     }
 
     @GetMapping("/startIndexing")
+    @CheckTimeWorking
     public ResponseEntity<Response> startIndexing() {
         if (!INDEXING_STARTED) {
             searchService.clearPrevInformation();
@@ -56,6 +59,7 @@ public class ApiController {
     }
 
     @GetMapping("/stopIndexing")
+    @CheckTimeWorking
     public ResponseEntity<Response> stopIndexing() {
         if (INDEXING_STARTED) {
             indexingService.stopIndexing();
@@ -66,6 +70,7 @@ public class ApiController {
     }
 
     @PostMapping("/indexPage")
+    @CheckTimeWorking
     public ResponseEntity<Response> indexPage(@RequestParam String url) {
         searchService.clearPrevInformation();
         indexingAndLemmaService.startIndexingAndCreateLemmaForOnePage(url);
@@ -73,6 +78,7 @@ public class ApiController {
     }
 
     @GetMapping("/search")
+    @CheckTimeWorking
     public ResponseEntity<Response> search(@RequestParam(name = "query") String query,
                                            @RequestParam(name = "limit", required = false, defaultValue = "10") String limit,
                                            @RequestParam(name = "offset", required = false, defaultValue = "0") String offset,
@@ -81,12 +87,5 @@ public class ApiController {
         SearchParametersDto searchParametersDto = new SearchParametersDto(query, limit, offset, siteUrl);
         SearchResponse searchResponse = searchService.search(searchParametersDto);
         return new ResponseEntity<>(searchResponse, HttpStatus.OK);
-    }
-
-    static void time(Runnable runnable) {
-        long start = System.currentTimeMillis();
-        runnable.run();
-        long finish = System.currentTimeMillis();
-        System.out.println("Индексация отработала за: " + (finish - start));
     }
 }

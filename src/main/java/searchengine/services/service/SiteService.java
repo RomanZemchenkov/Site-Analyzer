@@ -41,7 +41,7 @@ public class SiteService {
 
         Optional<Site> mayBeSite = repository.findSiteByName(name);
 
-        time(() -> mayBeSite.ifPresent(this::deleteAll));
+        mayBeSite.ifPresent(this::deleteAll);
         return siteSave(dto);
     }
 
@@ -80,32 +80,12 @@ public class SiteService {
 
     private void deleteAll(Site site) {
         List<Page> pagesBySite = pageRepository.findAllBySite(site);
-        timeForIndex(() -> pagesBySite.forEach(indexRepository::deleteAllByPage));
-        timeForLemma(() -> lemmaRepository.deleteAllBySite(site));
+        pagesBySite.forEach(indexRepository::deleteAllByPage);
+        lemmaRepository.deleteAllBySite(site);
         statisticRepository.deleteAllBySite(site);
         pageRepository.deleteAllBySite(site);
         siteRepository.deleteSite(site);
     }
 
-    static void timeForLemma(Runnable runnable) {
-        long start = System.currentTimeMillis();
-        runnable.run();
-        long finish = System.currentTimeMillis();
-        System.out.println("Леммы удалены за: " + (finish - start));
-    }
-
-    static void timeForIndex(Runnable runnable) {
-        long start = System.currentTimeMillis();
-        runnable.run();
-        long finish = System.currentTimeMillis();
-        System.out.println("Индексы удалены за: " + (finish - start));
-    }
-
-    static void time(Runnable runnable) {
-        long start = System.currentTimeMillis();
-        runnable.run();
-        long finish = System.currentTimeMillis();
-        System.out.println("Метод отработал за: " + (finish - start));
-    }
 
 }

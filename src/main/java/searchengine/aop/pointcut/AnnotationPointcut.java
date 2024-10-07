@@ -23,4 +23,7 @@ public class AnnotationPointcut {
 
     @Pointcut(value = "@annotation(searchengine.aop.annotation.CheckSiteExist)")
     public void isCheckSiteExistAnnotation(){}
+
+    @Pointcut(value = "@annotation(searchengine.aop.annotation.CheckTimeWorking)")
+    public void isCheckTimeWorkingAnnotation(){}
 }

@@ -10,17 +10,15 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 @SpringBootTest
-@ActiveProfiles("test")
+@ActiveProfiles({"test","logging"})
 @Sql(value = {"classpath:sql/init.sql","classpath:sql/load.sql"})
 public class BaseTest {
 
     private static final PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:16.3");
-    private static final GenericContainer<?> redisContainer = new GenericContainer<>("redis:7.4.0").withExposedPorts(6379);
 
     @BeforeAll
     static void init(){
         container.start();
-        redisContainer.start();
     }
 
     @DynamicPropertySource

@@ -54,48 +54,46 @@ public class SearchService {
     @CheckIndexingWork
     @CheckSiteExist
     public SearchResponse search(SearchParametersDto searchedTextAndParameters) {
-        if(checkQueriesMatch(searchedTextAndParameters)){
-            return createResponse(searchedTextAndParameters,prevSearchResult);
+        if (checkQueriesMatch(searchedTextAndParameters)) {
+            return createResponse(searchedTextAndParameters, prevSearchResult);
         }
         prevQueryParameters = searchedTextAndParameters;
         String searchedQuery = searchedTextAndParameters.getQuery();
         String mayBeUrl = searchedTextAndParameters.getUrl();
 
-        Set<String> lemmas = timeForLemmaCreate(() -> parseToLemmas(searchedQuery));
+        Set<String> lemmas = parseToLemmas(searchedQuery);
 
-        List<Site> usesUrls = timeForSiteFind(() -> findUsesSites(mayBeUrl));
+        List<Site> usesUrls = findUsesSites(mayBeUrl);
 
         List<ShowPageDto> showPagesList = new ArrayList<>();
-        timeForShowPageCreate(() -> {
-            for (Site oneSite : usesUrls) {
-                showPagesList.addAll(findSitesPages(oneSite, lemmas));
-            }
-        });
+        for (Site oneSite : usesUrls) {
+            showPagesList.addAll(findSitesPages(oneSite, lemmas));
+        }
         showPagesList.sort((o1, o2) -> o2.getRelevance().compareTo(o1.getRelevance()));
         prevSearchResult = showPagesList;
-        return createResponse(searchedTextAndParameters,showPagesList);
+        return createResponse(searchedTextAndParameters, showPagesList);
     }
 
-    public void clearPrevInformation(){
+    public void clearPrevInformation() {
         prevQueryParameters = null;
         prevSearchResult = null;
     }
 
-    private SearchResponse createResponse(SearchParametersDto dto, List<ShowPageDto> searchResult){
+    private SearchResponse createResponse(SearchParametersDto dto, List<ShowPageDto> searchResult) {
         String limit = dto.getLimit();
         String offset = dto.getOffset();
         List<ShowPageDto> offsetList = new ArrayList<>();
         int limitByInt = Integer.parseInt(limit);
         int offsetByInt = Integer.parseInt(offset);
-        int lastPageIndex = Math.min(limitByInt + offsetByInt,searchResult.size());
-        for(int i = offsetByInt; i < lastPageIndex; i++){
+        int lastPageIndex = Math.min(limitByInt + offsetByInt, searchResult.size());
+        for (int i = offsetByInt; i < lastPageIndex; i++) {
             offsetList.add(searchResult.get(i));
         }
         return new SearchResponse("true", searchResult.size(), offsetList);
     }
 
-    private boolean checkQueriesMatch(SearchParametersDto currentQueryParameters){
-        if(prevQueryParameters != null){
+    private boolean checkQueriesMatch(SearchParametersDto currentQueryParameters) {
+        if (prevQueryParameters != null) {
             return prevQueryParameters.equals(currentQueryParameters);
         }
         return false;
@@ -103,9 +101,9 @@ public class SearchService {
 
     private List<ShowPageDto> findSitesPages(Site site, Set<String> lemmas) {
         System.out.println("Сейчас ищем для сайта: " + site.getName());
-        List<Lemma> existLemmasForOneSite = timeForFindExistLemma(() -> findExistLemmas(site, lemmas));
+        List<Lemma> existLemmasForOneSite = findExistLemmas(site, lemmas);
         List<String> suitableLemmas = new ArrayList<>();
-        Map<Page, List<Index>> suitablePagesForOneSite = timeForFindSuitablePages(() -> findSuitablePages(existLemmasForOneSite, suitableLemmas));
+        Map<Page, List<Index>> suitablePagesForOneSite = findSuitablePages(existLemmasForOneSite, suitableLemmas);
         List<ShowPageDto> suitablePagesList = new ArrayList<>();
         if (!suitablePagesForOneSite.isEmpty()) {
             Map<Float, Page> pageAndMaxRelevance = new HashMap<>();
@@ -236,15 +234,15 @@ public class SearchService {
 
         threadPool.shutdown();
 
-        try{
-            threadPool.awaitTermination(120L,TimeUnit.SECONDS);
+        try {
+            threadPool.awaitTermination(120L, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
         return preparedShowPageDto;
     }
 
-    private List<ShowPageDto> createPreparedShowPageDtoFromFuture(List<Future<ShowPageDto>> futuresShowPagesDto){
+    private List<ShowPageDto> createPreparedShowPageDtoFromFuture(List<Future<ShowPageDto>> futuresShowPagesDto) {
         return futuresShowPagesDto.stream()
                 .map(fut -> {
                     try {
@@ -257,7 +255,6 @@ public class SearchService {
     }
 
 
-
     private ShowPageDto createShowPageDto(Page page, List<String> suitableLemmas, float maxRelevanceByPage, float maxRelevanceBySite) {
         String pathToPage = page.getPath();
         String content = page.getContent();
@@ -267,58 +264,11 @@ public class SearchService {
         RussianLuceneMorphology russianLuceneMorphology = LuceneMorphologyGiver.get();
         SnippetCreator snippetCreatorTask = new SnippetCreatorImpl(suitableLemmas, russianLuceneMorphology);
         LuceneMorphologyGiver.returnLucene(russianLuceneMorphology);
-        String snippet = timeForSnippedCreated(() -> snippetCreatorTask.createSnippet(content));
+        String snippet = snippetCreatorTask.createSnippet(content);
         String pageTitle = new PageAnalyzerImpl().searchPageTitle(content);
 
         Float relativeRelevance = maxRelevanceByPage / maxRelevanceBySite;
         String relativeRelevanceByString = String.format("%.4f", relativeRelevance);
         return new ShowPageDto(pathToPage, pageTitle, snippet, relativeRelevanceByString, siteName, siteUrl);
-    }
-
-    static <T> T timeForLemmaCreate(Supplier<T> runnable) {
-        long start = System.currentTimeMillis();
-        T t = runnable.get();
-        long finish = System.currentTimeMillis();
-        System.out.println("Леммы созданы за: " + (finish - start));
-        return t;
-    }
-
-    static <T> T timeForSiteFind(Supplier<T> runnable) {
-        long start = System.currentTimeMillis();
-        T t = runnable.get();
-        long finish = System.currentTimeMillis();
-        System.out.println("Сайты найдены за: " + (finish - start));
-        return t;
-    }
-
-    static <T> T timeForFindExistLemma(Supplier<T> runnable) {
-        long start = System.currentTimeMillis();
-        T t = runnable.get();
-        long finish = System.currentTimeMillis();
-        System.out.println("Леммы найдены за: " + (finish - start));
-        return t;
-    }
-
-    static <T> T timeForFindSuitablePages(Supplier<T> runnable) {
-        long start = System.currentTimeMillis();
-        T t = runnable.get();
-        long finish = System.currentTimeMillis();
-        System.out.println("Подходящие страницы найдены за: " + (finish - start));
-        return t;
-    }
-
-    static <T> T timeForSnippedCreated(Supplier<T> runnable) {
-        long start = System.currentTimeMillis();
-        T t = runnable.get();
-        long finish = System.currentTimeMillis();
-        System.out.println("Сниппеты созданы за: " + (finish - start));
-        return t;
-    }
-
-    static void timeForShowPageCreate(Runnable runnable) {
-        long start = System.currentTimeMillis();
-        runnable.run();
-        long finish = System.currentTimeMillis();
-        System.out.println("Страницы созданы за: " + (finish - start));
     }
 }

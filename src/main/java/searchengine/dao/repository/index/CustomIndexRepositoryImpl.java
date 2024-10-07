@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import searchengine.aop.annotation.CheckTimeWorking;
 import searchengine.dao.model.Index;
 import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Page;
@@ -13,9 +14,7 @@ import searchengine.dao.model.Site;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static searchengine.dao.repository.index.IndexSql.SAVE_INDEX_SQL;
 import static searchengine.dao.repository.index.IndexSql.SELECT_INDEX_WITH_PAGE_BY_LEMMA;
@@ -28,6 +27,7 @@ public class CustomIndexRepositoryImpl implements CustomIndexRepository {
     private static final int BATCH_SIZE = 1000;
 
     @Override
+    @CheckTimeWorking
     public List<Index> findAllIndexesWithPageByLemmas(Lemma lemma) {
         MapSqlParameterSource source = new MapSqlParameterSource();
         source.addValue("lemmaId", lemma.getId());
@@ -65,6 +65,7 @@ public class CustomIndexRepositoryImpl implements CustomIndexRepository {
     }
 
     @Override
+    @CheckTimeWorking
     public void deleteAllByPage(Page page) {
         Integer id = page.getId();
         int batchSize = 1000;

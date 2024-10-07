@@ -1,0 +1,3 @@
+<configuration>
+    <include resource="loggers/consoleTimeLogger.xml"/>
+</configuration>
