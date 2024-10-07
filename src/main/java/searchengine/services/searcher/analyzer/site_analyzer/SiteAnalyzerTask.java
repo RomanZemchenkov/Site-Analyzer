@@ -49,7 +49,7 @@ public class SiteAnalyzerTask extends RecursiveAction {
     }
 
     public void stopIndexing(ForkJoinPool usePool) {
-        pageAnalyzerTaskImpl.stopAnalyze(usePool);
+        stopAnalyze(usePool);
         pageAnalyzerTaskImpl.changeIfStopFlag(true);
         context.setErrorContent(STOP_INDEXING_TEXT);
     }
@@ -74,7 +74,7 @@ public class SiteAnalyzerTask extends RecursiveAction {
     private void checkResponse(HttpResponseEntity httpResponseEntity) {
         if (httpResponseEntity instanceof ErrorResponse) {
             ForkJoinPool currentPool = ForkJoinTask.getPool();
-            pageAnalyzerTaskImpl.stopAnalyze(currentPool);
+            stopAnalyze(currentPool);
             context.setErrorContent(httpResponseEntity.getContent());
             context.setIfErrorResponse(true);
         }
@@ -117,6 +117,18 @@ public class SiteAnalyzerTask extends RecursiveAction {
             if(!task.isCancelled()){
                 task.join();
             }
+        }
+    }
+
+    private void stopAnalyze(ForkJoinPool usePool) {
+        usePool.shutdownNow();
+        try {
+            if (!usePool.awaitTermination(60, TimeUnit.SECONDS)) {
+                usePool.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            usePool.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 
