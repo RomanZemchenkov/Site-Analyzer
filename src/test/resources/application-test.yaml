@@ -17,10 +17,10 @@ indexing-settings:
       name: ItDeti.ru
 #    - url: https://itdeti.ru/424214214214
 #      name: ItDetiWithException.ru
-    #    - url: https://hacker-son.com
-    #      name: Hacker-son
-    #    - url: https://shcool11-balakhna.edusite.ru
-    #      name: BalakhnaSchool11
+    - url: https://hacker-son.com
+      name: Hacker-son
+    - url: https://shcool11-balakhna.edusite.ru
+      name: BalakhnaSchool11
     #    - url: https://www.playback.ru
     #      name: PlayBack.Ru
     #    - url: https://www.svetlovka.ru

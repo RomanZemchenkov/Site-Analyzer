@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.aop.annotation.CheckTimeWorking;
 import searchengine.aop.annotation.LuceneInit;
+import searchengine.dao.model.Index;
 import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
@@ -21,14 +22,10 @@ import searchengine.services.searcher.lemma.LemmaCreatorTaskFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -47,63 +44,95 @@ public class IndexingAndLemmaService {
     @CheckTimeWorking
     public void startIndexingAndCreateLemma() {
         indexingService.startSitesIndexing();
-        System.out.println("Индексация и запись окончена");
         List<Site> allSites = getAllSites();
-        List<List<Lemma>> lemmas = lemmaListCreate(allSites);
+        GlobalVariables.INDEX_CREATING_STARTED = true;
+        GlobalVariables.LEMMA_CREATING_STARTED = false;
+        List<Map<Page, Map<Lemma, Integer>>> lemmas = lemmaListCreate(allSites);
+        saveIndexesAndLemmas(lemmas);
 
-        for (List<Lemma> lemmaList : lemmas) {
-            lemmaService.createBatch(lemmaList);
-        }
-
-        indexCreate();
+        GlobalVariables.INDEX_CREATING_STARTED = false;
+        GlobalVariables.COUNT_OF_LEMMAS.set(0);
     }
 
     @LuceneInit
+    @CheckTimeWorking
     public void startIndexingAndCreateLemmaForOnePage(String searchedUrl) {
         FindPageDto infoDto = indexingService.startPageIndexing(searchedUrl);
         Site site = infoDto.getSite();
         Page page = infoDto.getSavedPage();
 
-        List<Lemma> lemmas = lemmaCreate(site, List.of(page));
-
-        lemmaService.checkExistAndSaveOrUpdate(lemmas, site);
-
-        indexCreate();
-    }
-
-    private List<List<Lemma>> lemmaListCreate(List<Site> allSites) {
-        GlobalVariables.LEMMA_CREATING_STARTED = true;
-
-
-        List<List<Lemma>> resultsLemmas = new ArrayList<>();
-
-        for (Site site : allSites) {
-            List<Lemma> lemmaList = lemmaCreate(site, site.getPages());
-            resultsLemmas.add(lemmaList);
+        Map<Page, Map<Lemma, Integer>> taskResult = lemmaCreate(site, List.of(page));
+        List<Lemma> alreadyExistLemmas = lemmaService.findAllBySite(site);
+        for(Map.Entry<Page,Map<Lemma,Integer>> entry : taskResult.entrySet()){
+            Page p = entry.getKey();
+            Map<Lemma, Integer> lemmasAndCounts = entry.getValue();
+            List<Index> indexList = creatIndexesAndLemmas(p, lemmasAndCounts, alreadyExistLemmas);
+            saveIndexes(indexList);
         }
-
-        return resultsLemmas;
     }
 
-    private List<Lemma> lemmaCreate(Site site, List<Page> pages) {
+    private void saveIndexesAndLemmas(List<Map<Page, Map<Lemma, Integer>>> lemmas) {
+        List<Index> allIndexesBySite = new ArrayList<>();
+        for (Map<Page, Map<Lemma, Integer>> pageAndLemmas : lemmas) {
+            List<Lemma> alreadySavedLemmas = new ArrayList<>();
+            for (Map.Entry<Page, Map<Lemma, Integer>> entry : pageAndLemmas.entrySet()) {
+                allIndexesBySite.addAll(creatIndexesAndLemmas(entry.getKey(), entry.getValue(), alreadySavedLemmas));
+            }
+        }
+        saveIndexes(allIndexesBySite);
+    }
+
+    private List<Index> creatIndexesAndLemmas(Page page, Map<Lemma, Integer> lemmasAndCounts, List<Lemma> alreadySavedLemmas) {
+        List<Lemma> allLemmasForSave = new ArrayList<>();
+        List<Index> allIndexesByPage = new ArrayList<>();
+        for (Map.Entry<Lemma, Integer> lemmasAndCountByPage : lemmasAndCounts.entrySet()) {
+            boolean flag = false;
+            Lemma lemma = lemmasAndCountByPage.getKey();
+            for(Lemma mayBeExistLemma : alreadySavedLemmas){
+                if(mayBeExistLemma.equals(lemma)){
+                    lemma = mayBeExistLemma;
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag) {
+                allLemmasForSave.add(lemma);
+            }
+            Integer countByPage = lemmasAndCountByPage.getValue();
+            Index indexForSave = new Index(page, lemma, (float) countByPage);
+            allIndexesByPage.add(indexForSave);
+        }
+        alreadySavedLemmas.addAll(lemmaService.createBatch(allLemmasForSave));
+        return allIndexesByPage;
+    }
+
+    private void saveIndexes(List<Index> allIndexes){
+        indexService.createIndex(allIndexes);
+        statisticRepository.writeStatistics();
+    }
+
+
+
+    private List<Map<Page, Map<Lemma, Integer>>> lemmaListCreate(List<Site> allSites) {
         GlobalVariables.LEMMA_CREATING_STARTED = true;
-        ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+        return allSites
+                .stream()
+                .map(site -> lemmaCreate(site, site.getPages()))
+                .toList();
+    }
+
+    private Map<Page, Map<Lemma, Integer>> lemmaCreate(Site site, List<Page> pages) {
+        GlobalVariables.LEMMA_CREATING_STARTED = true;
 
         LemmaCreatorTask task = taskCreate(site, pages);
+        ForkJoinPool forkJoinPool = new ForkJoinPool();
+        Map<Page, Map<Lemma, Integer>> taskResult = forkJoinPool.invoke(task);
 
-        Future<List<Lemma>> futureResult = futureLemmaCreate(threadPool, task);
-
-        List<Lemma> lemmasList;
-        try {
-            lemmasList = futureResult.get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("Ошибка при создании лемм", e);
-        }
-
-        threadPool.shutdown();
+        forkJoinPool.shutdown();
 
         try {
-            if (!threadPool.awaitTermination(100L, TimeUnit.MINUTES)) {
+            if (!forkJoinPool.awaitTermination(100L, TimeUnit.MINUTES)) {
                 System.err.println("Потоки не завершились за отведенное время");
             }
         } catch (InterruptedException e) {
@@ -111,44 +140,22 @@ public class IndexingAndLemmaService {
             throw new RuntimeException("Ожидание завершения потоков было прервано", e);
         }
 
-        return lemmasList;
-    }
-
-    private Future<List<Lemma>> futureLemmaCreate(ExecutorService threadPool, LemmaCreatorTask task) {
-        return threadPool.submit(() -> {
-            ForkJoinPool forkJoinPool = new ForkJoinPool();
-            List<Lemma> lemmaList = forkJoinPool.invoke(task);
-            forkJoinPool.shutdown();
-            return lemmaList;
-        });
+        LemmaCreatorContext context = task.getContext();
+        ConcurrentHashMap<Lemma, Integer> countOfLemmas = context.getCountOfLemmas();
+        countOfLemmas.forEach(Lemma::setFrequency);
+        return taskResult;
     }
 
     private LemmaCreatorTask taskCreate(Site site, List<Page> pages) {
         LemmaCreatorContext lemmaCreatorContext = new LemmaCreatorContext(site,
-                new ConcurrentLinkedDeque<>(pages), factory, new ConcurrentHashMap<>());
-        return factory.createTask(lemmaCreatorContext);
+                pages, factory, new ConcurrentHashMap<>());
+        return factory.createTask(lemmaCreatorContext, new ConcurrentHashMap<>());
     }
-
-    private void indexCreate() {
-        GlobalVariables.INDEX_CREATING_STARTED = true;
-        GlobalVariables.LEMMA_CREATING_STARTED = false;
-
-        indexService.createIndex();
-        statisticRepository.writeStatistics();
-        GlobalVariables.INDEX_CREATING_STARTED = false;
-        GlobalVariables.PAGE_AND_LEMMAS_WITH_COUNT.clear();
-        GlobalVariables.COUNT_OF_LEMMAS.set(0);
-    }
-
 
     @Transactional(readOnly = true)
     public List<Site> getAllSites() {
         Set<String> siteNames = indexingService.getNamesAndSites().keySet();
         List<Site> allSites = siteRepository.findAllByName(siteNames);
-                /*
-        Не понимаю, почему если вызывать метод findAllByName напрямую из тестового класса, то сайты загрузятся вместе со страницами
-        Если же это делать через ApiControllerTest - страниц у сайтов не будет
-         */
         for (Site site : allSites) {
             site.setPages(pageRepository.findAllBySite(site));
         }

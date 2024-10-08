@@ -64,7 +64,6 @@ public class CustomIndexRepositoryImpl implements CustomIndexRepository {
     }
 
     @Override
-    @CheckTimeWorking
     public void deleteAllByPage(Page page) {
         Integer id = page.getId();
         int batchSize = 1000;

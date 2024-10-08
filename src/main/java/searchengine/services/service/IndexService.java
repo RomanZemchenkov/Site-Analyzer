@@ -2,19 +2,14 @@ package searchengine.services.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.dao.model.Index;
 import searchengine.dao.model.Lemma;
-import searchengine.dao.model.Page;
 import searchengine.dao.repository.index.IndexRepository;
 import searchengine.dao.repository.lemma.LemmaRepository;
-import searchengine.services.GlobalVariables;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -23,30 +18,18 @@ public class IndexService {
     private final IndexRepository indexRepository;
     private final LemmaRepository lemmaRepository;
 
-    @Transactional()
-    public void createIndex(){
-        ConcurrentHashMap<Page, HashMap<Lemma, Integer>> pageAndLemmasWithCount = GlobalVariables.PAGE_AND_LEMMAS_WITH_COUNT;
-        List<Index> indexList = new ArrayList<>();
-        pageAndLemmasWithCount.forEach(
-                (Page p, HashMap<Lemma, Integer> map) ->
-                {
-                    List<Index> indexList1 = parseToIndex(p, map);
-                    indexList.addAll(indexList1);
-                }
-        );
-        indexRepository.batchSave(indexList);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void createIndex(List<Index> indexesBySite){
+        indexRepository.batchSave(parseToIndex(indexesBySite));
     }
 
-    private List<Index> parseToIndex(Page page, HashMap<Lemma, Integer> countOfLemmas){
-        List<Index> indexList = new ArrayList<>();
-        for(Map.Entry<Lemma,Integer> entry : countOfLemmas.entrySet()){
-            Lemma lemma = entry.getKey();
-            if(lemma.getId() == null){
-                lemma = lemmaRepository.findLemmaByLemmaAndSite(lemma.getLemma(), lemma.getSite());
+    private List<Index> parseToIndex(List<Index> indexList){
+        for(Index index : indexList){
+            Lemma indexLemma = index.getLemma();
+            if(indexLemma.getId() == null){
+                indexLemma = lemmaRepository.findLemmaByLemmaAndSite(indexLemma.getLemma(), indexLemma.getSite());
+                index.setLemma(indexLemma);
             }
-            float count = (float) entry.getValue();
-            Index index = new Index(page, lemma, count);
-            indexList.add(index);
         }
         return indexList;
     }

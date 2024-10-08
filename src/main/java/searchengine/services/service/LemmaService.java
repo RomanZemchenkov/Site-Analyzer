@@ -16,12 +16,12 @@ public class LemmaService {
 
     private final LemmaRepository lemmaRepository;
 
-    public List<Lemma> createBatch(List<Lemma> lemmaList){
-        return lemmaRepository.batchSave(lemmaList);
+    public List<Lemma> findAllBySite(Site site){
+        return lemmaRepository.findAllBySiteId(site.getId());
     }
 
-    public void checkExistAndSaveOrUpdate(List<Lemma> lemmaList, Site site){
-        lemmaRepository.checkExistAndSaveOrUpdate(lemmaList,site);
+    public List<Lemma> createBatch(List<Lemma> lemmaList){
+        return lemmaRepository.batchSave(lemmaList);
     }
 
 }

@@ -10,9 +10,6 @@ import searchengine.services.event_listeners.event.UpdateSiteEvent;
 import searchengine.services.event_listeners.publisher.EventPublisher;
 import searchengine.services.searcher.entity.HttpResponseEntity;
 
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
-
 public class PageAnalyzerTaskImpl implements PageAnalyzerTask {
 
     private final String pageUrl;
@@ -54,7 +51,6 @@ public class PageAnalyzerTaskImpl implements PageAnalyzerTask {
     }
 
     private void ifErrorResponse(String errorMessage) {
-        System.out.println("Ошибка");
         updateSiteState(Status.FAILED.toString(), errorMessage);
     }
 

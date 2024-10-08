@@ -20,34 +20,31 @@ public class LemmaWriter {
         this.lemmasAndCounts = lemmasAndCounts;
     }
 
-    public void createLemma(Page page, Site site) {
+    public CreateLemmaResult createLemma(Page page, Site site) {
         TextToLemmaParserImpl parser = new TextToLemmaParserImpl();
         String htmlContent = page.getContent();
         Map<String, Integer> mapOfLemmas = parser.parse(htmlContent);
 
-        HashMap<Lemma, Integer> lemmaAndCountsOfOneSite = addLemmas(mapOfLemmas, site);
-        GlobalVariables.PAGE_AND_LEMMAS_WITH_COUNT.put(page, lemmaAndCountsOfOneSite);
         GlobalVariables.COUNT_OF_LEMMAS.set(lemmasAndCounts.size());
+        return new CreateLemmaResult(page, addLemmas(mapOfLemmas, site));
     }
 
-    private HashMap<Lemma, Integer> addLemmas(Map<String, Integer> mapOfLemmas, Site site) {
-        HashMap<Lemma,Integer> lemmasAndCountsOfOneSite = new HashMap<>();
+    private Map<Lemma, Integer> addLemmas(Map<String, Integer> mapOfLemmas, Site site) {
+        Map<Lemma, Integer> countOfLemmasByPage = new HashMap<>();
         for (Map.Entry<String, Integer> entry : mapOfLemmas.entrySet()) {
             String lemma = entry.getKey();
-            int countOfLemma = entry.getValue();
+            Integer countByPage = entry.getValue();
             Lemma saveLemma = new Lemma(lemma, site);
-
-            for (Map.Entry<Lemma,Integer> existLemmas : lemmasAndCounts.entrySet()){
+            for (Map.Entry<Lemma, Integer> existLemmas : lemmasAndCounts.entrySet()) {
                 Lemma savedLemma = existLemmas.getKey();
-                if (savedLemma.getLemma().equals(lemma)){
+                if (savedLemma.getLemma().equals(lemma)) {
                     saveLemma = savedLemma;
                     break;
                 }
             }
+            countOfLemmasByPage.put(saveLemma, countByPage);
             lemmasAndCounts.put(saveLemma, lemmasAndCounts.getOrDefault(saveLemma, 0) + 1);
-            lemmasAndCountsOfOneSite.put(saveLemma,countOfLemma);
         }
-        return lemmasAndCountsOfOneSite;
+        return countOfLemmasByPage;
     }
-
 }

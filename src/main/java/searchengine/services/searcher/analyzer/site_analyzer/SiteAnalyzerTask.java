@@ -10,13 +10,13 @@ import searchengine.services.searcher.entity.HttpResponseEntity;
 import searchengine.services.searcher.entity.NormalResponse;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.TimeUnit;
 
 
 import static searchengine.services.GlobalVariables.STOP_INDEXING_TEXT;
@@ -89,22 +89,12 @@ public class SiteAnalyzerTask extends RecursiveAction {
     private Set<String> checkAvailablePath(Set<String> paths) {
         Set<String> availablePaths = new HashSet<>();
         for (String path : paths) {
-            if (hasAlreadyExistPath(path)) {
+            if (!useUrlsSet.contains(path)) {
                 availablePaths.add(path);
                 useUrlsSet.add(path);
             }
         }
         return availablePaths;
-    }
-
-    private boolean hasAlreadyExistPath(String path) {
-        List<String> usePages = useUrlsSet.stream().toList();
-        for (String usePath : usePages) {
-            if (path.equals(usePath)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private void createTask(Set<String> availablePathForTask) {

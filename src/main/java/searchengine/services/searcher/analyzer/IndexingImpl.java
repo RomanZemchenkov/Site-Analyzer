@@ -47,7 +47,7 @@ public class IndexingImpl implements Indexing{
     @Getter
     private Map<String, String> namesAndSites;
     private List<ParseContext> contexts;
-    private HashMap<SiteAnalyzerTask, ForkJoinPool> pools = new HashMap<>();
+    private final HashMap<SiteAnalyzerTask, ForkJoinPool> pools = new HashMap<>();
 
 
     @PostConstruct
@@ -65,7 +65,9 @@ public class IndexingImpl implements Indexing{
         List<SiteAnalyzerTask> firstTasksList = new ArrayList<>();
         for (ParseContext context : contexts) {
             String startUrl = context.getSiteDto().getUrl();
-            firstTasksList.add(factory.createTask(startUrl, context, new ConcurrentSkipListSet<>()));
+            ConcurrentSkipListSet<String> useUrlsSet = new ConcurrentSkipListSet<>();
+            useUrlsSet.add(startUrl);
+            firstTasksList.add(factory.createTask(startUrl, context, useUrlsSet));
         }
 
         ExecutorService threadPool = Executors.newCachedThreadPool();
@@ -76,7 +78,6 @@ public class IndexingImpl implements Indexing{
             threadPool.submit(() -> executeTask(task, context, countOfParallel));
         }
         threadPool.shutdown();
-
 
         try {
             threadPool.awaitTermination(100L, TimeUnit.MINUTES);
