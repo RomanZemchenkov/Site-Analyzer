@@ -8,7 +8,6 @@ import searchengine.dao.model.Site;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 @Getter
 @EqualsAndHashCode

@@ -26,42 +26,25 @@ public class LemmaWriter {
         Map<String, Integer> mapOfLemmas = parser.parse(htmlContent);
 
         GlobalVariables.COUNT_OF_LEMMAS.set(lemmasAndCounts.size());
-        return new CreateLemmaResult(page,addLemmas(mapOfLemmas,site));
+        return new CreateLemmaResult(page, addLemmas(mapOfLemmas, site));
     }
 
-    private Map<Lemma,Integer> addLemmas(Map<String, Integer> mapOfLemmas, Site site) {
-        Map<Lemma,Integer> countOfLemmasByPage = new HashMap<>();
+    private Map<Lemma, Integer> addLemmas(Map<String, Integer> mapOfLemmas, Site site) {
+        Map<Lemma, Integer> countOfLemmasByPage = new HashMap<>();
         for (Map.Entry<String, Integer> entry : mapOfLemmas.entrySet()) {
             String lemma = entry.getKey();
             Integer countByPage = entry.getValue();
             Lemma saveLemma = new Lemma(lemma, site);
-            for (Map.Entry<Lemma,Integer> existLemmas : lemmasAndCounts.entrySet()){
+            for (Map.Entry<Lemma, Integer> existLemmas : lemmasAndCounts.entrySet()) {
                 Lemma savedLemma = existLemmas.getKey();
-                if (savedLemma.getLemma().equals(lemma)){
+                if (savedLemma.getLemma().equals(lemma)) {
                     saveLemma = savedLemma;
                     break;
                 }
             }
-            countOfLemmasByPage.put(saveLemma,countByPage);
+            countOfLemmasByPage.put(saveLemma, countByPage);
             lemmasAndCounts.put(saveLemma, lemmasAndCounts.getOrDefault(saveLemma, 0) + 1);
         }
         return countOfLemmasByPage;
     }
-
-//    private void addLemmas(Map<String, Integer> mapOfLemmas, Site site) {
-//        for (Map.Entry<String, Integer> entry : mapOfLemmas.entrySet()) {
-//            String lemma = entry.getKey();
-//            Lemma saveLemma = new Lemma(lemma, site);
-//
-//            for (Map.Entry<Lemma,Integer> existLemmas : lemmasAndCounts.entrySet()){
-//                Lemma savedLemma = existLemmas.getKey();
-//                if (savedLemma.getLemma().equals(lemma)){
-//                    saveLemma = savedLemma;
-//                    break;
-//                }
-//            }
-//            lemmasAndCounts.put(saveLemma, lemmasAndCounts.getOrDefault(saveLemma, 0) + 1);
-//        }
-//    }
-
 }

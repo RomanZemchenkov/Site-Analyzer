@@ -44,7 +44,7 @@ public class SiteAnalyzerTaskTest extends BaseTest {
     @Test
     @DisplayName("Testing the task for one site without exception")
     void successfulTaskTest() throws InterruptedException {
-        Site siteDto = siteService.createSite(new CreateSiteDto(TEST_MAIN_URL, "ItDeti"));
+        ShowSiteDto siteDto = siteService.createSite(new CreateSiteDto(TEST_MAIN_URL, "ItDeti"));
         ParseContext context = new ParseContext(siteDto, factory);
         SiteAnalyzerTask task = factory.createTask(TEST_MAIN_URL, context, new ConcurrentSkipListSet<>());
 
@@ -68,7 +68,7 @@ public class SiteAnalyzerTaskTest extends BaseTest {
     @Test
     @DisplayName("Testing the task for one site with exception")
     void taskWithException() throws InterruptedException {
-        Site site = siteService.createSite(new CreateSiteDto(TEST_MAIN_URL_WITH_EXCEPTION, "Et-cetera"));
+        ShowSiteDto site = siteService.createSite(new CreateSiteDto(TEST_MAIN_URL_WITH_EXCEPTION, "Et-cetera"));
         ParseContext context = new ParseContext(site, factory);
         SiteAnalyzerTask task = factory.createTask(TEST_MAIN_URL_WITH_EXCEPTION, context, new ConcurrentSkipListSet<>());
 

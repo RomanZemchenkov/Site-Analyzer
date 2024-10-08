@@ -3,6 +3,7 @@ package searchengine.services.service;
 import lombok.RequiredArgsConstructor;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.aop.annotation.CheckQuery;
 import searchengine.aop.annotation.CheckIndexingWork;
@@ -37,7 +38,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
 public class SearchService {
 
     private final SiteRepository siteRepository;

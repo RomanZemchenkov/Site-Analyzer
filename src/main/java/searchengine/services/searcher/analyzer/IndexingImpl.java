@@ -5,17 +5,16 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.aop.annotation.CheckTimeWorking;
-import searchengine.dao.model.Page;
-import searchengine.dao.model.Site;
 import searchengine.dao.model.Status;
-import searchengine.services.searcher.analyzer.page_analyzer.AnalyzeResponse;
-import searchengine.services.searcher.analyzer.page_analyzer.ErrorAnalyzeResponse;
+import searchengine.services.dto.site.ShowSiteDto;
 import searchengine.services.searcher.analyzer.page_analyzer.PageAnalyzerTask;
 import searchengine.services.searcher.analyzer.page_analyzer.PageAnalyzerTaskFactory;
 import searchengine.services.searcher.analyzer.page_analyzer.PageParseContext;
 import searchengine.services.searcher.analyzer.site_analyzer.ParseContext;
 import searchengine.services.searcher.analyzer.site_analyzer.SiteAnalyzerTask;
 import searchengine.services.searcher.analyzer.site_analyzer.SiteAnalyzerTaskFactory;
+import searchengine.services.searcher.entity.ErrorResponse;
+import searchengine.services.searcher.entity.HttpResponseEntity;
 import searchengine.services.service.PageService;
 import searchengine.services.service.SiteService;
 import searchengine.services.dto.SiteProperties;
@@ -23,15 +22,22 @@ import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.dto.site.CreateSiteDto;
 import searchengine.services.exception.IllegalPageException;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static searchengine.services.GlobalVariables.*;
 
 @Service
 @RequiredArgsConstructor
-public class IndexingImpl implements Indexing {
+public class IndexingImpl implements Indexing{
 
     private final SiteService siteService;
     private final PageService pageService;
@@ -41,7 +47,7 @@ public class IndexingImpl implements Indexing {
     @Getter
     private Map<String, String> namesAndSites;
     private List<ParseContext> contexts;
-    private HashMap<SiteAnalyzerTask, ForkJoinPool> pools = new HashMap<>();
+    private final HashMap<SiteAnalyzerTask, ForkJoinPool> pools = new HashMap<>();
 
 
     @PostConstruct
@@ -52,40 +58,29 @@ public class IndexingImpl implements Indexing {
     }
 
     @CheckTimeWorking
-    public HashMap<Site, List<Page>> startSitesIndexing() {
+    public void startSitesIndexing() {
         INDEXING_STARTED = true;
         createContext();
 
         List<SiteAnalyzerTask> firstTasksList = new ArrayList<>();
         for (ParseContext context : contexts) {
-            String startUrl = context.getSite().getUrl();
+            String startUrl = context.getSiteDto().getUrl();
             ConcurrentSkipListSet<String> useUrlsSet = new ConcurrentSkipListSet<>();
             useUrlsSet.add(startUrl);
             firstTasksList.add(factory.createTask(startUrl, context, useUrlsSet));
         }
 
         ExecutorService threadPool = Executors.newCachedThreadPool();
-        HashMap<Site, List<Page>> sitesAndPages = new HashMap<>();
         for (int i = 0; i < firstTasksList.size(); i++) {
             SiteAnalyzerTask task = firstTasksList.get(i);
             ParseContext context = contexts.get(i);
             int countOfParallel = Math.max(1, COUNT_OF_PROCESSORS / firstTasksList.size());
-            Future<List<Page>> future = threadPool.submit(() -> executeTask(task, context, countOfParallel));
-            try {
-                List<Page> pages = future.get();
-                sitesAndPages.put(context.getSite(),pages);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } catch (ExecutionException e) {
-                throw new RuntimeException(e);
-            }
+            threadPool.submit(() -> executeTask(task, context, countOfParallel));
         }
         threadPool.shutdown();
 
-
         try {
             threadPool.awaitTermination(100L, TimeUnit.MINUTES);
-            System.out.println("Внутри индексатора");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -93,11 +88,9 @@ public class IndexingImpl implements Indexing {
             INDEXING_STARTED = false;
         }
 
-        return sitesAndPages;
     }
 
     public void stopIndexing() {
-        System.out.println("Остановка задачи");
         for (ParseContext context : contexts) {
             context.setIfErrorResponse(true);
         }
@@ -110,7 +103,7 @@ public class IndexingImpl implements Indexing {
         }
     }
 
-    private List<Page> executeTask(SiteAnalyzerTask task, ParseContext context, int countOfParallel) {
+    private void executeTask(SiteAnalyzerTask task, ParseContext context, int countOfParallel) {
         ForkJoinPool forkJoinPool = new ForkJoinPool(countOfParallel);
         pools.put(task, forkJoinPool);
         try {
@@ -125,18 +118,14 @@ public class IndexingImpl implements Indexing {
                 forkJoinPool.shutdownNow();
             }
             if (!context.isIfErrorResponse()) {
-                System.out.println("Устанавливаем окончание работы таски без ошибок");
                 task.updateSiteState(Status.INDEXED.toString());
             } else {
-                System.out.println("Устанавливаем окончание работы таски с ошибкой");
-                task.updateSiteState(Status.FAILED.toString(), context.getErrorContent());
+                task.updateSiteState(Status.FAILED.toString(),context.getErrorContent());
             }
         }
-        return context.getPagesSet().stream().toList();
     }
 
     private void createContext() {
-        System.out.println("Контекст создаётся начало");
         contexts = new ArrayList<>();
 
         for (Map.Entry<String, String> entry : namesAndSites.entrySet()) {
@@ -144,26 +133,23 @@ public class IndexingImpl implements Indexing {
             String url = entry.getValue();
 
             CreateSiteDto dto = new CreateSiteDto(url, name);
-            Site site = siteService.createSite(dto);
+            ShowSiteDto site = siteService.createSite(dto);
 
             ParseContext context = new ParseContext(site, factory);
             contexts.add(context);
         }
-        System.out.println("Контекст создаётся конец");
 
     }
 
     public FindPageDto startPageIndexing(String searchedUrl) {
-        System.out.println("Выполнение задачи");
-        Site site = checkSiteExist(searchedUrl);
-        PageParseContext pageContext = new PageParseContext(site);
+        ShowSiteDto showSite = checkSiteExist(searchedUrl);
+        PageParseContext pageContext = new PageParseContext(showSite);
         PageAnalyzerTask task = pageFactory.createTask(searchedUrl, pageContext);
-        AnalyzeResponse analyzeResult = task.analyze();
+        HttpResponseEntity analyzeResult = task.analyze();
 
-        String pageUri = searchedUrl.substring(site.getUrl().length());
-        System.out.println("сохранена " + pageUri);
-        if (analyzeResult instanceof ErrorAnalyzeResponse) {
-            task.updateSiteState(Status.FAILED.toString(),((ErrorAnalyzeResponse) analyzeResult).getContent());
+        String pageUri = searchedUrl.substring(showSite.getUrl().length());
+        if(analyzeResult instanceof ErrorResponse){
+            task.updateSiteState(Status.FAILED.toString(),analyzeResult.getContent());
         } else {
             task.updateSiteState(Status.INDEXED.toString());
         }
@@ -171,7 +157,7 @@ public class IndexingImpl implements Indexing {
     }
 
 
-    private Site checkSiteExist(String searchedUrl) {
+    private ShowSiteDto checkSiteExist(String searchedUrl){
         String siteUrl = "";
         String siteName = "";
         for (Map.Entry<String, String> entry : namesAndSites.entrySet()) {

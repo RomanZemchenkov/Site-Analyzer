@@ -3,24 +3,20 @@ package searchengine.services.searcher.analyzer.site_analyzer;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import searchengine.dao.model.Page;
-import searchengine.dao.model.Site;
+import searchengine.services.dto.site.ShowSiteDto;
 
-import java.util.concurrent.CopyOnWriteArraySet;
-
-@EqualsAndHashCode(of = "site")
+@EqualsAndHashCode(of = "siteDto")
 @Getter
 public class ParseContext {
-    private final Site site;
+    private final ShowSiteDto siteDto;
     private final SiteAnalyzerTaskFactory factory;
     @Setter
     private volatile boolean ifErrorResponse = false;
     @Setter
     private String errorContent;
-    private final CopyOnWriteArraySet<Page> pagesSet = new CopyOnWriteArraySet<>();
 
-    public ParseContext(Site site, SiteAnalyzerTaskFactory factory) {
-        this.site = site;
+    public ParseContext(ShowSiteDto siteDto, SiteAnalyzerTaskFactory factory) {
+        this.siteDto = siteDto;
         this.factory = factory;
     }
 }

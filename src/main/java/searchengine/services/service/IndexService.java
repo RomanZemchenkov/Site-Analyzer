@@ -28,7 +28,6 @@ public class IndexService {
             Lemma indexLemma = index.getLemma();
             if(indexLemma.getId() == null){
                 indexLemma = lemmaRepository.findLemmaByLemmaAndSite(indexLemma.getLemma(), indexLemma.getSite());
-                System.out.println("Lemma without id");
                 index.setLemma(indexLemma);
             }
         }

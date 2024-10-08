@@ -1,42 +1,37 @@
 package searchengine.services.searcher.analyzer.page_analyzer;
 
 import org.springframework.http.HttpStatus;
-import searchengine.dao.model.Page;
-import searchengine.dao.model.Site;
 import searchengine.dao.model.Status;
 import searchengine.services.dto.page.CreatePageDto;
 import searchengine.services.dto.site.ShowSiteDto;
 import searchengine.services.dto.site.UpdateSiteDto;
+import searchengine.services.event_listeners.event.CreatePageEvent;
+import searchengine.services.event_listeners.event.UpdateSiteEvent;
+import searchengine.services.event_listeners.publisher.EventPublisher;
 import searchengine.services.searcher.entity.HttpResponseEntity;
-import searchengine.services.searcher.entity.NormalResponse;
-import searchengine.services.service.PageService;
-import searchengine.services.service.SiteService;
 
 public class PageAnalyzerTaskImpl implements PageAnalyzerTask {
 
     private final String pageUrl;
     private final PageParseContext context;
-    private final SiteService siteService;
-    private final PageService pageService;
+    private final EventPublisher publisher;
 
-    public PageAnalyzerTaskImpl(String pageUrl, PageParseContext context, SiteService siteService, PageService pageService) {
+    public PageAnalyzerTaskImpl(String pageUrl, PageParseContext context, EventPublisher publisher) {
         this.pageUrl = pageUrl;
         this.context = context;
-        this.siteService = siteService;
-        this.pageService = pageService;
+        this.publisher = publisher;
     }
 
-    public AnalyzeResponse analyze() {
+    public HttpResponseEntity analyze() {
         HttpResponseEntity response = analyzeUrl();
 
         boolean isNormalResponse = checkStatusCode(response);
-        AnalyzeResponse analyzeResponse;
         if (!isNormalResponse) {
-            analyzeResponse = ifErrorResponse(response);
+            ifErrorResponse(response.getContent());
         } else {
-            analyzeResponse = ifNormalResponse(response);
+            ifNormalResponse(response);
         }
-        return analyzeResponse;
+        return response;
     }
 
     @Override
@@ -55,15 +50,17 @@ public class PageAnalyzerTaskImpl implements PageAnalyzerTask {
         return status != null && !status.is4xxClientError() && !status.is5xxServerError();
     }
 
-    private AnalyzeResponse ifErrorResponse(HttpResponseEntity response) {
-        updateSiteState(Status.FAILED.toString(), response.getContent());
-        return new ErrorAnalyzeResponse(response.getContent());
+    private void ifErrorResponse(String errorMessage) {
+        updateSiteState(Status.FAILED.toString(), errorMessage);
     }
 
+    private void createPageEvent(CreatePageDto createPageDto) {
+        publisher.publishCreatePageEvent(new CreatePageEvent(createPageDto));
+    }
 
-    private AnalyzeResponse ifNormalResponse(HttpResponseEntity response) {
-        Site site = context.getSite();
-        String siteId = String.valueOf(site.getId());
+    private void ifNormalResponse(HttpResponseEntity response) {
+        ShowSiteDto site = context.getSite();
+        String siteId = site.getId();
 
         Integer statusCode = response.getStatusCode();
         String urlPage = response.getUrl();
@@ -73,12 +70,11 @@ public class PageAnalyzerTaskImpl implements PageAnalyzerTask {
         String code = String.valueOf(statusCode);
 
         CreatePageDto dto = new CreatePageDto(siteId, urlForSave, code, content);
-        Page savedPage = pageService.createPage(dto);
+        createPageEvent(dto);
 
         if (!PageParseContext.isIfStop()) {
             updateSiteState(Status.INDEXING.toString());
         }
-        return new NormalAnalyzeResponse(savedPage, ((NormalResponse) response).getUrls());
     }
 
 
@@ -87,17 +83,17 @@ public class PageAnalyzerTaskImpl implements PageAnalyzerTask {
     }
 
     public void updateSiteState(String status, String content) {
-        Site site = context.getSite();
+        ShowSiteDto site = context.getSite();
         String mainUrl = site.getUrl();
         String siteName = site.getName();
-        String siteId = String.valueOf(site.getId());
+        String siteId = site.getId();
         UpdateSiteDto siteDto;
         if (content != null) {
             siteDto = new UpdateSiteDto(siteId, status, content, mainUrl, siteName);
         } else {
             siteDto = new UpdateSiteDto(siteId, status, mainUrl, siteName);
         }
-        siteService.updateSite(siteDto);
+        publisher.publishUpdateSiteEvent(new UpdateSiteEvent(siteDto));
     }
 
 

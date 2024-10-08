@@ -2,15 +2,22 @@ package searchengine.services.searcher.analyzer.site_analyzer;
 
 import lombok.ToString;
 import searchengine.services.event_listeners.publisher.EventPublisher;
-import searchengine.services.searcher.analyzer.page_analyzer.AnalyzeResponse;
-import searchengine.services.searcher.analyzer.page_analyzer.ErrorAnalyzeResponse;
-import searchengine.services.searcher.analyzer.page_analyzer.NormalAnalyzeResponse;
 import searchengine.services.searcher.analyzer.page_analyzer.PageAnalyzerTask;
 import searchengine.services.searcher.analyzer.page_analyzer.PageAnalyzerTaskFactory;
 import searchengine.services.searcher.analyzer.page_analyzer.PageParseContext;
+import searchengine.services.searcher.entity.ErrorResponse;
+import searchengine.services.searcher.entity.HttpResponseEntity;
+import searchengine.services.searcher.entity.NormalResponse;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.TimeUnit;
+
 
 import static searchengine.services.GlobalVariables.STOP_INDEXING_TEXT;
 
@@ -34,7 +41,7 @@ public class SiteAnalyzerTask extends RecursiveAction {
 
     @Override
     protected void compute() {
-        AnalyzeResponse response;
+        HttpResponseEntity response;
         try {
             response = createPageAnalyzerTask();
         } catch (ExecutionException | InterruptedException e) {
@@ -42,11 +49,52 @@ public class SiteAnalyzerTask extends RecursiveAction {
             return;
         }
         if (!context.isIfErrorResponse()) {
-            NormalAnalyzeResponse normalResponse = (NormalAnalyzeResponse) response;
-            Set<String> availablePath = checkAvailablePath(normalResponse.getUrls());
-            context.getPagesSet().add(normalResponse.getPage());
+            Set<String> availablePath = checkAvailablePath(((NormalResponse) response).getUrls());
             createTask(availablePath);
         }
+    }
+
+    public void stopIndexing(ForkJoinPool usePool) {
+        stopAnalyze(usePool);
+        pageAnalyzerTaskImpl.changeIfStopFlag(true);
+        context.setErrorContent(STOP_INDEXING_TEXT);
+    }
+
+    public void updateSiteState(String status) {
+        pageAnalyzerTaskImpl.updateSiteState(status);
+    }
+
+    public void updateSiteState(String status, String content) {
+        pageAnalyzerTaskImpl.updateSiteState(status, content);
+    }
+
+    private HttpResponseEntity createPageAnalyzerTask() throws ExecutionException, InterruptedException {
+        PageParseContext pageParseContext = new PageParseContext(context.getSiteDto());
+        pageAnalyzerTaskImpl = pageAnalyzerTaskFactory.createTask(pageUrl, pageParseContext);
+
+        HttpResponseEntity analyze = pageAnalyzerTaskImpl.analyze();
+        checkResponse(analyze);
+        return analyze;
+    }
+
+    private void checkResponse(HttpResponseEntity httpResponseEntity) {
+        if (httpResponseEntity instanceof ErrorResponse) {
+            ForkJoinPool currentPool = ForkJoinTask.getPool();
+            stopAnalyze(currentPool);
+            context.setErrorContent(httpResponseEntity.getContent());
+            context.setIfErrorResponse(true);
+        }
+    }
+
+    private Set<String> checkAvailablePath(Set<String> paths) {
+        Set<String> availablePaths = new HashSet<>();
+        for (String path : paths) {
+            if (!useUrlsSet.contains(path)) {
+                availablePaths.add(path);
+                useUrlsSet.add(path);
+            }
+        }
+        return availablePaths;
     }
 
     private void createTask(Set<String> availablePathForTask) {
@@ -67,51 +115,6 @@ public class SiteAnalyzerTask extends RecursiveAction {
             }
         }
     }
-
-    public void stopIndexing(ForkJoinPool usePool) {
-        stopAnalyze(usePool);
-        pageAnalyzerTaskImpl.changeIfStopFlag(true);
-        context.setErrorContent(STOP_INDEXING_TEXT);
-    }
-
-    public void updateSiteState(String status) {
-        pageAnalyzerTaskImpl.updateSiteState(status);
-    }
-
-    public void updateSiteState(String status, String content) {
-        pageAnalyzerTaskImpl.updateSiteState(status, content);
-    }
-
-    private AnalyzeResponse createPageAnalyzerTask() throws ExecutionException, InterruptedException {
-        PageParseContext pageParseContext = new PageParseContext(context.getSite());
-        pageAnalyzerTaskImpl = pageAnalyzerTaskFactory.createTask(pageUrl, pageParseContext);
-
-        AnalyzeResponse analyzeResponse = pageAnalyzerTaskImpl.analyze();
-        checkAnalyzeResponse(analyzeResponse);
-        return analyzeResponse;
-    }
-
-    private void checkAnalyzeResponse(AnalyzeResponse analyzeResponse) {
-        if (analyzeResponse instanceof ErrorAnalyzeResponse) {
-            ForkJoinPool currentPool = ForkJoinTask.getPool();
-            stopAnalyze(currentPool);
-            context.setErrorContent(((ErrorAnalyzeResponse) analyzeResponse).getContent());
-            context.setIfErrorResponse(true);
-        }
-    }
-
-    private Set<String> checkAvailablePath(Set<String> paths) {
-        Set<String> availablePaths = new HashSet<>();
-        for (String path : paths) {
-            if (!useUrlsSet.contains(path)) {
-                availablePaths.add(path);
-                useUrlsSet.add(path);
-            }
-        }
-        return availablePaths;
-    }
-
-
 
     private void stopAnalyze(ForkJoinPool usePool) {
         usePool.shutdownNow();

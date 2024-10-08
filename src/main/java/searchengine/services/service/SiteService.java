@@ -35,14 +35,11 @@ public class SiteService {
     private final SiteRepository siteRepository;
 
     @Transactional
-    public Site createSite(CreateSiteDto dto) {
-        System.out.println("Новый сайт создан или удалён начало");
+    public ShowSiteDto createSite(CreateSiteDto dto) {
         String name = dto.getName();
 
         Optional<Site> mayBeSite = repository.findSiteByName(name);
-
         mayBeSite.ifPresent(this::deleteAll);
-
         return siteSave(dto);
     }
 
@@ -58,21 +55,24 @@ public class SiteService {
     }
 
     @Transactional
-    public Site findSiteByUrl(String url, String siteName) {
+    public ShowSiteDto findSiteByUrl(String url, String siteName) {
         Optional<Site> mayBeSite = siteRepository.findSiteByUrl(url);
-        Site showSite;
-        showSite = mayBeSite.orElseGet(() -> siteSave(new CreateSiteDto(url, siteName)));
+        ShowSiteDto showSite;
+        if (mayBeSite.isEmpty()) {
+            showSite = siteSave(new CreateSiteDto(url, siteName));
+        } else {
+            showSite = mapper.mapToShow(mayBeSite.get());
+        }
         return showSite;
     }
 
-    private Site siteSave(CreateSiteDto dto) {
+    private ShowSiteDto siteSave(CreateSiteDto dto) {
         Site site = mapper.mapToSite(dto);
         site.setStatus(Status.INDEXING);
         site.setStatusTime(OffsetDateTime.now(ZoneId.systemDefault()));
 
         Site savedSite = repository.saveAndFlush(site);
-        System.out.println("Новый сайт создан или удалён конец");
-        return savedSite;
+        return mapper.mapToShow(savedSite);
     }
 
     private void deleteAll(Site site) {
@@ -83,6 +83,4 @@ public class SiteService {
         pageRepository.deleteAllBySite(site);
         siteRepository.deleteSite(site);
     }
-
-
 }

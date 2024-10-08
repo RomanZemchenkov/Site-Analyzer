@@ -27,9 +27,9 @@ public class SiteServiceTest extends BaseTest {
     @Test
     @DisplayName("Testing the create site")
     void createSite(){
-        Site site = assertDoesNotThrow(() -> service.createSite(new CreateSiteDto("/url/test", "Site name")));
+        ShowSiteDto site = assertDoesNotThrow(() -> service.createSite(new CreateSiteDto("/url/test", "Site name")));
 
-        assertThat(site.getId()).isEqualTo(4);
+        assertThat(site.getId()).isEqualTo("4");
     }
 
     @Test

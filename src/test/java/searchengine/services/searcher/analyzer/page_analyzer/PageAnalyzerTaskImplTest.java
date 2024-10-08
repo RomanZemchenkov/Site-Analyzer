@@ -34,7 +34,7 @@ public class PageAnalyzerTaskImplTest extends BaseTest {
     @Test
     @DisplayName("Testing the page analyzer task")
     void pageAnalyzerTaskTest() {
-        Site siteDto = siteService.createSite(new CreateSiteDto(TEST_MAIN_URL, "ItDeti"));
+        ShowSiteDto siteDto = siteService.createSite(new CreateSiteDto(TEST_MAIN_URL, "ItDeti"));
         PageParseContext pageContext = new PageParseContext(siteDto);
         PageAnalyzerTask task = factory.createTask(TEST_PAGE_URL, pageContext);
         assertDoesNotThrow(task::analyze);

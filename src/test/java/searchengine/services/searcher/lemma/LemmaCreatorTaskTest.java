@@ -51,7 +51,11 @@ public class LemmaCreatorTaskTest extends BaseTest {
 //
 //        assertThat(resultLemmas).hasSize(1798);
 //    }
+<<<<<<< HEAD
 
+=======
+//
+>>>>>>> 0b2c17b (Changing the method of finding lemmas and indexes)
 //    @Test
 //    @DisplayName("Create lemma for several sites by multi thread test")
 //    void lemmaCreatorTaskForSeveralSites() {
@@ -103,6 +107,7 @@ public class LemmaCreatorTaskTest extends BaseTest {
 //        }
 //
 //    }
+<<<<<<< HEAD
 
     static <T> T time(Supplier<T> supplier) {
         long start = System.currentTimeMillis();
@@ -111,4 +116,14 @@ public class LemmaCreatorTaskTest extends BaseTest {
         System.out.println("Метод отработал за: " + (finish - start));
         return t;
     }
+=======
+//
+//    static <T> T time(Supplier<T> supplier) {
+//        long start = System.currentTimeMillis();
+//        T t = supplier.get();
+//        long finish = System.currentTimeMillis();
+//        System.out.println("Метод отработал за: " + (finish - start));
+//        return t;
+//    }
+>>>>>>> 0b2c17b (Changing the method of finding lemmas and indexes)
 }

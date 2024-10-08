@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class LemmaCreatorTaskFactory {
 
-
     public LemmaCreatorTask createTask(LemmaCreatorContext context, ConcurrentHashMap<Page, Map<Lemma,Integer>> countOfLemmasByPage){
         return new LemmaCreatorTask(context, countOfLemmasByPage );
     }

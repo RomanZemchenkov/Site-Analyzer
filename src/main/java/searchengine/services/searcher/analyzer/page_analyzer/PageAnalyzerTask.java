@@ -1,8 +1,11 @@
 package searchengine.services.searcher.analyzer.page_analyzer;
 
+import searchengine.services.searcher.entity.HttpResponseEntity;
+
+
 public interface PageAnalyzerTask {
 
-    AnalyzeResponse analyze();
+    HttpResponseEntity analyze();
 
     void updateSiteState(String status);
 
