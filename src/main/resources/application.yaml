@@ -6,12 +6,12 @@ indexing-settings:
 #      name: PlayBack.Ru
     - url: https://itdeti.ru
       name: ItDeti.ru
-    - url: https://hacker-son.com
-      name: Hacker-son
-    - url: https://gkb15.moscow/
-      name: GBK15
-#            - url: https://lenta.ru
-#              name: Lenta.ru
+#    - url: https://hacker-son.com
+#      name: Hacker-son
+#    - url: https://gkb15.moscow/
+#      name: GBK15
+#    - url: https://lenta.ru
+#      name: Lenta.ru
 #    - url: https://et-cetera.ru
 #      name: Et-cetera
 #    - url: https://skillbox.ru/
@@ -19,6 +19,8 @@ indexing-settings:
 #    - url: https://shcool11-balakhna.edusite.ru
 #      name: BalakhnaSchool11
 spring:
+  profiles:
+    active: logging
   datasource:
     url: jdbc:postgresql://localhost:5432/search_engine
     password: 1234

@@ -67,7 +67,6 @@ public class PageAnalyzerImpl implements PageAnalyzer{
         } catch (HttpStatusException statusException) {
             throw statusException;
         } catch (SocketTimeoutException | ConnectException e){
-            System.out.println(e.getMessage());
             throw new HttpStatusException(e.getMessage(),408,url);
         } catch (IOException e) {
             throw new RuntimeException(e);

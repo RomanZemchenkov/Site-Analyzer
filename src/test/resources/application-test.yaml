@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: logging
   datasource:
     username: test
     password: test

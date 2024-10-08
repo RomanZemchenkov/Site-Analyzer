@@ -29,6 +29,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 
+import static searchengine.services.GlobalVariables.COUNT_OF_LEMMAS;
+import static searchengine.services.GlobalVariables.INDEXING_STARTED;
+import static searchengine.services.GlobalVariables.INDEX_CREATING_STARTED;
+import static searchengine.services.GlobalVariables.LEMMA_CREATING_STARTED;
+
 @Service
 @RequiredArgsConstructor
 public class IndexingAndLemmaService {
@@ -44,15 +49,20 @@ public class IndexingAndLemmaService {
     @LuceneInit
     @CheckTimeWorking
     public void startIndexingAndCreateLemma() {
+        INDEXING_STARTED = true;
         indexingService.startSitesIndexing();
-        List<Site> allSites = getAllSites();
-        GlobalVariables.INDEX_CREATING_STARTED = true;
-        GlobalVariables.LEMMA_CREATING_STARTED = false;
-        List<Map<Page, Map<Lemma, Integer>>> lemmas = lemmaListCreate(allSites);
-        saveIndexesAndLemmas(lemmas);
+        LEMMA_CREATING_STARTED = true;
+        INDEXING_STARTED = false;
 
-        GlobalVariables.INDEX_CREATING_STARTED = false;
-        GlobalVariables.COUNT_OF_LEMMAS.set(0);
+        List<Site> allSites = getAllSites();
+        List<Map<Page, Map<Lemma, Integer>>> lemmas = lemmaListCreate(allSites);
+        INDEX_CREATING_STARTED = true;
+        LEMMA_CREATING_STARTED = false;
+
+        saveIndexesAndLemmas(lemmas);
+        INDEX_CREATING_STARTED = false;
+
+        COUNT_OF_LEMMAS.set(0);
     }
 
     @LuceneInit
@@ -115,8 +125,6 @@ public class IndexingAndLemmaService {
 
 
     private List<Map<Page, Map<Lemma, Integer>>> lemmaListCreate(List<Site> allSites) {
-        GlobalVariables.LEMMA_CREATING_STARTED = true;
-
         return allSites
                 .stream()
                 .map(site -> lemmaCreate(site, site.getPages()))
@@ -124,7 +132,7 @@ public class IndexingAndLemmaService {
     }
 
     private Map<Page, Map<Lemma, Integer>> lemmaCreate(Site site, List<Page> pages) {
-        GlobalVariables.LEMMA_CREATING_STARTED = true;
+        LEMMA_CREATING_STARTED = true;
 
         LemmaCreatorTask task = taskCreate(site, pages);
         ForkJoinPool forkJoinPool = new ForkJoinPool();
@@ -145,6 +153,7 @@ public class IndexingAndLemmaService {
         ConcurrentHashMap<Lemma, Integer> countOfLemmas = context.getCountOfLemmas();
         countOfLemmas.forEach(Lemma::setFrequency);
 
+        System.out.println("Количество лемм: " + countOfLemmas.size());
         return taskResult;
     }
     private LemmaCreatorTask taskCreate(Site site, List<Page> pages) {

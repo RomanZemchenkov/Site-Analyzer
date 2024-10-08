@@ -59,7 +59,6 @@ public class IndexingImpl implements Indexing{
 
     @CheckTimeWorking
     public void startSitesIndexing() {
-        INDEXING_STARTED = true;
         createContext();
 
         List<SiteAnalyzerTask> firstTasksList = new ArrayList<>();
@@ -74,7 +73,7 @@ public class IndexingImpl implements Indexing{
         for (int i = 0; i < firstTasksList.size(); i++) {
             SiteAnalyzerTask task = firstTasksList.get(i);
             ParseContext context = contexts.get(i);
-            int countOfParallel = Math.max(1, COUNT_OF_PROCESSORS / firstTasksList.size());
+            int countOfParallel = Math.max(1, COUNT_OF_PROCESSORS);
             threadPool.submit(() -> executeTask(task, context, countOfParallel));
         }
         threadPool.shutdown();
@@ -85,7 +84,6 @@ public class IndexingImpl implements Indexing{
             throw new RuntimeException(e);
         } finally {
             pools.clear();
-            INDEXING_STARTED = false;
         }
 
     }
