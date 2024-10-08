@@ -5,55 +5,56 @@ import searchengine.dao.model.Lemma;
 import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RecursiveTask;
+import java.util.stream.Collectors;
 
 
 @Getter
-public class LemmaCreatorTask extends RecursiveTask<List<Lemma>> {
+public class LemmaCreatorTask extends RecursiveTask<Map<Page, Map<Lemma,Integer>>> {
 
     private final LemmaCreatorContext context;
+    private final ConcurrentHashMap<Page,Map<Lemma,Integer>> countOfLemmasByPages;
 
-    public LemmaCreatorTask(LemmaCreatorContext context) {
+    public LemmaCreatorTask(LemmaCreatorContext context, ConcurrentHashMap<Page, Map<Lemma, Integer>> countOfLemmasByPages) {
         this.context = context;
+        this.countOfLemmasByPages = countOfLemmasByPages;
     }
 
     @Override
-    protected List<Lemma> compute() {
+    protected Map<Page,Map<Lemma,Integer>> compute() {
         Site site = context.getSite();
-        ConcurrentLinkedDeque<Page> pageList = context.getPageList();
+        List<Page> pageList = context.getPageList();
 
         createTask(pageList, site);
 
-        List<Lemma> lemmaList = new ArrayList<>();
-
-        ConcurrentHashMap<Lemma, Integer> countOfLemmas = context.getCountOfLemmas();
-
-        countOfLemmas.forEach((Lemma, Integer) -> {
-            Lemma.setFrequency(Integer);
-            lemmaList.add(Lemma);
-        });
-        return lemmaList;
+        return countOfLemmasByPages.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private void createTask(ConcurrentLinkedDeque<Page> pages, Site site) {
+    private void createTask(List<Page> pages, Site site) {
         int pageSize = pages.size();
         if (pageSize <= 2) {
             for (Page page : pages) {
                 ConcurrentHashMap<Lemma, Integer> countOfLemmas = context.getCountOfLemmas();
                 LemmaWriter lemmaWriter = new LemmaWriter(countOfLemmas);
-                lemmaWriter.createLemma(page, site);
+                CreateLemmaResult result = lemmaWriter.createLemma(page, site);
+                countOfLemmasByPages.put(result.getPage(),result.getCountOfLemmasByPage());
             }
             return;
         }
-        ConcurrentLinkedDeque<Page> leftPages = new ConcurrentLinkedDeque<>();
-        ConcurrentLinkedDeque<Page> rightPages = new ConcurrentLinkedDeque<>();
+        List<Page> leftPages = new ArrayList<>();
+        List<Page> rightPages = new ArrayList<>();
         for (int i = 0; i < pageSize; i++) {
             if (i < (pageSize / 2)) {
-                Page x = pages.pollFirst();
+                Page x = pages.get(i);
                 leftPages.add(x);
             } else {
-                Page e = pages.pollFirst();
+                Page e = pages.get(i);
                 rightPages.add(e);
             }
         }
@@ -65,8 +66,8 @@ public class LemmaCreatorTask extends RecursiveTask<List<Lemma>> {
         LemmaCreatorContext leftContext = new LemmaCreatorContext(site, leftPages, creatorTaskFactory, countOfLemmas);
         LemmaCreatorContext rightContext = new LemmaCreatorContext(site, rightPages, creatorTaskFactory, countOfLemmas);
 
-        LemmaCreatorTask leftTask = creatorTaskFactory.createTask(leftContext);
-        LemmaCreatorTask rightTask = creatorTaskFactory.createTask(rightContext);
+        LemmaCreatorTask leftTask = creatorTaskFactory.createTask(leftContext, countOfLemmasByPages);
+        LemmaCreatorTask rightTask = creatorTaskFactory.createTask(rightContext, countOfLemmasByPages);
 
         leftTask.fork();
         rightTask.fork();

@@ -11,6 +11,7 @@ import searchengine.dao.model.Status;
 import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.exception.IllegalPageException;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;

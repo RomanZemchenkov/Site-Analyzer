@@ -52,6 +52,9 @@ public class CustomIndexRepositoryImpl implements CustomIndexRepository {
         List<Index> tempList = new ArrayList<>();
         for (Index index : indexList) {
             tempList.add(index);
+            if(index.getLemma().getId() == null){
+                System.out.println(index);
+            }
 
             if (tempList.size() == BATCH_SIZE) {
                 save(tempList);

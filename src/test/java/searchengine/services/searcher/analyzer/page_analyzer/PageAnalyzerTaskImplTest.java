@@ -7,9 +7,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import searchengine.BaseTest;
+import searchengine.dao.model.Site;
 import searchengine.services.dto.site.CreateSiteDto;
 import searchengine.services.dto.site.ShowSiteDto;
 import searchengine.services.service.SiteService;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 
 @SpringBootTest
@@ -30,13 +33,11 @@ public class PageAnalyzerTaskImplTest extends BaseTest {
 
     @Test
     @DisplayName("Testing the page analyzer task")
-    void pageAnalyzerTaskTest() throws InterruptedException {
-        ShowSiteDto siteDto = siteService.createSite(new CreateSiteDto(TEST_MAIN_URL, "ItDeti"));
+    void pageAnalyzerTaskTest() {
+        Site siteDto = siteService.createSite(new CreateSiteDto(TEST_MAIN_URL, "ItDeti"));
         PageParseContext pageContext = new PageParseContext(siteDto);
         PageAnalyzerTask task = factory.createTask(TEST_PAGE_URL, pageContext);
-        Thread thread = new Thread(task::analyze);
-        thread.start();
-        thread.join();
+        assertDoesNotThrow(task::analyze);
 
         Long result = entityManager.createQuery("SELECT count(p) FROM Page p WHERE p.site.id = :siteId", Long.class)
                 .setParameter("siteId", siteDto.getId())

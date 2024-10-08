@@ -1,12 +1,8 @@
 package searchengine.services.searcher.analyzer.page_analyzer;
 
-import searchengine.services.searcher.entity.HttpResponseEntity;
-
-import java.util.concurrent.ForkJoinPool;
-
 public interface PageAnalyzerTask {
 
-    HttpResponseEntity analyze();
+    AnalyzeResponse analyze();
 
     void updateSiteState(String status);
 

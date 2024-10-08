@@ -12,6 +12,9 @@ import searchengine.services.searcher.entity.HttpResponseEntity;
 import searchengine.services.searcher.entity.NormalResponse;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,7 +23,7 @@ import java.util.regex.Pattern;
 
 public class PageAnalyzerImpl implements PageAnalyzer{
 
-    private static final Pattern INVALID_EXTENSIONS = Pattern.compile("\\.(sql|zip|pdf|jpg|png|jpeg)$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern INVALID_EXTENSIONS = Pattern.compile("\\.(sql|zip|pdf|jpg|png|jpeg|xlsx)$", Pattern.CASE_INSENSITIVE);
     private static final List<String> AGENTS = List.of(
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
@@ -63,6 +66,9 @@ public class PageAnalyzerImpl implements PageAnalyzer{
             return new HttpResponse(statusCode, document);
         } catch (HttpStatusException statusException) {
             throw statusException;
+        } catch (SocketTimeoutException | ConnectException e){
+            System.out.println(e.getMessage());
+            throw new HttpStatusException(e.getMessage(),408,url);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -100,6 +106,7 @@ public class PageAnalyzerImpl implements PageAnalyzer{
 
     private String generateUserFriendlyMessage(int statusCode, String message, String url) {
         return switch (statusCode) {
+            case 408 -> "Страница %s не отвечает. Превышено время ожидания.".formatted(url);
             case 404 ->
                     "Страница " + url + " не найдена (Ошибка 404). Возможно, она была удалена или вы ввели неправильный адрес.";
             case 500 -> "На сервере произошла ошибка (Ошибка 500). Пожалуйста, попробуйте позже.";

@@ -23,7 +23,7 @@ public class PageService {
     private final PageMapper mapper;
 
     @Transactional()
-    public String createPage(CreatePageDto dto){
+    public Page createPage(CreatePageDto dto){
         deletePageIfExist(dto.getPath());
         Integer siteId = Integer.valueOf(dto.getSiteId());
 
@@ -31,8 +31,7 @@ public class PageService {
 
         Page page = mapper.mapToPage(dto, site);
 
-        Page savedPage = pageRepository.save(page);
-        return savedPage.getPath();
+        return pageRepository.save(page);
     }
 
     public FindPageDto findPageWithSite(String pageUrl){

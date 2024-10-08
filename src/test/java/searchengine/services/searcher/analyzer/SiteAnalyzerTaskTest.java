@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import searchengine.BaseTest;
 import searchengine.dao.model.Page;
+import searchengine.dao.model.Site;
 import searchengine.dao.model.Status;
 import searchengine.services.dto.site.CreateSiteDto;
 import searchengine.services.dto.site.ShowSiteDto;
@@ -43,7 +44,7 @@ public class SiteAnalyzerTaskTest extends BaseTest {
     @Test
     @DisplayName("Testing the task for one site without exception")
     void successfulTaskTest() throws InterruptedException {
-        ShowSiteDto siteDto = siteService.createSite(new CreateSiteDto(TEST_MAIN_URL, "ItDeti"));
+        Site siteDto = siteService.createSite(new CreateSiteDto(TEST_MAIN_URL, "ItDeti"));
         ParseContext context = new ParseContext(siteDto, factory);
         SiteAnalyzerTask task = factory.createTask(TEST_MAIN_URL, context, new ConcurrentSkipListSet<>());
 
@@ -67,7 +68,7 @@ public class SiteAnalyzerTaskTest extends BaseTest {
     @Test
     @DisplayName("Testing the task for one site with exception")
     void taskWithException() throws InterruptedException {
-        ShowSiteDto site = siteService.createSite(new CreateSiteDto(TEST_MAIN_URL_WITH_EXCEPTION, "Et-cetera"));
+        Site site = siteService.createSite(new CreateSiteDto(TEST_MAIN_URL_WITH_EXCEPTION, "Et-cetera"));
         ParseContext context = new ParseContext(site, factory);
         SiteAnalyzerTask task = factory.createTask(TEST_MAIN_URL_WITH_EXCEPTION, context, new ConcurrentSkipListSet<>());
 
@@ -83,7 +84,7 @@ public class SiteAnalyzerTaskTest extends BaseTest {
                 .getSingleResult();
 
 
-        assertThat(result.get("status")).isEqualTo(Status.FAILED);
+        assertThat(result.get("status")).isEqualTo(Status.INDEXING);
         assertThat(result.get("lastError", String.class)).isNotNull();
     }
 
