@@ -4,12 +4,12 @@ indexing-settings:
 #      name: PlayBack.Ru
     - url: https://itdeti.ru
       name: ItDeti.ru
-    - url: https://hacker-son.com
-      name: Hacker-son
-    - url: https://gkb15.moscow/
-      name: GBK15
-#            - url: https://lenta.ru
-#              name: Lenta.ru
+#    - url: https://hacker-son.com
+#      name: Hacker-son
+#    - url: https://gkb15.moscow/
+#      name: GBK15
+#    - url: https://lenta.ru
+#      name: Lenta.ru
 #    - url: https://et-cetera.ru
 #      name: Et-cetera
 #    - url: https://skillbox.ru/
@@ -18,7 +18,7 @@ indexing-settings:
 #      name: BalakhnaSchool11
 spring:
   profiles:
-    active: git a
+    active:
   datasource:
     url: jdbc:postgresql://${DATABASE_NAME}:5432/search_engine
   jpa:

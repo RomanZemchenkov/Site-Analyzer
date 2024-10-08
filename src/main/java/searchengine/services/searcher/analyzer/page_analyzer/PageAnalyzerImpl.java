@@ -12,6 +12,8 @@ import searchengine.services.searcher.entity.HttpResponseEntity;
 import searchengine.services.searcher.entity.NormalResponse;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,6 +65,8 @@ public class PageAnalyzerImpl implements PageAnalyzer{
             return new HttpResponse(statusCode, document);
         } catch (HttpStatusException statusException) {
             throw statusException;
+        } catch (SocketTimeoutException | ConnectException e){
+            throw new HttpStatusException(e.getMessage(),408,url);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

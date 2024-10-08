@@ -55,9 +55,9 @@ public class SiteAnalyzerTask extends RecursiveAction {
     }
 
     public void stopIndexing(ForkJoinPool usePool) {
-        stopAnalyze(usePool);
         pageAnalyzerTaskImpl.changeIfStopFlag(true);
         context.setErrorContent(STOP_INDEXING_TEXT);
+        stopAnalyze(usePool);
     }
 
     public void updateSiteState(String status) {
@@ -80,9 +80,9 @@ public class SiteAnalyzerTask extends RecursiveAction {
     private void checkResponse(HttpResponseEntity httpResponseEntity) {
         if (httpResponseEntity instanceof ErrorResponse) {
             ForkJoinPool currentPool = ForkJoinTask.getPool();
-            stopAnalyze(currentPool);
-            context.setErrorContent(httpResponseEntity.getContent());
             context.setIfErrorResponse(true);
+            context.setErrorContent(httpResponseEntity.getContent());
+            stopAnalyze(currentPool);
         }
     }
 
