@@ -22,6 +22,7 @@ import searchengine.web.entity.SearchResponse;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 
 import static searchengine.services.GlobalVariables.INDEXING_STARTED;
 import static searchengine.services.exception.ExceptionMessage.INDEXING_ALREADY_START;
@@ -84,6 +85,8 @@ public class ApiController {
                                            @RequestParam(name = "limit", required = false, defaultValue = "10") String limit,
                                            @RequestParam(name = "offset", required = false, defaultValue = "0") String offset,
                                            @RequestParam(name = "site", required = false) String siteUrl) {
+
+
 
         SearchParametersDto searchParametersDto = new SearchParametersDto(query, limit, offset, siteUrl);
         SearchResponse searchResponse = searchService.search(searchParametersDto);
