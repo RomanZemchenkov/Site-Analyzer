@@ -17,15 +17,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static searchengine.services.GlobalVariables.STOP_INDEXING_TEXT;
 
 
-public class SiteSiteIndexingImplTest extends BaseTest {
+public class SiteIndexingImplTest extends BaseTest {
 
-    private final SiteSiteIndexingImpl service;
+    private final SiteIndexingImpl service;
     private final EntityManager manager;
     private static final String ALWAYS_GOOD_SITE = "ItDeti.ru";
     private static final String EXCEPTION_SITE = "ItDetiWithException.ru";
 
     @Autowired
-    public SiteSiteIndexingImplTest(SiteSiteIndexingImpl service, EntityManager manager) {
+    public SiteIndexingImplTest(SiteIndexingImpl service, EntityManager manager) {
         this.service = service;
         this.manager = manager;
     }

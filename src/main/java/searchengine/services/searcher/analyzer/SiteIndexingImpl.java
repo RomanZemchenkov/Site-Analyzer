@@ -37,7 +37,7 @@ import static searchengine.services.GlobalVariables.*;
 
 @Service
 @RequiredArgsConstructor
-public class SiteSiteIndexingImpl implements SiteIndexing {
+public class SiteIndexingImpl implements SiteIndexing {
 
     private final SiteService siteService;
     private final PageService pageService;

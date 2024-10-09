@@ -11,7 +11,7 @@ import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 import searchengine.dao.repository.lemma.LemmaRepository;
 import searchengine.dao.repository.site.SiteRepository;
-import searchengine.services.searcher.analyzer.SiteSiteIndexingImpl;
+import searchengine.services.searcher.analyzer.SiteIndexingImpl;
 import searchengine.services.searcher.lemma.LemmaCreatorContext;
 import searchengine.services.searcher.lemma.LemmaCreatorTask;
 import searchengine.services.searcher.lemma.LemmaCreatorTaskFactory;
@@ -29,11 +29,11 @@ public class LemmaServiceIT extends BaseTest {
     private final LemmaService lemmaService;
     private final LemmaRepository lemmaRepository;
     private final SiteRepository siteRepository;
-    private final SiteSiteIndexingImpl indexing;
+    private final SiteIndexingImpl indexing;
     private static final String EXIST_SITE_NAME = "Sendel.ru";
 
     @Autowired
-    public LemmaServiceIT(LemmaService lemmaService, LemmaRepository lemmaRepository, SiteRepository siteRepository, SiteSiteIndexingImpl indexing) {
+    public LemmaServiceIT(LemmaService lemmaService, LemmaRepository lemmaRepository, SiteRepository siteRepository, SiteIndexingImpl indexing) {
         this.lemmaService = lemmaService;
         this.lemmaRepository = lemmaRepository;
         this.siteRepository = siteRepository;

@@ -4,7 +4,7 @@ import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
 import searchengine.dao.repository.site.SiteRepository;
-import searchengine.services.searcher.analyzer.SiteSiteIndexingImpl;
+import searchengine.services.searcher.analyzer.SiteIndexingImpl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -12,13 +12,13 @@ public class IndexServiceIT extends BaseTest {
 
     private final LemmaService lemmaService;
     private final SiteRepository siteRepository;
-    private final SiteSiteIndexingImpl indexing;
+    private final SiteIndexingImpl indexing;
     private final IndexService indexService;
     private final EntityManager entityManager;
     private static final String EXIST_SITE_NAME = "Sendel.ru";
 
     @Autowired
-    public IndexServiceIT(LemmaService lemmaService, SiteRepository siteRepository, SiteSiteIndexingImpl indexing, IndexService indexService, EntityManager entityManager) {
+    public IndexServiceIT(LemmaService lemmaService, SiteRepository siteRepository, SiteIndexingImpl indexing, IndexService indexService, EntityManager entityManager) {
         this.lemmaService = lemmaService;
         this.siteRepository = siteRepository;
         this.indexing = indexing;

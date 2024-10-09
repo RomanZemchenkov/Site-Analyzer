@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import searchengine.aop.annotation.CheckTimeWorking;
 import searchengine.services.dto.SearchParametersDto;
-import searchengine.services.searcher.analyzer.SiteSiteIndexingImpl;
+import searchengine.services.searcher.analyzer.SiteIndexingImpl;
 import searchengine.services.dto.statistics.StatisticsResponse;
 import searchengine.services.IndexingService;
 import searchengine.services.service.SearchService;
@@ -32,7 +32,7 @@ import static searchengine.services.exception.ExceptionMessage.INDEXING_DOESNT_S
 public class ApiController {
 
     private final StatisticsService statisticsService;
-    private final SiteSiteIndexingImpl indexingService;
+    private final SiteIndexingImpl indexingService;
     private final IndexingService indexingAndLemmaService;
     private final SearchService searchService;
 

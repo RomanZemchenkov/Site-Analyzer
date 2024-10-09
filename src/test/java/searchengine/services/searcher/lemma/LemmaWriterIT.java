@@ -9,7 +9,7 @@ import searchengine.dao.model.Page;
 import searchengine.dao.model.Site;
 import searchengine.dao.repository.page.PageRepository;
 import searchengine.dao.repository.site.SiteRepository;
-import searchengine.services.searcher.analyzer.SiteSiteIndexingImpl;
+import searchengine.services.searcher.analyzer.SiteIndexingImpl;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,13 +19,13 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 public class LemmaWriterIT extends BaseTest {
 
-    private final SiteSiteIndexingImpl indexingService;
+    private final SiteIndexingImpl indexingService;
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
     private static final String SITE_NAME = "Sendel.ru";
 
     @Autowired
-    public LemmaWriterIT(SiteSiteIndexingImpl indexingService, SiteRepository siteRepository, PageRepository pageRepository) {
+    public LemmaWriterIT(SiteIndexingImpl indexingService, SiteRepository siteRepository, PageRepository pageRepository) {
         this.indexingService = indexingService;
         this.siteRepository = siteRepository;
         this.pageRepository = pageRepository;

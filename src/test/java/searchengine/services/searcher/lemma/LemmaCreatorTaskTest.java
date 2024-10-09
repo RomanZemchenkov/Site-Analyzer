@@ -3,7 +3,7 @@ package searchengine.services.searcher.lemma;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
 import searchengine.dao.repository.site.SiteRepository;
-import searchengine.services.searcher.analyzer.SiteSiteIndexingImpl;
+import searchengine.services.searcher.analyzer.SiteIndexingImpl;
 
 import java.util.function.Supplier;
 
@@ -14,11 +14,11 @@ public class LemmaCreatorTaskTest extends BaseTest {
 
     private final LemmaCreatorTaskFactory factory;
     private final SiteRepository siteRepository;
-    private final SiteSiteIndexingImpl service;
+    private final SiteIndexingImpl service;
     private static final String[] SITES_NAME = {"Sendel.ru","ItDeti.ru"};
 
     @Autowired
-    public LemmaCreatorTaskTest(LemmaCreatorTaskFactory factory, SiteRepository siteRepository, SiteSiteIndexingImpl service) {
+    public LemmaCreatorTaskTest(LemmaCreatorTaskFactory factory, SiteRepository siteRepository, SiteIndexingImpl service) {
         this.factory = factory;
         this.siteRepository = siteRepository;
         this.service = service;

@@ -13,7 +13,7 @@ import searchengine.dao.repository.site.SiteRepository;
 import searchengine.dao.repository.statistic.StatisticRepository;
 import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.service.IndexService;
-import searchengine.services.searcher.analyzer.SiteSiteIndexingImpl;
+import searchengine.services.searcher.analyzer.SiteIndexingImpl;
 import searchengine.services.service.LemmaService;
 
 
@@ -31,7 +31,7 @@ import static searchengine.services.GlobalVariables.LEMMA_CREATING_STARTED;
 @RequiredArgsConstructor
 public class IndexingService {
 
-    private final SiteSiteIndexingImpl indexingService;
+    private final SiteIndexingImpl indexingService;
     private final LemmaService lemmaService;
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
