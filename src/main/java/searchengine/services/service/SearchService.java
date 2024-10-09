@@ -264,7 +264,6 @@ public class SearchService {
 
         RussianLuceneMorphology russianLuceneMorphology = LuceneMorphologyGiver.get();
         SnippetCreator snippetCreatorTask = new SnippetCreatorImpl(suitableLemmas, russianLuceneMorphology);
-        LuceneMorphologyGiver.returnLucene(russianLuceneMorphology);
 
         String snippet = snippetCreatorTask.createSnippet(content);
 

@@ -36,7 +36,6 @@ public class TextToLemmaParserImpl implements TextToLemmaParser{
         RussianLuceneMorphology morphology = LuceneMorphologyGiver.get();
         String[] oneLanguageWords = parseToOneLanguageWords(text, RUSSIAN_LETTERS);
         Map<String, Integer> lemmasMap = createLemmasMap(oneLanguageWords, RUSSIAN_PARTICLES_NAMES, morphology);
-        LuceneMorphologyGiver.returnLucene(morphology);
         return lemmasMap;
     }
 

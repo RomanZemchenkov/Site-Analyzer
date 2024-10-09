@@ -1,16 +1,12 @@
 package searchengine.services.service;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
-import searchengine.services.IndexingAndLemmaService;
+import searchengine.services.IndexingService;
 import searchengine.services.dto.SearchParametersDto;
-import searchengine.services.dto.page.ShowPageDto;
 import searchengine.web.entity.SearchResponse;
-
-import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -19,14 +15,14 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 public class  SearchServiceIT extends BaseTest {
 
     private final SearchService searchService;
-    private final IndexingAndLemmaService indexingAndLemmaService;
+    private final IndexingService indexingAndLemmaService;
     private final static String TEST_TEXT = "Написание скриптов";
     private final static String SITE_URL = "https://itdeti.ru";
     private static final String BASE_LIMIT = "20";
     private static final String BASE_OFFSET = "0";
 
     @Autowired
-    public SearchServiceIT(SearchService searchService, IndexingAndLemmaService indexingAndLemmaService) {
+    public SearchServiceIT(SearchService searchService, IndexingService indexingAndLemmaService) {
         this.searchService = searchService;
         this.indexingAndLemmaService = indexingAndLemmaService;
     }

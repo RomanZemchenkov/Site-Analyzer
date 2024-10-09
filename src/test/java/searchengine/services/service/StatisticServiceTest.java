@@ -4,7 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
-import searchengine.services.IndexingAndLemmaService;
+import searchengine.services.IndexingService;
 import searchengine.services.dto.statistics.DetailedStatisticsItem;
 import searchengine.services.dto.statistics.StatisticsResponse;
 import searchengine.services.dto.statistics.TotalStatistics;
@@ -17,10 +17,10 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 public class StatisticServiceTest extends BaseTest {
 
     private final StatisticsService statisticsService;
-    private final IndexingAndLemmaService indexingAndLemmaService;
+    private final IndexingService indexingAndLemmaService;
 
     @Autowired
-    public StatisticServiceTest(StatisticsService statisticsService, IndexingAndLemmaService indexingAndLemmaService) {
+    public StatisticServiceTest(StatisticsService statisticsService, IndexingService indexingAndLemmaService) {
         this.statisticsService = statisticsService;
         this.indexingAndLemmaService = indexingAndLemmaService;
     }

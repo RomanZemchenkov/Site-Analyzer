@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
+import searchengine.dao.model.Page;
 import searchengine.services.dto.page.CreatePageDto;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,10 +25,10 @@ public class PageServiceTest extends BaseTest {
     @Test
     @DisplayName("Testing the create page with id")
     void pageWithIdSave(){
-        CreatePageDto dto = new CreatePageDto(EXIST_SITE_ID, "/path/to", "200", "content");
-        String path = assertDoesNotThrow(() -> service.createPage(dto));
+        CreatePageDto dto = new CreatePageDto(EXIST_SITE_ID, "/page/to", "200", "content");
+        Page page = assertDoesNotThrow(() -> service.createPage(dto));
 
-        assertThat(path).isEqualTo("/path/to");
+        assertThat(page.getPath()).isEqualTo("/page/to");
     }
 
 }

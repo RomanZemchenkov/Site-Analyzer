@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import searchengine.aop.annotation.CheckTimeWorking;
 import searchengine.services.dto.SearchParametersDto;
-import searchengine.services.searcher.analyzer.IndexingImpl;
+import searchengine.services.searcher.analyzer.SiteIndexingImpl;
 import searchengine.services.dto.statistics.StatisticsResponse;
-import searchengine.services.IndexingAndLemmaService;
+import searchengine.services.IndexingService;
 import searchengine.services.service.SearchService;
 import searchengine.services.service.StatisticsService;
 import searchengine.web.entity.ErrorResponse;
@@ -33,8 +33,8 @@ import static searchengine.services.exception.ExceptionMessage.INDEXING_DOESNT_S
 public class ApiController {
 
     private final StatisticsService statisticsService;
-    private final IndexingImpl indexingService;
-    private final IndexingAndLemmaService indexingAndLemmaService;
+    private final SiteIndexingImpl indexingService;
+    private final IndexingService indexingAndLemmaService;
     private final SearchService searchService;
 
 
@@ -47,7 +47,7 @@ public class ApiController {
     @GetMapping("/startIndexing")
     @CheckTimeWorking
     public ResponseEntity<Response> startIndexing() {
-        if (!INDEXING_STARTED) {
+        if (!INDEXING_STARTED.get()) {
             searchService.clearPrevInformation();
             ExecutorService executorService = Executors.newSingleThreadExecutor();
             executorService.submit(indexingAndLemmaService::startIndexingAndCreateLemma);
@@ -62,7 +62,7 @@ public class ApiController {
     @GetMapping("/stopIndexing")
     @CheckTimeWorking
     public ResponseEntity<Response> stopIndexing() {
-        if (INDEXING_STARTED) {
+        if (INDEXING_STARTED.get()) {
             indexingService.stopIndexing();
             return new ResponseEntity<>(new NormalResponse("true"), HttpStatus.OK);
         } else {

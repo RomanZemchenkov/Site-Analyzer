@@ -18,7 +18,9 @@ public class LemmaCreatorContext {
     private final LemmaCreatorTaskFactory creatorTaskFactory;
     private final ConcurrentHashMap<Lemma, Integer> countOfLemmas;
 
-    public LemmaCreatorContext(Site site, List<Page> pageList, LemmaCreatorTaskFactory creatorTaskFactory, ConcurrentHashMap<Lemma, Integer> countOfLemmas) {
+
+    public LemmaCreatorContext(Site site, List<Page> pageList,
+                               LemmaCreatorTaskFactory creatorTaskFactory, ConcurrentHashMap<Lemma, Integer> countOfLemmas) {
         this.site = site;
         this.pageList = pageList;
         this.creatorTaskFactory = creatorTaskFactory;

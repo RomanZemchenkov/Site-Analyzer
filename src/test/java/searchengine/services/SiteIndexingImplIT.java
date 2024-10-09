@@ -15,16 +15,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @Sql(value = "classpath:sql/init.sql")
-public class IndexingImplAndLemmaCreatorIT extends BaseTest{
+public class SiteIndexingImplIT extends BaseTest{
 
-    private final IndexingAndLemmaService service;
+    private final IndexingService service;
     private final EntityManager entityManager;
     private static final String SITE_NAME = "ItDeti.ru";
     private static final String MAIN_SITE_URL = "https://itdeti.ru";
     private static final String RANDOM_PAGE = "https://itdeti.ru/robotrack";
 
     @Autowired
-    public IndexingImplAndLemmaCreatorIT(IndexingAndLemmaService service, EntityManager entityManager) {
+    public SiteIndexingImplIT(IndexingService service, EntityManager entityManager) {
         this.service = service;
         this.entityManager = entityManager;
     }

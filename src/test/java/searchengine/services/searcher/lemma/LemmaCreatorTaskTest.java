@@ -1,17 +1,10 @@
 package searchengine.services.searcher.lemma;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
-import searchengine.dao.model.Lemma;
-import searchengine.dao.model.Site;
 import searchengine.dao.repository.site.SiteRepository;
-import searchengine.services.searcher.analyzer.IndexingImpl;
+import searchengine.services.searcher.analyzer.SiteIndexingImpl;
 
-import java.util.*;
-import java.util.concurrent.*;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,11 +14,11 @@ public class LemmaCreatorTaskTest extends BaseTest {
 
     private final LemmaCreatorTaskFactory factory;
     private final SiteRepository siteRepository;
-    private final IndexingImpl service;
+    private final SiteIndexingImpl service;
     private static final String[] SITES_NAME = {"Sendel.ru","ItDeti.ru"};
 
     @Autowired
-    public LemmaCreatorTaskTest(LemmaCreatorTaskFactory factory, SiteRepository siteRepository, IndexingImpl service) {
+    public LemmaCreatorTaskTest(LemmaCreatorTaskFactory factory, SiteRepository siteRepository, SiteIndexingImpl service) {
         this.factory = factory;
         this.siteRepository = siteRepository;
         this.service = service;
@@ -51,7 +44,6 @@ public class LemmaCreatorTaskTest extends BaseTest {
 //
 //        assertThat(resultLemmas).hasSize(1798);
 //    }
-//
 //    @Test
 //    @DisplayName("Create lemma for several sites by multi thread test")
 //    void lemmaCreatorTaskForSeveralSites() {
@@ -102,13 +94,5 @@ public class LemmaCreatorTaskTest extends BaseTest {
 //            }
 //        }
 //
-//    }
-//
-//    static <T> T time(Supplier<T> supplier) {
-//        long start = System.currentTimeMillis();
-//        T t = supplier.get();
-//        long finish = System.currentTimeMillis();
-//        System.out.println("Метод отработал за: " + (finish - start));
-//        return t;
 //    }
 }

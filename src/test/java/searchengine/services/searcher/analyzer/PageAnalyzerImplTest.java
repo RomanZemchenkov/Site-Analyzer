@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 public class PageAnalyzerImplTest {
 
-    private static final String mainUrl = "https://sendel.ru";
+    private static final String mainUrl = "https://shcool11-balakhna.edusite.ru";
 
     @Test
     @DisplayName("Testing that the work searchLink method was successful")

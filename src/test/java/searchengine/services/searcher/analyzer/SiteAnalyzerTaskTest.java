@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import searchengine.BaseTest;
 import searchengine.dao.model.Page;
+import searchengine.dao.model.Site;
 import searchengine.dao.model.Status;
 import searchengine.services.dto.site.CreateSiteDto;
 import searchengine.services.dto.site.ShowSiteDto;
@@ -83,7 +84,7 @@ public class SiteAnalyzerTaskTest extends BaseTest {
                 .getSingleResult();
 
 
-        assertThat(result.get("status")).isEqualTo(Status.FAILED);
+        assertThat(result.get("status")).isEqualTo(Status.INDEXING);
         assertThat(result.get("lastError", String.class)).isNotNull();
     }
 

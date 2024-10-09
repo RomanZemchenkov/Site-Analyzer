@@ -47,4 +47,5 @@ public class LemmaWriter {
         }
         return countOfLemmasByPage;
     }
+
 }

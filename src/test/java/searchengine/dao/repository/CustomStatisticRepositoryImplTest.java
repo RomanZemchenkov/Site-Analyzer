@@ -9,7 +9,7 @@ import searchengine.BaseTest;
 import searchengine.dao.model.Site;
 import searchengine.dao.repository.site.SiteRepository;
 import searchengine.dao.repository.statistic.StatisticRepository;
-import searchengine.services.IndexingAndLemmaService;
+import searchengine.services.IndexingService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -18,11 +18,11 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 public class CustomStatisticRepositoryImplTest extends BaseTest {
 
     private final StatisticRepository statisticRepository;
-    private final IndexingAndLemmaService indexingAndLemmaService;
+    private final IndexingService indexingAndLemmaService;
     private final SiteRepository siteRepository;
 
     @Autowired
-    public CustomStatisticRepositoryImplTest(StatisticRepository statisticRepository, IndexingAndLemmaService indexingAndLemmaService, SiteRepository siteRepository) {
+    public CustomStatisticRepositoryImplTest(StatisticRepository statisticRepository, IndexingService indexingAndLemmaService, SiteRepository siteRepository) {
         this.statisticRepository = statisticRepository;
         this.indexingAndLemmaService = indexingAndLemmaService;
         this.siteRepository = siteRepository;

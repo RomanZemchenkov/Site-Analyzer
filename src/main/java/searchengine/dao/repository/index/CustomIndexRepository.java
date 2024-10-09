@@ -11,6 +11,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public interface CustomIndexRepository {
 
+    @Transactional
     void batchSave(List<Index> indexList);
 
     @Modifying
