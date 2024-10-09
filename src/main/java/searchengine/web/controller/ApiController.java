@@ -46,7 +46,7 @@ public class ApiController {
     @GetMapping("/startIndexing")
     @CheckTimeWorking
     public ResponseEntity<Response> startIndexing() {
-        if (!INDEXING_STARTED) {
+        if (!INDEXING_STARTED.get()) {
             searchService.clearPrevInformation();
             ExecutorService executorService = Executors.newSingleThreadExecutor();
             executorService.submit(indexingAndLemmaService::startIndexingAndCreateLemma);
@@ -61,7 +61,7 @@ public class ApiController {
     @GetMapping("/stopIndexing")
     @CheckTimeWorking
     public ResponseEntity<Response> stopIndexing() {
-        if (INDEXING_STARTED) {
+        if (INDEXING_STARTED.get()) {
             indexingService.stopIndexing();
             return new ResponseEntity<>(new NormalResponse("true"), HttpStatus.OK);
         } else {

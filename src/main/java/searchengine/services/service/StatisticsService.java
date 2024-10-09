@@ -39,7 +39,7 @@ public class StatisticsService {
 
     @Transactional
     public TotalStatistics readTotalStatistics() {
-        if (INDEXING_STARTED || LEMMA_CREATING_STARTED || INDEX_CREATING_STARTED) {
+        if (INDEXING_STARTED.get() || LEMMA_CREATING_STARTED.get() || INDEX_CREATING_STARTED.get()) {
             return ifWorking();
         } else {
             return ifFinished();
@@ -81,7 +81,7 @@ public class StatisticsService {
         }
         lemmasCount += COUNT_OF_LEMMAS.get();
 
-        return new TotalStatistics(sitesCount, pagesCount, lemmasCount, INDEXING_STARTED);
+        return new TotalStatistics(sitesCount, pagesCount, lemmasCount, INDEXING_STARTED.get());
     }
 
 

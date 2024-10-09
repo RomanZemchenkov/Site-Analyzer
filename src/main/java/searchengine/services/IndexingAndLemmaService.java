@@ -49,18 +49,18 @@ public class IndexingAndLemmaService {
     @LuceneInit
     @CheckTimeWorking
     public void startIndexingAndCreateLemma() {
-        INDEXING_STARTED = true;
+        INDEXING_STARTED.set(true);
         indexingService.startSitesIndexing();
-        LEMMA_CREATING_STARTED = true;
-        INDEXING_STARTED = false;
+        LEMMA_CREATING_STARTED.set(true);
+        INDEXING_STARTED.set(false);
 
         List<Site> allSites = getAllSites();
         List<Map<Page, Map<Lemma, Integer>>> lemmas = lemmaListCreate(allSites);
-        INDEX_CREATING_STARTED = true;
-        LEMMA_CREATING_STARTED = false;
+        INDEX_CREATING_STARTED.set(true);
+        LEMMA_CREATING_STARTED.set(false);
 
         saveIndexesAndLemmas(lemmas);
-        INDEX_CREATING_STARTED = false;
+        INDEX_CREATING_STARTED.set(false);
 
         COUNT_OF_LEMMAS.set(0);
     }
@@ -132,8 +132,6 @@ public class IndexingAndLemmaService {
     }
 
     private Map<Page, Map<Lemma, Integer>> lemmaCreate(Site site, List<Page> pages) {
-        LEMMA_CREATING_STARTED = true;
-
         LemmaCreatorTask task = taskCreate(site, pages);
         ForkJoinPool forkJoinPool = new ForkJoinPool();
         Map<Page, Map<Lemma, Integer>> taskResult = forkJoinPool.invoke(task);

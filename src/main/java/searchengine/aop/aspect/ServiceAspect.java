@@ -49,7 +49,7 @@ public class ServiceAspect {
     @Before(value = "searchengine.aop.pointcut.ClassPointcut.isService() " +
                     "&& searchengine.aop.pointcut.AnnotationPointcut.isCheckIndexingWorkAnnotation()")
     public void indexingWorkChecking(JoinPoint joinPoint){
-        if (INDEXING_STARTED || LEMMA_CREATING_STARTED || INDEX_CREATING_STARTED) {
+        if (INDEXING_STARTED.get() || LEMMA_CREATING_STARTED.get() || INDEX_CREATING_STARTED.get()) {
             throw new IndexingStartingException();
         }
     }
