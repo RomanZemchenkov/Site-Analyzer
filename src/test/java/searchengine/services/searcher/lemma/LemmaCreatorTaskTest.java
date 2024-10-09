@@ -1,17 +1,10 @@
 package searchengine.services.searcher.lemma;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
-import searchengine.dao.model.Lemma;
-import searchengine.dao.model.Site;
 import searchengine.dao.repository.site.SiteRepository;
-import searchengine.services.searcher.analyzer.IndexingImpl;
+import searchengine.services.searcher.analyzer.SiteSiteIndexingImpl;
 
-import java.util.*;
-import java.util.concurrent.*;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,11 +14,11 @@ public class LemmaCreatorTaskTest extends BaseTest {
 
     private final LemmaCreatorTaskFactory factory;
     private final SiteRepository siteRepository;
-    private final IndexingImpl service;
+    private final SiteSiteIndexingImpl service;
     private static final String[] SITES_NAME = {"Sendel.ru","ItDeti.ru"};
 
     @Autowired
-    public LemmaCreatorTaskTest(LemmaCreatorTaskFactory factory, SiteRepository siteRepository, IndexingImpl service) {
+    public LemmaCreatorTaskTest(LemmaCreatorTaskFactory factory, SiteRepository siteRepository, SiteSiteIndexingImpl service) {
         this.factory = factory;
         this.siteRepository = siteRepository;
         this.service = service;

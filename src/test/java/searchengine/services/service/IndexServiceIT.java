@@ -1,21 +1,10 @@
 package searchengine.services.service;
 
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.BaseTest;
-import searchengine.dao.model.Lemma;
-import searchengine.dao.model.Site;
 import searchengine.dao.repository.site.SiteRepository;
-import searchengine.services.searcher.analyzer.IndexingImpl;
-import searchengine.services.searcher.lemma.LemmaCreatorContext;
-import searchengine.services.searcher.lemma.LemmaCreatorTask;
-import searchengine.services.searcher.lemma.LemmaCreatorTaskFactory;
-
-import java.util.*;
-import java.util.concurrent.*;
+import searchengine.services.searcher.analyzer.SiteSiteIndexingImpl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,13 +12,13 @@ public class IndexServiceIT extends BaseTest {
 
     private final LemmaService lemmaService;
     private final SiteRepository siteRepository;
-    private final IndexingImpl indexing;
+    private final SiteSiteIndexingImpl indexing;
     private final IndexService indexService;
     private final EntityManager entityManager;
     private static final String EXIST_SITE_NAME = "Sendel.ru";
 
     @Autowired
-    public IndexServiceIT(LemmaService lemmaService, SiteRepository siteRepository, IndexingImpl indexing, IndexService indexService, EntityManager entityManager) {
+    public IndexServiceIT(LemmaService lemmaService, SiteRepository siteRepository, SiteSiteIndexingImpl indexing, IndexService indexService, EntityManager entityManager) {
         this.lemmaService = lemmaService;
         this.siteRepository = siteRepository;
         this.indexing = indexing;
@@ -39,7 +28,7 @@ public class IndexServiceIT extends BaseTest {
 
 //    @Test
 //    @DisplayName("Testing the create index method")
-//    void createIndex(){
+//    void createBatchIndexes(){
 //        indexing.startSitesIndexing();
 //        Optional<Site> mayBeSite = siteRepository.findSiteByName(EXIST_SITE_NAME);
 //        Assertions.assertTrue(mayBeSite.isPresent());
@@ -69,7 +58,7 @@ public class IndexServiceIT extends BaseTest {
 //
 //        lemmaService.createBatch(lemmaList);
 //
-//        Assertions.assertDoesNotThrow(indexService::createIndex);
+//        Assertions.assertDoesNotThrow(indexService::createBatchIndexes);
 //
 //        Long result = entityManager.createQuery("SELECT count(i) FROM Index i", Long.class).getSingleResult();
 //

@@ -64,7 +64,6 @@ public class CustomIndexRepositoryImpl implements CustomIndexRepository {
         if (!tempList.isEmpty()) {
             save(tempList);
         }
-        System.out.println("Сохранение индексов произошло");
     }
 
     @Override

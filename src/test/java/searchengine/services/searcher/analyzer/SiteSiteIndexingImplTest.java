@@ -11,22 +11,21 @@ import searchengine.dao.model.Status;
 import searchengine.services.dto.page.FindPageDto;
 import searchengine.services.exception.IllegalPageException;
 
-import java.util.HashMap;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static searchengine.services.GlobalVariables.STOP_INDEXING_TEXT;
 
 
-public class IndexingImplTest extends BaseTest {
+public class SiteSiteIndexingImplTest extends BaseTest {
 
-    private final IndexingImpl service;
+    private final SiteSiteIndexingImpl service;
     private final EntityManager manager;
     private static final String ALWAYS_GOOD_SITE = "ItDeti.ru";
     private static final String EXCEPTION_SITE = "ItDetiWithException.ru";
 
     @Autowired
-    public IndexingImplTest(IndexingImpl service, EntityManager manager) {
+    public SiteSiteIndexingImplTest(SiteSiteIndexingImpl service, EntityManager manager) {
         this.service = service;
         this.manager = manager;
     }
