@@ -10,6 +10,6 @@ public class GlobalVariables {
     public static AtomicBoolean INDEXING_STARTED = new AtomicBoolean(false);
     public static AtomicBoolean LEMMA_CREATING_STARTED = new AtomicBoolean(false);
     public static AtomicBoolean INDEX_CREATING_STARTED = new AtomicBoolean(false);
-git add    public static final AtomicLong COUNT_OF_LEMMAS = new AtomicLong();
+    public static final AtomicLong COUNT_OF_LEMMAS = new AtomicLong();
 
 }
