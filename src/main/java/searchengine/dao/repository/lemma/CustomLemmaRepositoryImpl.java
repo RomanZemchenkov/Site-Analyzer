@@ -87,11 +87,12 @@ public class CustomLemmaRepositoryImpl implements CustomLemmaRepository {
 
     @Override
     @CheckTimeWorking
-    public List<Lemma> findAllBySiteIdAndLemmas(Site site, Set<String> lemmas) {
+    public List<Lemma> findAllBySiteIdAndLemmasByMaxFrequency(Site site, Set<String> lemmas,float maxFrequency) {
         MapSqlParameterSource source = new MapSqlParameterSource();
         source.addValue("id", site.getId());
         source.addValue("lemmas", lemmas);
-        return namedTemplate.query(SELECT_LEMMA_BY_SITE_ID_AND_LEMMA_SQL, source,
+        source.addValue("maxFrequency",maxFrequency);
+        return namedTemplate.query(SELECT_LEMMA_BY_SITE_ID_AND_LEMMA_SQL_AND_FREQUENCY, source,
                 (rs) -> {
                     List<Lemma> lemmaList = new ArrayList<>();
                     while (rs.next()) {

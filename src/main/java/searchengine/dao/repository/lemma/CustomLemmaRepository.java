@@ -12,7 +12,7 @@ public interface CustomLemmaRepository {
 
     List<Lemma> batchSave(List<Lemma> lemmaList);
 
-    List<Lemma> findAllBySiteIdAndLemmas(Site site, Set<String> lemmas);
+    List<Lemma> findAllBySiteIdAndLemmasByMaxFrequency(Site site, Set<String> lemmas,float maxFrequency);
 
     void checkExistAndSaveOrUpdate(List<Lemma> lemmaList, Site site);
 

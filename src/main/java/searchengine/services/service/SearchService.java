@@ -147,13 +147,7 @@ public class SearchService {
     }
 
     private List<Lemma> findExistLemmas(Site useSite, Set<String> lemmas) {
-        long countOfPagesBySite = pageRepository.findCountOfPagesBySite(useSite);
-        int maxLemmaFrequency = (int) (countOfPagesBySite * PERCENT_OF_TOTAL_COUNT);
-        return lemmaRepository.findAllBySiteIdAndLemmas(useSite, lemmas)
-                .stream()
-                .filter(lemma -> lemma.getFrequency() <= maxLemmaFrequency)
-                .sorted((l1, l2) -> l1.getFrequency().compareTo(l2.getFrequency()))
-                .toList();
+        return lemmaRepository.findAllBySiteIdAndLemmasByMaxFrequency(useSite, lemmas,0.95F);
     }
 
     private Map<Page, List<Index>> findSuitablePages(List<Lemma> targetLemmas, List<String> suitableLemmas) {
