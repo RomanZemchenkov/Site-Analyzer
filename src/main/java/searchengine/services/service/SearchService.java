@@ -264,7 +264,6 @@ public class SearchService {
         String siteUrl = site.getUrl();
         RussianLuceneMorphology russianLuceneMorphology = LuceneMorphologyGiver.get();
         SnippetCreator snippetCreatorTask = new SnippetCreatorImpl(suitableLemmas, russianLuceneMorphology);
-        LuceneMorphologyGiver.returnLucene(russianLuceneMorphology);
         String snippet = snippetCreatorTask.createSnippet(content);
         String pageTitle = new PageAnalyzerImpl().searchPageTitle(content);
 

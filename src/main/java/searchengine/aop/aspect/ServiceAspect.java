@@ -30,9 +30,9 @@ public class ServiceAspect {
     @Around(value = "searchengine.aop.pointcut.AnnotationPointcut.isLuceneInitAnnotation() " +
             " && searchengine.aop.pointcut.ClassPointcut.isService() ", argNames = "joinPoint")
     public Object aroundMethodWhereLemmasCreate(ProceedingJoinPoint joinPoint) throws Throwable {
-        LuceneMorphologyGiver.initPool();
+        LuceneMorphologyGiver.initLucene();
         Object proceed = joinPoint.proceed();
-        LuceneMorphologyGiver.closePool();
+        LuceneMorphologyGiver.clearLucene();
         return proceed;
     }
 
