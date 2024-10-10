@@ -23,9 +23,9 @@ public class PageService {
     private final PageMapper mapper;
 
     @Transactional()
-    public Page createPage(CreatePageDto dto){
-        deletePageIfExist(dto.getPath());
+    public Page createPage(CreatePageDto dto) {
         Integer siteId = Integer.valueOf(dto.getSiteId());
+        deletePageIfExist(dto.getPath(), siteId);
 
         Site site = siteRepository.findById(siteId).get();
 
@@ -34,15 +34,14 @@ public class PageService {
         return pageRepository.save(page);
     }
 
-    public FindPageDto findPageWithSite(String pageUrl){
-        Page page = pageRepository.findByPath(pageUrl).get();
-        return new FindPageDto(page,page.getSite());
+    public FindPageDto findPageWithSite(String pageUrl, Integer siteId) {
+        Page page = pageRepository.findByPathAndSiteId(pageUrl, siteId).get();
+        return new FindPageDto(page, page.getSite());
     }
 
-    private void deletePageIfExist(String pageUri){
-        Optional<Page> mayBePage = pageRepository.findByPath(pageUri);
+    private void deletePageIfExist(String pageUri, Integer siteId) {
+        Optional<Page> mayBePage = pageRepository.findByPathAndSiteId(pageUri, siteId);
         mayBePage.ifPresent(pageRepository::delete);
-
     }
 
 }

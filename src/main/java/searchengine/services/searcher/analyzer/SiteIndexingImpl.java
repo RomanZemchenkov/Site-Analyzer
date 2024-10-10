@@ -141,6 +141,7 @@ public class SiteIndexingImpl implements SiteIndexing {
 
     public FindPageDto startPageIndexing(String searchedUrl) {
         ShowSiteDto showSite = checkSiteExist(searchedUrl);
+        Integer siteId = Integer.parseInt(showSite.getId());
         PageParseContext pageContext = new PageParseContext(showSite);
         PageAnalyzerTask task = pageFactory.createTask(searchedUrl, pageContext);
         HttpResponseEntity analyzeResult = task.analyze();
@@ -151,7 +152,7 @@ public class SiteIndexingImpl implements SiteIndexing {
         } else {
             task.updateSiteState(Status.INDEXED.toString());
         }
-        return pageService.findPageWithSite(pageUri);
+        return pageService.findPageWithSite(pageUri,siteId);
     }
 
 
