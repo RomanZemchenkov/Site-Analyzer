@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface PageRepository extends JpaRepository<Page, Integer>, CustomPageRepository {
 
     @EntityGraph(type = EntityGraph.EntityGraphType.LOAD,attributePaths = "site")
-    Optional<Page> findByPath(String path);
+    Optional<Page> findByPathAndSiteId(String path, Integer siteId);
 
     List<Page> findAllBySite(Site site);
 
