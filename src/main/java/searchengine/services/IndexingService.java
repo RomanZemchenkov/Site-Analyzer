@@ -31,7 +31,7 @@ import static searchengine.services.GlobalVariables.LEMMA_CREATING_STARTED;
 @RequiredArgsConstructor
 public class IndexingService {
 
-    private final SiteIndexingImpl indexingService;
+    private final SiteIndexingImpl siteIndexing;
     private final LemmaService lemmaService;
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
@@ -42,7 +42,7 @@ public class IndexingService {
     @CheckTimeWorking
     public void startIndexingAndCreateLemma() {
         INDEXING_STARTED.set(true);
-        indexingService.startSitesIndexing();
+        siteIndexing.startSitesIndexing();
         LEMMA_CREATING_STARTED.set(true);
         INDEXING_STARTED.set(false);
 
@@ -60,7 +60,7 @@ public class IndexingService {
     @LuceneInit
     @CheckTimeWorking
     public void startIndexingAndCreateLemmaForOnePage(String searchedUrl) {
-        FindPageDto infoDto = indexingService.startPageIndexing(searchedUrl);
+        FindPageDto infoDto = siteIndexing.startPageIndexing(searchedUrl);
         Site site = infoDto.getSite();
         Page page = infoDto.getSavedPage();
 
@@ -89,7 +89,7 @@ public class IndexingService {
 
     @Transactional(readOnly = true)
     public List<Site> getAllSites() {
-        Set<String> siteNames = indexingService.getNamesAndSites().keySet();
+        Set<String> siteNames = siteIndexing.getNamesAndSites().keySet();
         List<Site> allSites = siteRepository.findAllByName(siteNames);
         for (Site site : allSites) {
             site.setPages(pageRepository.findAllBySite(site));
